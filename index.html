@@ -190,6 +190,49 @@
         <button type="button" id="btn-auth-toggle" class="text-violet2 underline">Crear cuenta</button>
       </p>
     </form>
+
+    <div class="flex items-center gap-3 my-5">
+      <span class="flex-1 h-px bg-line"></span>
+      <span class="text-[10px] text-[#6b5b93] tracking-widest">O CONTINUAR CON</span>
+      <span class="flex-1 h-px bg-line"></span>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <button type="button" id="btn-login-google" class="btn-clip flex items-center justify-center gap-2 border border-line bg-panel2 text-sm font-display font-semibold py-2.5 text-[#eee7ff] hover:border-violet">
+        <span>🇬</span> Continuar con Google
+      </button>
+      <button type="button" id="btn-login-anonimo" class="btn-clip border border-line bg-panel2 text-sm font-display font-semibold py-2.5 text-[#a394c9] hover:border-violet2 hover:text-violet2">
+        Continuar como invitado
+      </button>
+
+      <!-- Flujo de teléfono / SMS -->
+      <div id="phone-step-numero" class="flex flex-col gap-2">
+        <label class="text-xs text-[#a394c9] block">Número de teléfono</label>
+        <div class="flex gap-2">
+          <input id="auth-phone" type="tel" placeholder="+549261xxxxxxx"
+            class="flex-1 bg-panel2 border border-line px-4 py-2.5 text-sm text-[#eee7ff] outline-none focus:border-violet">
+          <button type="button" id="btn-enviar-sms" class="btn-clip border border-violet text-violet2 text-xs font-display font-semibold px-4 whitespace-nowrap">
+            Enviar código
+          </button>
+        </div>
+      </div>
+
+      <div id="phone-step-codigo" class="hidden flex-col gap-2">
+        <label class="text-xs text-[#a394c9] block">Código recibido por SMS</label>
+        <div class="flex gap-2">
+          <input id="auth-phone-code" type="text" inputmode="numeric" placeholder="123456"
+            class="flex-1 bg-panel2 border border-line px-4 py-2.5 text-sm text-[#eee7ff] outline-none focus:border-violet">
+          <button type="button" id="btn-confirmar-sms" class="btn-clip bg-gradient-to-r from-violet to-magenta text-white text-xs font-display font-semibold px-4 whitespace-nowrap">
+            Confirmar
+          </button>
+        </div>
+      </div>
+
+      <p id="social-auth-status" class="text-xs text-center text-[#6b5b93]"></p>
+    </div>
+
+    <!-- Contenedor invisible requerido por Firebase para el reCAPTCHA del login por SMS -->
+    <div id="recaptcha-container"></div>
   </div>
 </div>
 
@@ -198,7 +241,11 @@
     auth,
     db,
     obtenerProductos,
-    guardarCliente
+    guardarCliente,
+    loginConGoogle,
+    loginAnonimo,
+    enviarCodigoSms,
+    confirmarCodigoSms
   } from "./firebase.js";
   import {
     onAuthStateChanged,
@@ -502,10 +549,96 @@
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      sessionInfo.textContent = `Conectado: ${user.email}`;
+      sessionInfo.textContent = `Conectado: ${user.email || user.phoneNumber || "invitado"}`;
       sessionInfo.classList.remove("hidden");
     } else {
       sessionInfo.classList.add("hidden");
+    }
+  });
+
+  // ---------------------------------
+  // Post-login: revisa si es admin y redirige o cierra el modal
+  // ---------------------------------
+  async function resolverSesion(user, statusEl) {
+    const adminDocRef = doc(db, "admins", user.uid);
+    const adminDocSnap = await getDoc(adminDocRef);
+
+    if (adminDocSnap.exists()) {
+      statusEl.textContent = "Bienvenido, redirigiendo...";
+      window.location.href = "admin.html";
+    } else {
+      statusEl.textContent = "Sesión iniciada.";
+      setTimeout(() => closeModal(modalLogin), 800);
+    }
+  }
+
+  // ---------------------------------
+  // Login con Google
+  // ---------------------------------
+  const socialAuthStatus = document.getElementById("social-auth-status");
+
+  document.getElementById("btn-login-google").addEventListener("click", async () => {
+    socialAuthStatus.textContent = "Abriendo Google...";
+    try {
+      const cred = await loginConGoogle();
+      await resolverSesion(cred.user, socialAuthStatus);
+    } catch (err) {
+      console.error(err);
+      socialAuthStatus.textContent = "No se pudo iniciar sesión con Google.";
+    }
+  });
+
+  // ---------------------------------
+  // Login anónimo
+  // ---------------------------------
+  document.getElementById("btn-login-anonimo").addEventListener("click", async () => {
+    socialAuthStatus.textContent = "Ingresando como invitado...";
+    try {
+      const cred = await loginAnonimo();
+      await resolverSesion(cred.user, socialAuthStatus);
+    } catch (err) {
+      console.error(err);
+      socialAuthStatus.textContent = "No se pudo ingresar como invitado.";
+    }
+  });
+
+  // ---------------------------------
+  // Login por teléfono / SMS
+  // ---------------------------------
+  const phoneStepNumero = document.getElementById("phone-step-numero");
+  const phoneStepCodigo = document.getElementById("phone-step-codigo");
+  let confirmationResultActual = null;
+
+  document.getElementById("btn-enviar-sms").addEventListener("click", async () => {
+    const numero = document.getElementById("auth-phone").value.trim();
+    if (!numero.startsWith("+")) {
+      socialAuthStatus.textContent = "Incluí el código de país, ej: +5492610000000";
+      return;
+    }
+    socialAuthStatus.textContent = "Enviando código por SMS...";
+    try {
+      confirmationResultActual = await enviarCodigoSms(numero, "recaptcha-container");
+      socialAuthStatus.textContent = "Código enviado. Revisá tus mensajes.";
+      phoneStepNumero.classList.add("hidden");
+      phoneStepCodigo.classList.remove("hidden");
+      phoneStepCodigo.classList.add("flex");
+    } catch (err) {
+      console.error(err);
+      socialAuthStatus.textContent = "No se pudo enviar el código. Verificá el número.";
+    }
+  });
+
+  document.getElementById("btn-confirmar-sms").addEventListener("click", async () => {
+    const codigo = document.getElementById("auth-phone-code").value.trim();
+    if (!confirmationResultActual || !codigo) return;
+
+    socialAuthStatus.textContent = "Verificando código...";
+    try {
+      const cred = await confirmarCodigoSms(confirmationResultActual, codigo);
+      await resolverSesion(cred.user, socialAuthStatus);
+    } catch (err) {
+      console.error(err);
+      socialAuthStatus.textContent = "Código incorrecto. Intentá de nuevo.";
     }
   });
 </script>

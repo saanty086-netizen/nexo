@@ -3,7 +3,12 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
-  getAuth
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInAnonymously,
+  RecaptchaVerifier,
+  signInWithPhoneNumber
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import {
   getFirestore,
@@ -35,6 +40,64 @@ const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// -----------------------------
+// Helpers: Autenticación
+// -----------------------------
+
+/**
+ * Inicia sesión con Google usando un popup.
+ * @returns {Promise<import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js").UserCredential>}
+ */
+export async function loginConGoogle() {
+  const provider = new GoogleAuthProvider();
+  return await signInWithPopup(auth, provider);
+}
+
+/**
+ * Inicia sesión de forma anónima (sin correo ni contraseña).
+ * @returns {Promise<import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js").UserCredential>}
+ */
+export async function loginAnonimo() {
+  return await signInAnonymously(auth);
+}
+
+/**
+ * Crea (o reutiliza) un verificador reCAPTCHA invisible, requerido por Firebase
+ * antes de enviar un código SMS. containerId debe ser el id de un <div> vacío en el DOM.
+ * @param {string} containerId
+ * @returns {RecaptchaVerifier}
+ */
+export function crearRecaptcha(containerId) {
+  if (!window.__recaptchaVerifier) {
+    window.__recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+      size: "invisible"
+    });
+  }
+  return window.__recaptchaVerifier;
+}
+
+/**
+ * Envía el código SMS al número indicado. El número debe incluir código de país,
+ * ej: "+5492610000000".
+ * @param {string} numeroTelefono
+ * @param {string} recaptchaContainerId
+ * @returns {Promise<import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js").ConfirmationResult>}
+ */
+export async function enviarCodigoSms(numeroTelefono, recaptchaContainerId) {
+  const verifier = crearRecaptcha(recaptchaContainerId);
+  return await signInWithPhoneNumber(auth, numeroTelefono, verifier);
+}
+
+/**
+ * Confirma el código SMS recibido y completa el login.
+ * @param {import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js").ConfirmationResult} confirmationResult
+ * @param {string} codigo
+ * @returns {Promise<import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js").UserCredential>}
+ */
+export async function confirmarCodigoSms(confirmationResult, codigo) {
+  return await confirmationResult.confirm(codigo);
+}
 
 // -----------------------------
 // Referencias de colecciones
