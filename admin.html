@@ -447,7 +447,6 @@
     orderBy,
     onSnapshot,
     doc,
-    getDoc,
     addDoc,
     updateDoc,
     deleteDoc,
@@ -596,7 +595,18 @@
   });
 
   // -----------------------------
-  // Guard de acceso — corre sin importar el método de login usado
+  // Emails autorizados como admin. Para sumar a alguien más,
+  // agregá su email acá (todo en minúsculas) y también en
+  // firestore.rules (misma lista, dentro de esAdmin()).
+  // -----------------------------
+  const ADMIN_EMAILS = [
+    "saanty086@gmail.com"
+  ];
+
+  // -----------------------------
+  // Guard de acceso — corre sin importar el método de login usado.
+  // Se compara el email de la cuenta contra ADMIN_EMAILS, sin
+  // necesidad de crear documentos ni buscar UIDs a mano.
   // -----------------------------
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -610,20 +620,13 @@
       return;
     }
 
-    let adminDocSnap;
-    try {
-      adminDocSnap = await getDoc(doc(db, "admins", user.uid));
-    } catch (err) {
-      console.error("Error chequeando admins/{uid}:", err);
-      loginStatus.textContent =
-        "No se pudo verificar el permiso de admin (revisá las reglas de Firestore). UID: " + user.uid;
-      await signOut(auth);
-      return;
-    }
+    const email = (user.email || "").toLowerCase().trim();
+    const esAdmin = email && ADMIN_EMAILS.includes(email);
 
-    if (!adminDocSnap.exists()) {
-      loginStatus.textContent =
-        "Esta cuenta no tiene permisos de administrador (falta el documento admins/" + user.uid + ").";
+    if (!esAdmin) {
+      loginStatus.textContent = user.email
+        ? "Esta cuenta (" + user.email + ") no está autorizada como administrador."
+        : "Esa forma de ingresar (invitado/teléfono) no está autorizada como administrador.";
       await signOut(auth);
       return;
     }
