@@ -456,6 +456,12 @@
   const pedidosRef = collection(db, "pedidos_nexo");
   const productosRef = collection(db, "productos");
 
+  // TEMPORAL — diagnóstico: muestra cualquier error de JS como alerta,
+  // por si la consola del navegador no lo está mostrando. Borrar después.
+  window.addEventListener("error", (e) => {
+    alert("DEBUG: error de JS detectado -> " + e.message);
+  });
+
   // -----------------------------
   // Sesión: no se guarda entre visitas.
   // Con browserSessionPersistence, cerrar la pestaña/navegador
@@ -503,6 +509,7 @@
   // -----------------------------
   formLogin.addEventListener("submit", async (e) => {
     e.preventDefault();
+    alert("DEBUG: el formulario se está enviando. Email: " + loginEmail.value); // TEMPORAL — borrar después de diagnosticar
     loginStatus.textContent = "";
     btnLogin.disabled = true;
     const textoOriginal = btnLogin.textContent;
