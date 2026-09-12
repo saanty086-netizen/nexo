@@ -21,7 +21,8 @@
           violet2: '#c9a3ff',
           cyan: '#4ff2ff',
           ink: '#ece6fa',
-          mute: '#8b80ab'
+          mute: '#8b80ab',
+          bad: '#ff5f7e'
         },
         fontFamily: {
           display: ['"Chakra Petch"', 'sans-serif'],
@@ -44,18 +45,22 @@
   .clip-corner {
     clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
   }
-  .hidden-modal { display: none; }
+  .hidden-modal { display: none !important; }
   ::selection { background: #9146ff; color: #08050f; }
-  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { background: #08050f; }
   ::-webkit-scrollbar-thumb { background: #241a3d; border-radius: 4px; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  .chip { scroll-snap-align: start; }
+  .chip.chip-activo { background: linear-gradient(to right, #9146ff, #4ff2ff); color: #08050f; border-color: transparent; }
 </style>
 </head>
 <body class="font-mono text-ink min-h-screen">
 
 <div class="flex min-h-screen">
 
-  <!-- ============ SIDEBAR (desktop) / TOPBAR (mobile) ============ -->
+  <!-- ============ SIDEBAR (desktop) ============ -->
   <aside class="hidden md:flex md:flex-col md:w-64 shrink-0 border-r border-line bg-panel px-6 py-8">
     <div class="flex items-center gap-3 mb-10">
       <div class="w-11 h-11 rounded-full border-2 border-violet flex items-center justify-center glow-border">
@@ -79,28 +84,39 @@
     </div>
   </aside>
 
-  <!-- Mobile top bar -->
-  <header class="md:hidden fixed top-0 inset-x-0 z-30 flex items-center justify-between px-4 py-3 bg-panel/95 backdrop-blur border-b border-line">
+  <!-- ============ TOPBAR fijo (mobile) ============ -->
+  <header class="md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-between px-4 py-3 bg-[#08050f]/90 backdrop-blur border-b border-line">
     <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-full border-2 border-violet flex items-center justify-center">
+      <div class="w-8 h-8 rounded-full border-2 border-violet flex items-center justify-center shrink-0">
         <span class="font-display font-bold text-cyan text-xs">N</span>
       </div>
-      <span class="font-display font-bold text-sm tracking-wide">NEXO</span>
+      <span class="font-display font-bold text-sm tracking-wide">NEXO STORE</span>
     </div>
-    <nav class="flex items-center gap-4 text-xs text-mute">
-      <a href="#streaming" class="hover:text-cyan">Streaming</a>
-      <a href="#seguidores" class="hover:text-cyan">Seguidores</a>
-    </nav>
+    <a href="admin.html" aria-label="Acceso interno"
+      class="w-9 h-9 flex items-center justify-center rounded-full border border-line text-mute hover:text-cyan hover:border-cyan transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-4 h-4">
+        <circle cx="12" cy="8" r="3.2" />
+        <path d="M4.5 20c1.2-3.4 4-5.2 7.5-5.2s6.3 1.8 7.5 5.2" stroke-linecap="round" />
+      </svg>
+    </a>
   </header>
 
   <!-- ============ MAIN ============ -->
   <main class="flex-1 grid-veins">
-    <div class="max-w-5xl mx-auto px-5 md:px-10 pt-24 md:pt-16 pb-24">
+
+    <!-- Tira de plataformas — scroll táctil, tipo app -->
+    <div class="md:hidden pt-14 sticky top-14 z-30 bg-[#08050f]/90 backdrop-blur border-b border-line">
+      <div id="chips-plataforma" class="flex overflow-x-auto gap-2.5 py-3 px-4 scrollbar-none snap-x">
+        <!-- Se completa por JS -->
+      </div>
+    </div>
+
+    <div class="max-w-5xl mx-auto px-3 md:px-10 pt-5 md:pt-16 pb-24">
 
       <!-- Hero -->
-      <section id="inicio" class="mb-16">
+      <section id="inicio" class="mb-10 md:mb-16 px-2 md:px-0">
         <p class="text-cyan text-xs tracking-[0.25em] font-semibold mb-3">CATÁLOGO NEXO</p>
-        <h1 class="font-display font-bold text-4xl md:text-6xl leading-[1.05] tracking-tight">
+        <h1 class="font-display font-bold text-3xl md:text-6xl leading-[1.05] tracking-tight">
           Streaming y seguidores,<br class="hidden md:block" />
           <span class="text-violet2">sin esperar hasta mañana.</span>
         </h1>
@@ -110,21 +126,21 @@
       </section>
 
       <!-- Streaming -->
-      <section id="streaming" class="mb-16">
-        <div class="flex items-baseline justify-between mb-5">
-          <h2 class="font-display font-semibold text-xl text-violet2">Streaming</h2>
+      <section id="streaming" class="mb-10 md:mb-16">
+        <div class="flex items-baseline justify-between mb-4 px-2 md:px-0">
+          <h2 class="font-display font-semibold text-lg md:text-xl text-violet2">Streaming</h2>
           <span class="text-[11px] text-mute">Cuentas y perfiles, 30 días</span>
         </div>
-        <div id="grid-streaming" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <div id="grid-streaming" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 px-2 md:px-0"></div>
       </section>
 
       <!-- Seguidores -->
       <section id="seguidores" class="mb-10">
-        <div class="flex items-baseline justify-between mb-5">
-          <h2 class="font-display font-semibold text-xl text-violet2">Seguidores Instagram</h2>
+        <div class="flex items-baseline justify-between mb-4 px-2 md:px-0">
+          <h2 class="font-display font-semibold text-lg md:text-xl text-violet2">Seguidores Instagram</h2>
           <span class="text-[11px] text-mute">Entrega gradual, cuentas activas</span>
         </div>
-        <div id="grid-seguidores" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <div id="grid-seguidores" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 px-2 md:px-0"></div>
       </section>
 
     </div>
@@ -166,20 +182,29 @@
   </div>
 </div>
 
-<!-- ============ TEMPLATE: TARJETA DE PRODUCTO ============ -->
+<!-- ============ TEMPLATE: TARJETA DE PRODUCTO (compacta, tipo app) ============ -->
 <template id="tpl-producto">
-  <article class="border border-line bg-panel clip-corner p-5 flex flex-col justify-between glow-border transition-shadow">
-    <div>
-      <img data-field="imagen" class="hidden-modal w-full h-32 object-cover rounded mb-3 border border-line" />
-      <p class="font-display font-semibold text-base text-ink" data-field="nombre"></p>
-      <p class="text-xs text-mute mt-1.5 leading-relaxed" data-field="descripcion"></p>
-      <ul data-field="caracteristicas" class="text-[11px] text-mute mt-2 leading-relaxed list-disc list-inside"></ul>
+  <article class="border border-line bg-panel clip-corner flex flex-col justify-between glow-border transition-shadow overflow-hidden">
+    <div class="relative aspect-square w-full bg-panel2" data-field="imagen-wrap">
+      <img data-field="imagen" class="hidden-modal absolute inset-0 w-full h-full object-cover" />
+      <div data-field="imagen-fallback" class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-violet/25 via-panel2 to-cyan/10">
+        <div class="w-10 h-10 rounded-full border-2 border-violet/70 flex items-center justify-center">
+          <span class="font-display font-bold text-cyan text-sm">N</span>
+        </div>
+      </div>
+      <div data-field="badge-stock" class="hidden-modal absolute top-1.5 left-1.5 bg-bad/90 text-white text-[9px] font-display font-bold tracking-wide px-2 py-1 clip-corner">
+        SIN EXISTENCIAS
+      </div>
     </div>
-    <div class="flex items-center justify-between mt-5">
-      <span class="font-display font-bold text-lg text-cyan" data-field="precio"></span>
-      <button data-field="btn" class="text-xs font-semibold px-3.5 py-2 border border-violet text-violet2 hover:bg-violet hover:text-bg transition-colors">
-        Pedir
-      </button>
+    <div class="p-2.5 md:p-3.5 flex flex-col flex-1">
+      <p class="font-display font-semibold text-[13px] md:text-base text-ink leading-snug line-clamp-2" data-field="nombre"></p>
+      <p class="text-[11px] text-mute mt-1 leading-relaxed line-clamp-2 hidden md:block" data-field="descripcion"></p>
+      <div class="flex items-center justify-between mt-2.5 md:mt-4 gap-2">
+        <span class="font-display font-bold text-sm md:text-lg text-cyan whitespace-nowrap" data-field="precio"></span>
+        <button data-field="btn" class="text-[11px] md:text-xs font-semibold px-2.5 md:px-3.5 py-1.5 md:py-2 border border-violet text-violet2 hover:bg-violet hover:text-bg transition-colors whitespace-nowrap">
+          Pedir
+        </button>
+      </div>
     </div>
   </article>
 </template>
@@ -212,11 +237,6 @@
   const pedidosRef = collection(db, "pedidos_nexo");
   const productosRef = collection(db, "productos");
 
-  // -----------------------------
-  // Catálogo — se lee en vivo desde Firestore (colección "productos").
-  // Solo se muestran los productos con visible !== false, y los productos
-  // con hayStock === false se muestran pero sin poder pedirse.
-  // -----------------------------
   const WHATSAPP_NEXO = "5492634273255";
 
   function formatearPrecio(numero) {
@@ -224,68 +244,156 @@
     return "$" + n.toLocaleString("es-AR");
   }
 
+  // -----------------------------
+  // Tira de plataformas (filtro rápido, estilo app).
+  // Cada chip filtra el catálogo por palabra clave en el nombre del producto.
+  // Los ícono se leen de /assets — si falta el archivo, el chip igual
+  // funciona, solo que sin ícono.
+  // -----------------------------
+  const PLATAFORMAS = [
+    { id: "todos", label: "Todos" },
+    { id: "netflix", label: "Netflix", icono: "assets/netflix.png", palabra: "netflix" },
+    { id: "hbo", label: "HBO", icono: "assets/hbo.png", palabra: "hbo" },
+    { id: "disney", label: "Disney+", icono: "assets/disneyplus.png", palabra: "disney" },
+    { id: "prime", label: "Prime Video", icono: "assets/primevideo.png", palabra: "prime" },
+    { id: "crunchyroll", label: "Crunchyroll", icono: "assets/crunchyroll.png", palabra: "crunchyroll" },
+    { id: "spotify", label: "Spotify", icono: "assets/spotify.png", palabra: "spotify" },
+    { id: "seguidores", label: "Seguidores", palabra: "seguidor" }
+  ];
+
+  let filtroActivo = "todos";
+  let productosCache = [];
+
+  const chipsContenedor = document.getElementById("chips-plataforma");
+
+  PLATAFORMAS.forEach((plataforma) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.dataset.filtro = plataforma.id;
+    chip.className =
+      "chip shrink-0 flex items-center gap-1.5 border border-line bg-panel2 text-[11px] font-semibold text-mute px-3 py-2 rounded-full whitespace-nowrap transition-colors" +
+      (plataforma.id === "todos" ? " chip-activo" : "");
+
+    if (plataforma.icono) {
+      const icono = document.createElement("img");
+      icono.src = plataforma.icono;
+      icono.alt = "";
+      icono.className = "w-4 h-4 rounded-full object-cover";
+      icono.onerror = () => icono.remove();
+      chip.appendChild(icono);
+    }
+
+    const texto = document.createElement("span");
+    texto.textContent = plataforma.label;
+    chip.appendChild(texto);
+
+    chip.addEventListener("click", () => {
+      filtroActivo = plataforma.id;
+      document.querySelectorAll(".chip").forEach((c) => c.classList.remove("chip-activo"));
+      chip.classList.add("chip-activo");
+      aplicarFiltroYRenderizar();
+    });
+
+    chipsContenedor.appendChild(chip);
+  });
+
+  function productoCoincideConFiltro(producto) {
+    if (filtroActivo === "todos") return true;
+    const plataforma = PLATAFORMAS.find((p) => p.id === filtroActivo);
+    if (!plataforma || !plataforma.palabra) return true;
+    const nombre = (producto.nombre || "").toLowerCase();
+    const categoria = (producto.categoria || "").toLowerCase();
+    return nombre.includes(plataforma.palabra) || categoria.includes(plataforma.palabra);
+  }
+
+  // -----------------------------
+  // Imagen del producto: soporta URL externa (http/https) o ruta local
+  // del repositorio (./netflix.jpg, assets/netflix.jpg, etc). Si no hay
+  // imagen o falla la carga, se muestra un fallback con el logo NEXO.
+  // -----------------------------
+  function pintarImagenProducto(nodo, producto) {
+    const imagenEl = nodo.querySelector('[data-field="imagen"]');
+    const fallbackEl = nodo.querySelector('[data-field="imagen-fallback"]');
+    const ruta = (producto.imagen || "").trim();
+
+    if (!ruta) {
+      imagenEl.classList.add("hidden-modal");
+      fallbackEl.classList.remove("hidden-modal");
+      return;
+    }
+
+    // Tanto una URL externa (http/https) como una ruta local relativa
+    // (./netflix.jpg, netflix.jpg, assets/netflix.jpg) funcionan tal cual
+    // en el atributo src — el navegador resuelve la ruta relativa solo.
+    imagenEl.src = ruta;
+    imagenEl.alt = producto.nombre || "";
+    fallbackEl.classList.add("hidden-modal");
+    imagenEl.classList.remove("hidden-modal");
+
+    imagenEl.onerror = () => {
+      imagenEl.classList.add("hidden-modal");
+      fallbackEl.classList.remove("hidden-modal");
+    };
+  }
+
   function renderCatalogo(lista, contenedorId) {
     const contenedor = document.getElementById(contenedorId);
     const tpl = document.getElementById("tpl-producto");
     contenedor.innerHTML = "";
 
-    if (lista.length === 0) {
+    const listaFiltrada = lista.filter(productoCoincideConFiltro);
+
+    if (listaFiltrada.length === 0) {
       const vacio = document.createElement("p");
       vacio.className = "text-mute text-xs col-span-full";
-      vacio.textContent = "Sin productos disponibles por el momento.";
+      vacio.textContent =
+        lista.length === 0
+          ? "Sin productos disponibles por el momento."
+          : "No hay resultados para este filtro.";
       contenedor.appendChild(vacio);
       return;
     }
 
-    lista.forEach((producto) => {
+    listaFiltrada.forEach((producto) => {
       const nodo = tpl.content.cloneNode(true);
 
-      const imagenEl = nodo.querySelector('[data-field="imagen"]');
-      if (producto.imagen) {
-        imagenEl.src = producto.imagen;
-        imagenEl.alt = producto.nombre || "";
-        imagenEl.classList.remove("hidden-modal");
-      }
+      pintarImagenProducto(nodo, producto);
 
       nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre;
       nodo.querySelector('[data-field="descripcion"]').textContent = producto.descripcion || "";
-
-      const listaCaracteristicas = nodo.querySelector('[data-field="caracteristicas"]');
-      if (Array.isArray(producto.caracteristicas) && producto.caracteristicas.length > 0) {
-        producto.caracteristicas.forEach((item) => {
-          const li = document.createElement("li");
-          li.textContent = item;
-          listaCaracteristicas.appendChild(li);
-        });
-      }
-
       nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
 
       const btn = nodo.querySelector('[data-field="btn"]');
+      const badgeStock = nodo.querySelector('[data-field="badge-stock"]');
       const hayStock = producto.hayStock !== false;
+
       if (hayStock) {
         btn.addEventListener("click", () => abrirModalPedido(producto));
       } else {
+        badgeStock.classList.remove("hidden-modal");
         btn.textContent = "Sin stock";
         btn.disabled = true;
-        btn.className = "text-xs font-semibold px-3.5 py-2 border border-line text-mute cursor-not-allowed opacity-60";
+        btn.className = "text-[11px] md:text-xs font-semibold px-2.5 md:px-3.5 py-1.5 md:py-2 border border-line text-mute cursor-not-allowed opacity-60 whitespace-nowrap";
       }
 
       contenedor.appendChild(nodo);
     });
   }
 
+  function aplicarFiltroYRenderizar() {
+    const streaming = productosCache.filter((p) => p.categoria === "streaming");
+    const seguidores = productosCache.filter((p) => p.categoria === "seguidores");
+    renderCatalogo(streaming, "grid-streaming");
+    renderCatalogo(seguidores, "grid-seguidores");
+  }
+
   function iniciarEscuchaCatalogo() {
     onSnapshot(productosRef, (snapshot) => {
-      const productos = snapshot.docs
+      productosCache = snapshot.docs
         .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
         .filter((producto) => producto.visible !== false);
 
-      const streaming = productos.filter((p) => p.categoria === "streaming");
-      const seguidores = productos.filter((p) => p.categoria === "seguidores");
-
-      renderCatalogo(streaming, "grid-streaming");
-      renderCatalogo(seguidores, "grid-seguidores");
+      aplicarFiltroYRenderizar();
     });
   }
 
