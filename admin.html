@@ -38,7 +38,7 @@
   body { background-color: #08050f; }
   .glow-border { box-shadow: 0 0 0 1px rgba(145,70,255,0.25); }
   .clip-corner { clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
-  .hidden-modal { display: none; }
+  .hidden-modal { display: none !important; }
   select.estado-select { -webkit-appearance: none; appearance: none; }
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { background: #08050f; }
@@ -456,12 +456,6 @@
   const pedidosRef = collection(db, "pedidos_nexo");
   const productosRef = collection(db, "productos");
 
-  // TEMPORAL — diagnóstico: muestra cualquier error de JS como alerta,
-  // por si la consola del navegador no lo está mostrando. Borrar después.
-  window.addEventListener("error", (e) => {
-    alert("DEBUG: error de JS detectado -> " + e.message);
-  });
-
   // -----------------------------
   // Sesión: no se guarda entre visitas.
   // Con browserSessionPersistence, cerrar la pestaña/navegador
@@ -509,7 +503,6 @@
   // -----------------------------
   formLogin.addEventListener("submit", async (e) => {
     e.preventDefault();
-    alert("DEBUG: el formulario se está enviando. Email: " + loginEmail.value); // TEMPORAL — borrar después de diagnosticar
     loginStatus.textContent = "";
     btnLogin.disabled = true;
     const textoOriginal = btnLogin.textContent;
