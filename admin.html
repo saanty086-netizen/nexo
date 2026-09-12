@@ -383,6 +383,11 @@
         <input id="cliente-vencimiento" type="date"
           class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink focus:outline-none focus:border-cyan" />
       </div>
+      <div id="campo-cliente-enlace" class="hidden-modal">
+        <label class="text-xs text-mute block mb-1.5">Enlace de perfil (Instagram)</label>
+        <input id="cliente-enlace-perfil" type="url" placeholder="https://instagram.com/usuario"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
 
       <p id="cliente-status" class="text-xs text-mute min-h-[1rem]"></p>
 
@@ -872,6 +877,8 @@
   const clienteServicio = document.getElementById("cliente-servicio");
   const clienteEstado = document.getElementById("cliente-estado");
   const clienteVencimiento = document.getElementById("cliente-vencimiento");
+  const campoClienteEnlace = document.getElementById("campo-cliente-enlace");
+  const clienteEnlacePerfil = document.getElementById("cliente-enlace-perfil");
   const clienteStatus = document.getElementById("cliente-status");
   const modalClienteTitulo = document.getElementById("modal-cliente-titulo");
   const modalClienteEyebrow = document.getElementById("modal-cliente-titulo-eyebrow");
@@ -882,6 +889,10 @@
   function abrirModalCliente(pedido) {
     formCliente.reset();
     clienteStatus.textContent = "";
+
+    // El enlace de perfil solo aplica a pedidos de seguidores; se ve si el pedido ya lo trae cargado
+    campoClienteEnlace.classList.toggle("hidden-modal", !(pedido && pedido.enlacePerfil));
+    clienteEnlacePerfil.value = (pedido && pedido.enlacePerfil) || "";
 
     if (pedido) {
       pedidoEnEdicionId = pedido.id;
@@ -925,6 +936,9 @@
       estado: clienteEstado.value,
       vencimiento: clienteVencimiento.value || null
     };
+    if (!campoClienteEnlace.classList.contains("hidden-modal")) {
+      datos.enlacePerfil = clienteEnlacePerfil.value.trim();
+    }
 
     btnGuardarCliente.disabled = true;
     btnGuardarCliente.textContent = "Guardando...";
