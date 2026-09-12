@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXO STORE — Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          void: '#08050f',
+          panel: '#120a24',
+          panel2: '#180f30',
+          line: '#3a2564',
+          violet: '#9146ff',
+          violet2: '#b47bff',
+          magenta: '#ff4fd8',
+          cyan: '#4ff2ff'
+        },
+        fontFamily: {
+          display: ['Rajdhani', 'sans-serif'],
+          body: ['Space Grotesk', 'sans-serif']
+        }
+      }
+    }
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{
+    background:
+      radial-gradient(circle at 15% 0%, rgba(145,70,255,0.16), transparent 45%),
+      radial-gradient(circle at 85% 15%, rgba(255,79,216,0.10), transparent 40%),
+      #08050f;
+  }
+  .grid-bg{
+    position:fixed; inset:0; z-index:-1; opacity:0.3;
+    background-image:
+      linear-gradient(rgba(145,70,255,0.10) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(145,70,255,0.10) 1px, transparent 1px);
+    background-size:42px 42px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 55% at 20% 0%, black 20%, transparent 80%);
+            mask-image: radial-gradient(ellipse 70% 55% at 20% 0%, black 20%, transparent 80%);
+  }
+  ::-webkit-scrollbar{width:8px; height:8px;}
+  ::-webkit-scrollbar-track{background:#08050f;}
+  ::-webkit-scrollbar-thumb{background:#3a2564;}
+  .card-clip{clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);}
+  .btn-clip{clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);}
+  .tab-btn.active-tab{background:#9146ff; color:#fff;}
+  .tab-panel{display:none;}
+  .tab-panel.active-panel{display:block;}
+  table{border-collapse:separate; border-spacing:0;}
+  th{position:sticky; top:0; background:#120a24; z-index:1;}
+</style>
+</head>
+<body class="font-body text-[#eee7ff] min-h-screen">
+<div class="grid-bg"></div>
+
+<!-- GATE: se muestra mientras se verifica sesión -->
+<div id="auth-gate" class="fixed inset-0 z-50 bg-void flex items-center justify-center">
+  <p class="text-[#a394c9] text-sm">Verificando sesión...</p>
+</div>
+
+<div id="admin-app" class="hidden max-w-7xl mx-auto px-5 md:px-10 py-8">
+
+  <!-- HEADER -->
+  <header class="flex items-center justify-between mb-10 flex-wrap gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-full border-2 border-violet2 flex items-center justify-center">
+        <span class="font-display font-bold text-magenta text-sm">ネ</span>
+      </div>
+      <div class="leading-tight">
+        <b class="font-display text-xl tracking-wide">NEXO</b>
+        <small class="block text-[10px] text-[#6b5b93] tracking-widest">PANEL ADMIN</small>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <span id="admin-email" class="text-xs text-[#a394c9]"></span>
+      <a href="index.html" class="text-xs text-violet2 underline">Ver tienda</a>
+      <button id="btn-logout" class="btn-clip border border-line text-xs font-display font-semibold px-4 py-2 text-[#eee7ff] hover:border-magenta hover:text-magenta">
+        Cerrar sesión
+      </button>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <div class="flex gap-2 mb-8">
+    <button data-tab="clientes" class="tab-btn active-tab px-5 py-2.5 text-sm font-display font-semibold border border-line bg-panel">Vencimientos y Clientes</button>
+    <button data-tab="productos" class="tab-btn px-5 py-2.5 text-sm font-display font-semibold border border-line bg-panel text-[#a394c9]">Catálogo de Productos</button>
+  </div>
+
+  <!-- ================= TAB: CLIENTES ================= -->
+  <section id="panel-clientes" class="tab-panel active-panel">
+
+    <div class="bg-panel border border-line card-clip p-6 mb-8">
+      <span class="text-xs text-magenta tracking-widest block mb-1">NUEVO REGISTRO</span>
+      <h2 class="font-display text-xl font-bold mb-5">Cargar cliente manualmente</h2>
+
+      <form id="form-cliente" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        <div>
+          <label class="text-xs text-[#a394c9] block mb-1.5">Nombre</label>
+          <input required id="cli-nombre" type="text" placeholder="Nombre y apellido"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm outline-none focus:border-violet">
+        </div>
+        <div>
+          <label class="text-xs text-[#a394c9] block mb-1.5">WhatsApp</label>
+          <input required id="cli-whatsapp" type="tel" placeholder="5492610000000"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm outline-none focus:border-violet">
+        </div>
+        <div>
+          <label class="text-xs text-[#a394c9] block mb-1.5">Servicio</label>
+          <input required id="cli-servicio" type="text" placeholder="Netflix, Spotify..."
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm outline-none focus:border-violet">
+        </div>
+        <div>
+          <label class="text-xs text-[#a394c9] block mb-1.5">Vencimiento</label>
+          <input required id="cli-vencimiento" type="date"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm outline-none focus:border-violet">
+        </div>
+        <button type="submit" class="btn-clip bg-gradient-to-r from-violet to-magenta text-white font-display font-semibold text-sm py-2.5">
+          Agregar cliente
+        </button>
+      </form>
+      <p id="cliente-form-status" class="text-xs text-[#6b5b93] mt-3"></p>
+    </div>
+
+    <div class="bg-panel border border-line card-clip overflow-hidden">
+      <div class="overflow-x-auto max-h-[60vh]">
+        <table class="w-full text-sm min-w-[860px]">
+          <thead>
+            <tr class="text-left text-[#a394c9] text-xs border-b border-line">
+              <th class="px-4 py-3">Nombre</th>
+              <th class="px-4 py-3">WhatsApp</th>
+              <th class="px-4 py-3">Servicio</th>
+              <th class="px-4 py-3">Vencimiento</th>
+              <th class="px-4 py-3">Días restantes</th>
+              <th class="px-4 py-3">Pago</th>
+              <th class="px-4 py-3">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="clientes-tbody">
+            <tr><td colspan="7" class="text-center py-10 text-[#6b5b93] text-xs">Cargando clientes...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TAB: PRODUCTOS ================= -->
+  <section id="panel-productos" class="tab-panel">
+
+    <div class="bg-panel border border-line card-clip p-6 mb-8">
+      <span id="producto-form-tag" class="text-xs text-magenta tracking-widest block mb-1">NUEVO PRODUCTO</span>
+      <h2 id="producto-form-title" class="font-display text-xl font-bold mb-5">Crear producto</h2>
+
+      <form id="form-producto" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="hidden" id="prod-id" value="">
+        <div>
+          <label class="text-xs text-[#a394c9] block mb-1.5">Nombre</label>
+          <input required id="prod-nombre" type="text" placeholder="Netflix"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm outline-none focus:border-violet">
+        </div>
+        <div>
+          <label class="text-xs text-[#a394c9] block mb-1.5">Precio ARS</label>
+          <input required id="prod-precio" type="number" min="0" placeholder="6400"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm outline-none focus:border-violet">
+        </div>
+        <div>
+          <label class="text-xs text-[#a394c9] block mb-1.5">Categoría</label>
+          <select id="prod-categoria" class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm outline-none focus:border-violet">
+            <option value="streaming">Streaming</option>
+            <option value="seguidores">Seguidores</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-[#a394c9] block mb-1.5">URL de imagen</label>
+          <input id="prod-imagen" type="text" placeholder="https://..."
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm outline-none focus:border-violet">
+        </div>
+        <div class="md:col-span-2">
+          <label class="text-xs text-[#a394c9] block mb-1.5">Características (una por línea)</label>
+          <textarea id="prod-caracteristicas" rows="3" placeholder="Perfil individual&#10;Entrega en 24hs"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm outline-none focus:border-violet"></textarea>
+        </div>
+        <label class="flex items-center gap-2 text-sm text-[#a394c9]">
+          <input id="prod-stock" type="checkbox" checked class="w-4 h-4 accent-violet">
+          Hay stock
+        </label>
+
+        <div class="md:col-span-2 flex gap-3">
+          <button type="submit" id="btn-prod-submit" class="btn-clip bg-gradient-to-r from-violet to-magenta text-white font-display font-semibold text-sm py-2.5 px-6">
+            Guardar producto
+          </button>
+          <button type="button" id="btn-prod-cancelar" class="hidden btn-clip border border-line text-sm font-display font-semibold py-2.5 px-6 text-[#a394c9]">
+            Cancelar edición
+          </button>
+        </div>
+      </form>
+      <p id="producto-form-status" class="text-xs text-[#6b5b93] mt-3"></p>
+    </div>
+
+    <div id="productos-admin-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <p class="text-[#6b5b93] text-xs">Cargando productos...</p>
+    </div>
+  </section>
+
+</div>
+
+<script type="module">
+  import {
+    auth,
+    db,
+    obtenerProductos,
+    guardarProducto,
+    actualizarProducto,
+    obtenerClientes,
+    guardarCliente,
+    actualizarEstadoPago
+  } from "./firebase.js";
+  import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // ---------------------------------
+  // Protección de la vista
+  // ---------------------------------
+  const authGate = document.getElementById("auth-gate");
+  const adminApp = document.getElementById("admin-app");
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = "index.html";
+      return;
+    }
+
+    try {
+      const adminDocRef = doc(db, "admins", user.uid);
+      const adminDocSnap = await getDoc(adminDocRef);
+
+      if (!adminDocSnap.exists()) {
+        window.location.href = "index.html";
+        return;
+      }
+
+      document.getElementById("admin-email").textContent = user.email;
+      authGate.classList.add("hidden");
+      adminApp.classList.remove("hidden");
+
+      cargarClientes();
+      cargarProductosAdmin();
+    } catch (err) {
+      console.error(err);
+      window.location.href = "index.html";
+    }
+  });
+
+  document.getElementById("btn-logout").addEventListener("click", async () => {
+    await signOut(auth);
+    window.location.href = "index.html";
+  });
+
+  // ---------------------------------
+  // Tabs
+  // ---------------------------------
+  const tabBtns = document.querySelectorAll(".tab-btn");
+  tabBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      tabBtns.forEach(b => {
+        b.classList.remove("active-tab");
+        b.classList.add("text-[#a394c9]");
+      });
+      btn.classList.add("active-tab");
+      btn.classList.remove("text-[#a394c9]");
+
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active-panel"));
+      document.getElementById(`panel-${btn.dataset.tab}`).classList.add("active-panel");
+    });
+  });
+
+  // ---------------------------------
+  // TAB CLIENTES
+  // ---------------------------------
+  const clientesTbody = document.getElementById("clientes-tbody");
+  const formCliente = document.getElementById("form-cliente");
+  const clienteFormStatus = document.getElementById("cliente-form-status");
+
+  function diasRestantes(fechaVencimiento) {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const venc = new Date(fechaVencimiento);
+    venc.setHours(0, 0, 0, 0);
+    const diffMs = venc - hoy;
+    return Math.round(diffMs / (1000 * 60 * 60 * 24));
+  }
+
+  function badgeDias(dias) {
+    if (dias <= 0) {
+      return `<span class="text-[10px] font-display font-bold px-2 py-1 rounded bg-red-500/10 text-red-400 border border-red-500/40">VENCIDO</span>`;
+    }
+    if (dias <= 3) {
+      return `<span class="text-[10px] font-display font-bold px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/40">AVISAR (${dias}d)</span>`;
+    }
+    return `<span class="text-[10px] font-display font-bold px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/40">${dias}d</span>`;
+  }
+
+  function formatFecha(fecha) {
+    const d = new Date(fecha);
+    return d.toLocaleDateString("es-AR");
+  }
+
+  async function cargarClientes() {
+    try {
+      const clientes = await obtenerClientes();
+      renderClientes(clientes);
+    } catch (err) {
+      console.error(err);
+      clientesTbody.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-red-400 text-xs">Error al cargar clientes.</td></tr>`;
+    }
+  }
+
+  function renderClientes(clientes) {
+    if (!clientes.length) {
+      clientesTbody.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-[#6b5b93] text-xs">No hay clientes cargados.</td></tr>`;
+      return;
+    }
+
+    clientesTbody.innerHTML = clientes.map(c => {
+      const dias = c.fechaVencimiento ? diasRestantes(c.fechaVencimiento) : null;
+      const pagado = !!c.pagado;
+      const mensaje = encodeURIComponent(
+        `Hola ${c.nombre}! Te avisamos de NEXO que tu cuenta de ${c.servicio} vence el ${c.fechaVencimiento ? formatFecha(c.fechaVencimiento) : ''}. ¿Deseas renovar para mantener el perfil?`
+      );
+      const waUrl = `https://wa.me/${(c.whatsapp || '').replace(/\D/g, '')}?text=${mensaje}`;
+
+      return `
+        <tr class="border-b border-line/60 hover:bg-panel2 transition">
+          <td class="px-4 py-3 font-medium">${c.nombre || '-'}</td>
+          <td class="px-4 py-3 text-[#a394c9]">${c.whatsapp || '-'}</td>
+          <td class="px-4 py-3 text-[#a394c9]">${c.servicio || c.productoNombre || '-'}</td>
+          <td class="px-4 py-3 text-[#a394c9]">${c.fechaVencimiento ? formatFecha(c.fechaVencimiento) : '-'}</td>
+          <td class="px-4 py-3">${dias !== null ? badgeDias(dias) : '-'}</td>
+          <td class="px-4 py-3">
+            <button data-id="${c.id}" data-pagado="${pagado}" class="btn-toggle-pago text-[10px] font-display font-bold px-3 py-1.5 rounded ${
+              pagado
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/40'
+                : 'bg-panel2 text-[#a394c9] border border-line'
+            }">
+              ${pagado ? 'PAGADO' : 'PENDIENTE'}
+            </button>
+          </td>
+          <td class="px-4 py-3">
+            <a href="${waUrl}" target="_blank" class="btn-clip inline-block bg-gradient-to-r from-violet to-magenta text-white text-[11px] font-display font-semibold px-3 py-2">
+              Avisar WhatsApp
+            </a>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    document.querySelectorAll(".btn-toggle-pago").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const nuevoEstado = btn.dataset.pagado !== "true";
+        try {
+          await actualizarEstadoPago(id, nuevoEstado);
+          cargarClientes();
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    });
+  }
+
+  formCliente.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nombre = document.getElementById("cli-nombre").value.trim();
+    const whatsapp = document.getElementById("cli-whatsapp").value.trim();
+    const servicio = document.getElementById("cli-servicio").value.trim();
+    const fechaVencimiento = document.getElementById("cli-vencimiento").value;
+
+    clienteFormStatus.textContent = "Guardando...";
+
+    try {
+      await guardarCliente({
+        nombre,
+        whatsapp,
+        servicio,
+        fechaVencimiento,
+        pagado: false,
+        fechaPedido: new Date().toISOString()
+      });
+      clienteFormStatus.textContent = "Cliente agregado correctamente.";
+      formCliente.reset();
+      cargarClientes();
+    } catch (err) {
+      console.error(err);
+      clienteFormStatus.textContent = "Error al guardar el cliente.";
+    }
+  });
+
+  // ---------------------------------
+  // TAB PRODUCTOS
+  // ---------------------------------
+  const productosAdminGrid = document.getElementById("productos-admin-grid");
+  const formProducto = document.getElementById("form-producto");
+  const productoFormStatus = document.getElementById("producto-form-status");
+  const btnProdCancelar = document.getElementById("btn-prod-cancelar");
+  const productoFormTag = document.getElementById("producto-form-tag");
+  const productoFormTitle = document.getElementById("producto-form-title");
+  const btnProdSubmit = document.getElementById("btn-prod-submit");
+
+  let editandoId = null;
+
+  function resetFormProducto() {
+    editandoId = null;
+    formProducto.reset();
+    document.getElementById("prod-id").value = "";
+    document.getElementById("prod-stock").checked = true;
+    productoFormTag.textContent = "NUEVO PRODUCTO";
+    productoFormTitle.textContent = "Crear producto";
+    btnProdSubmit.textContent = "Guardar producto";
+    btnProdCancelar.classList.add("hidden");
+  }
+
+  btnProdCancelar.addEventListener("click", resetFormProducto);
+
+  async function cargarProductosAdmin() {
+    try {
+      const productos = await obtenerProductos();
+      renderProductosAdmin(productos);
+    } catch (err) {
+      console.error(err);
+      productosAdminGrid.innerHTML = `<p class="text-red-400 text-xs">Error al cargar productos.</p>`;
+    }
+  }
+
+  function renderProductosAdmin(productos) {
+    if (!productos.length) {
+      productosAdminGrid.innerHTML = `<p class="text-[#6b5b93] text-xs">No hay productos cargados.</p>`;
+      return;
+    }
+
+    productosAdminGrid.innerHTML = productos.map(p => {
+      const hayStock = p.hayStock !== false;
+      return `
+        <div class="bg-panel border border-line card-clip p-5 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <b class="font-display text-lg">${p.nombre || 'Sin nombre'}</b>
+            <span class="text-[9px] font-display font-bold px-2 py-1 rounded ${hayStock ? 'bg-cyan/10 text-cyan border border-cyan/40' : 'bg-magenta/10 text-magenta border border-magenta/40'}">
+              ${hayStock ? 'EN STOCK' : 'SIN STOCK'}
+            </span>
+          </div>
+          <span class="text-cyan font-display font-semibold text-sm">$${Number(p.precio || 0).toLocaleString('es-AR')}</span>
+          <span class="text-[11px] text-[#6b5b93]">${p.categoria || '-'}</span>
+          <div class="flex gap-2 mt-2">
+            <button data-action="toggle-stock" data-id="${p.id}" data-stock="${hayStock}"
+              class="flex-1 btn-clip text-[11px] font-display font-semibold py-2 border border-line text-[#a394c9] hover:border-violet hover:text-violet2">
+              ${hayStock ? 'Marcar sin stock' : 'Marcar en stock'}
+            </button>
+            <button data-action="editar" data-id="${p.id}"
+              class="flex-1 btn-clip text-[11px] font-display font-semibold py-2 bg-gradient-to-r from-violet to-magenta text-white">
+              Editar
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    productosAdminGrid.querySelectorAll('[data-action="toggle-stock"]').forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const actual = btn.dataset.stock === "true";
+        try {
+          await actualizarProducto(id, { hayStock: !actual });
+          cargarProductosAdmin();
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    });
+
+    productosAdminGrid.querySelectorAll('[data-action="editar"]').forEach(btn => {
+      btn.addEventListener("click", () => {
+        const producto = productos.find(p => p.id === btn.dataset.id);
+        if (!producto) return;
+        editandoId = producto.id;
+
+        document.getElementById("prod-id").value = producto.id;
+        document.getElementById("prod-nombre").value = producto.nombre || "";
+        document.getElementById("prod-precio").value = producto.precio || 0;
+        document.getElementById("prod-categoria").value = producto.categoria || "streaming";
+        document.getElementById("prod-imagen").value = producto.imagen || "";
+        document.getElementById("prod-caracteristicas").value = Array.isArray(producto.caracteristicas)
+          ? producto.caracteristicas.join("\n")
+          : "";
+        document.getElementById("prod-stock").checked = producto.hayStock !== false;
+
+        productoFormTag.textContent = "EDITANDO";
+        productoFormTitle.textContent = `Editar: ${producto.nombre}`;
+        btnProdSubmit.textContent = "Actualizar producto";
+        btnProdCancelar.classList.remove("hidden");
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+  }
+
+  formProducto.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const nombre = document.getElementById("prod-nombre").value.trim();
+    const precio = Number(document.getElementById("prod-precio").value);
+    const categoria = document.getElementById("prod-categoria").value;
+    const imagen = document.getElementById("prod-imagen").value.trim();
+    const caracteristicas = document.getElementById("prod-caracteristicas").value
+      .split("\n")
+      .map(c => c.trim())
+      .filter(Boolean);
+    const hayStock = document.getElementById("prod-stock").checked;
+
+    const datos = { nombre, precio, categoria, imagen, caracteristicas, hayStock };
+
+    productoFormStatus.textContent = "Guardando...";
+
+    try {
+      if (editandoId) {
+        await actualizarProducto(editandoId, datos);
+        productoFormStatus.textContent = "Producto actualizado.";
+      } else {
+        await guardarProducto(datos);
+        productoFormStatus.textContent = "Producto creado.";
+      }
+      resetFormProducto();
+      cargarProductosAdmin();
+    } catch (err) {
+      console.error(err);
+      productoFormStatus.textContent = "Error al guardar el producto.";
+    }
+  });
+</script>
+</body>
+</html>

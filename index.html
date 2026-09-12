@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXO STORE</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          void: '#08050f',
+          panel: '#120a24',
+          panel2: '#180f30',
+          line: '#3a2564',
+          violet: '#9146ff',
+          violet2: '#b47bff',
+          magenta: '#ff4fd8',
+          cyan: '#4ff2ff'
+        },
+        fontFamily: {
+          display: ['Rajdhani', 'sans-serif'],
+          body: ['Space Grotesk', 'sans-serif']
+        }
+      }
+    }
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{
+    background:
+      radial-gradient(circle at 15% 0%, rgba(145,70,255,0.16), transparent 45%),
+      radial-gradient(circle at 85% 15%, rgba(255,79,216,0.10), transparent 40%),
+      #08050f;
+  }
+  .grid-bg{
+    position:fixed; inset:0; z-index:-1; opacity:0.35;
+    background-image:
+      linear-gradient(rgba(145,70,255,0.10) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(145,70,255,0.10) 1px, transparent 1px);
+    background-size:42px 42px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 55% at 20% 0%, black 20%, transparent 80%);
+            mask-image: radial-gradient(ellipse 70% 55% at 20% 0%, black 20%, transparent 80%);
+  }
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-track{background:#08050f;}
+  ::-webkit-scrollbar-thumb{background:#3a2564;}
+  .card-clip{clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);}
+  .btn-clip{clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);}
+  .modal-backdrop{background:rgba(8,5,15,0.85); backdrop-filter:blur(6px);}
+  .hidden-modal{display:none;}
+</style>
+</head>
+<body class="font-body text-[#eee7ff] min-h-screen">
+<div class="grid-bg"></div>
+
+<div class="flex min-h-screen">
+
+  <!-- SIDEBAR -->
+  <aside class="hidden md:flex flex-col fixed left-0 top-0 h-screen w-64 bg-panel border-r border-line px-6 py-8 z-40">
+    <div class="flex items-center gap-3 mb-10">
+      <div class="w-11 h-11 rounded-full border-2 border-violet2 flex items-center justify-center flex-shrink-0">
+        <span class="font-display font-bold text-magenta text-sm">ネ</span>
+      </div>
+      <div class="leading-tight">
+        <b class="font-display text-lg tracking-wide">NEXO</b>
+        <small class="block text-[10px] text-[#6b5b93] tracking-widest">STORE</small>
+      </div>
+    </div>
+
+    <div class="mb-8">
+      <label class="text-[11px] text-[#6b5b93] tracking-widest block mb-2">MONEDA</label>
+      <div class="flex border border-line btn-clip overflow-hidden w-max">
+        <button id="btn-ars" class="px-4 py-1.5 text-xs font-display font-semibold bg-violet text-white">ARS</button>
+        <button id="btn-usd" class="px-4 py-1.5 text-xs font-display font-semibold text-[#a394c9]">USD</button>
+      </div>
+    </div>
+
+    <nav class="flex flex-col gap-1 text-sm">
+      <a href="#inicio" class="px-3 py-2.5 rounded hover:bg-panel2 hover:text-violet2 transition">Inicio</a>
+      <a href="#streaming" data-filter="streaming" class="nav-filter px-3 py-2.5 rounded hover:bg-panel2 hover:text-violet2 transition">Streaming</a>
+      <a href="#seguidores" data-filter="seguidores" class="nav-filter px-3 py-2.5 rounded hover:bg-panel2 hover:text-violet2 transition">Seguidores</a>
+    </nav>
+
+    <div class="mt-auto pt-6 border-t border-line">
+      <button id="btn-login" class="w-full btn-clip bg-gradient-to-r from-violet to-magenta text-white font-display font-semibold text-sm py-3">
+        Login / Admin
+      </button>
+      <p id="session-info" class="text-[11px] text-[#6b5b93] mt-3 text-center hidden"></p>
+    </div>
+  </aside>
+
+  <!-- MOBILE TOPBAR -->
+  <header class="md:hidden fixed top-0 left-0 right-0 z-40 bg-panel border-b border-line flex items-center justify-between px-4 h-16">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-full border-2 border-violet2 flex items-center justify-center">
+        <span class="font-display font-bold text-magenta text-xs">ネ</span>
+      </div>
+      <b class="font-display text-base">NEXO</b>
+    </div>
+    <button id="btn-login-mobile" class="btn-clip bg-violet text-white text-xs font-display font-semibold px-4 py-2">Login</button>
+  </header>
+
+  <!-- MAIN -->
+  <main class="flex-1 md:ml-64 pt-24 md:pt-10 pb-16 px-5 md:px-10" id="inicio">
+    <div class="max-w-6xl mx-auto">
+
+      <div class="mb-10">
+        <span class="text-xs text-magenta tracking-widest block mb-2">CATÁLOGO</span>
+        <h1 class="font-display text-4xl md:text-5xl font-bold">
+          TODO LO QUE <span class="bg-gradient-to-r from-violet2 via-magenta to-cyan bg-clip-text text-transparent">NECESITÁS</span>
+        </h1>
+        <p class="text-[#a394c9] text-sm mt-3 max-w-md">Streaming, seguidores y más — precios claros y entrega rápida.</p>
+      </div>
+
+      <div class="flex gap-2 mb-8 flex-wrap">
+        <button data-filter="all" class="filter-btn active-filter px-4 py-2 text-xs font-body border border-line bg-panel text-[#eee7ff]">Todos</button>
+        <button data-filter="streaming" class="filter-btn px-4 py-2 text-xs font-body border border-line bg-panel text-[#a394c9]">Streaming</button>
+        <button data-filter="seguidores" class="filter-btn px-4 py-2 text-xs font-body border border-line bg-panel text-[#a394c9]">Seguidores</button>
+      </div>
+
+      <div id="loading-state" class="text-center py-20 text-[#6b5b93] text-sm">
+        Cargando catálogo...
+      </div>
+
+      <div id="empty-state" class="hidden text-center py-20 text-[#6b5b93] text-sm">
+        No hay productos cargados todavía.
+      </div>
+
+      <div id="productos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: PEDIDO RAPIDO -->
+<div id="modal-pedido" class="hidden-modal fixed inset-0 z-50 modal-backdrop items-center justify-center px-4">
+  <div class="bg-panel border border-line card-clip w-full max-w-md p-7 relative">
+    <button data-close="modal-pedido" class="absolute top-4 right-4 text-[#a394c9] hover:text-white">✕</button>
+    <span class="text-xs text-magenta tracking-widest block mb-1">PEDIDO RÁPIDO</span>
+    <h3 id="pedido-producto-nombre" class="font-display text-2xl font-bold mb-1">Producto</h3>
+    <p id="pedido-producto-precio" class="text-cyan font-display font-semibold mb-6"></p>
+
+    <form id="form-pedido" class="flex flex-col gap-4">
+      <div>
+        <label class="text-xs text-[#a394c9] block mb-1.5">Nombre</label>
+        <input required id="pedido-nombre" type="text" placeholder="Tu nombre"
+          class="w-full bg-panel2 border border-line px-4 py-2.5 text-sm text-[#eee7ff] outline-none focus:border-violet">
+      </div>
+      <div>
+        <label class="text-xs text-[#a394c9] block mb-1.5">WhatsApp</label>
+        <input required id="pedido-whatsapp" type="tel" placeholder="Ej: 5492610000000"
+          class="w-full bg-panel2 border border-line px-4 py-2.5 text-sm text-[#eee7ff] outline-none focus:border-violet">
+      </div>
+      <button type="submit" class="btn-clip bg-gradient-to-r from-violet to-magenta text-white font-display font-semibold text-sm py-3 mt-2">
+        Enviar pedido por WhatsApp
+      </button>
+      <p id="pedido-status" class="text-xs text-center text-[#6b5b93]"></p>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: LOGIN / REGISTRO -->
+<div id="modal-login" class="hidden-modal fixed inset-0 z-50 modal-backdrop items-center justify-center px-4">
+  <div class="bg-panel border border-line card-clip w-full max-w-sm p-7 relative">
+    <button data-close="modal-login" class="absolute top-4 right-4 text-[#a394c9] hover:text-white">✕</button>
+    <span class="text-xs text-magenta tracking-widest block mb-1" id="auth-mode-label">INGRESAR</span>
+    <h3 class="font-display text-2xl font-bold mb-6">Mi cuenta</h3>
+
+    <form id="form-auth" class="flex flex-col gap-4">
+      <div>
+        <label class="text-xs text-[#a394c9] block mb-1.5">Correo</label>
+        <input required id="auth-email" type="email" placeholder="correo@ejemplo.com"
+          class="w-full bg-panel2 border border-line px-4 py-2.5 text-sm text-[#eee7ff] outline-none focus:border-violet">
+      </div>
+      <div>
+        <label class="text-xs text-[#a394c9] block mb-1.5">Contraseña</label>
+        <input required id="auth-password" type="password" placeholder="••••••••"
+          class="w-full bg-panel2 border border-line px-4 py-2.5 text-sm text-[#eee7ff] outline-none focus:border-violet">
+      </div>
+      <button type="submit" id="btn-auth-submit" class="btn-clip bg-gradient-to-r from-violet to-magenta text-white font-display font-semibold text-sm py-3 mt-2">
+        Ingresar
+      </button>
+      <p id="auth-status" class="text-xs text-center text-[#6b5b93]"></p>
+      <p class="text-xs text-center text-[#a394c9]">
+        <span id="auth-toggle-text">¿No tenés cuenta?</span>
+        <button type="button" id="btn-auth-toggle" class="text-violet2 underline">Crear cuenta</button>
+      </p>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+  import {
+    auth,
+    db,
+    obtenerProductos,
+    guardarCliente
+  } from "./firebase.js";
+  import {
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import {
+    doc,
+    getDoc
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // ---------------------------------
+  // Estado global
+  // ---------------------------------
+  let currency = "ARS";
+  let currentFilter = "all";
+  let productosCache = [];
+  let selectedProducto = null;
+  let authMode = "login"; // login | register
+
+  const grid = document.getElementById("productos-grid");
+  const loadingState = document.getElementById("loading-state");
+  const emptyState = document.getElementById("empty-state");
+
+  // ---------------------------------
+  // Currency toggle
+  // ---------------------------------
+  const btnArs = document.getElementById("btn-ars");
+  const btnUsd = document.getElementById("btn-usd");
+
+  function setCurrency(c) {
+    currency = c;
+    if (c === "ARS") {
+      btnArs.classList.add("bg-violet", "text-white");
+      btnArs.classList.remove("text-[#a394c9]");
+      btnUsd.classList.remove("bg-violet", "text-white");
+      btnUsd.classList.add("text-[#a394c9]");
+    } else {
+      btnUsd.classList.add("bg-violet", "text-white");
+      btnUsd.classList.remove("text-[#a394c9]");
+      btnArs.classList.remove("bg-violet", "text-white");
+      btnArs.classList.add("text-[#a394c9]");
+    }
+    renderProductos();
+  }
+  btnArs.addEventListener("click", () => setCurrency("ARS"));
+  btnUsd.addEventListener("click", () => setCurrency("USD"));
+
+  // Tasa de cambio aproximada solo para mostrar (ajustar según necesidad real)
+  const USD_RATE = 1450;
+
+  function formatPrecio(precioArs) {
+    if (currency === "USD") {
+      const usd = precioArs / USD_RATE;
+      return `US$ ${usd.toFixed(2)}`;
+    }
+    return `$${Number(precioArs).toLocaleString("es-AR")}`;
+  }
+
+  // ---------------------------------
+  // Filtros
+  // ---------------------------------
+  const filterBtns = document.querySelectorAll(".filter-btn");
+  const navFilters = document.querySelectorAll(".nav-filter");
+
+  function applyFilter(f) {
+    currentFilter = f;
+    filterBtns.forEach(b => {
+      if (b.dataset.filter === f) {
+        b.classList.add("active-filter", "bg-panel", "text-[#eee7ff]");
+        b.classList.remove("text-[#a394c9]");
+      } else {
+        b.classList.remove("active-filter");
+        b.classList.add("text-[#a394c9]");
+      }
+    });
+    renderProductos();
+  }
+  filterBtns.forEach(b => b.addEventListener("click", () => applyFilter(b.dataset.filter)));
+  navFilters.forEach(a => a.addEventListener("click", (e) => {
+    applyFilter(a.dataset.filter);
+  }));
+
+  // ---------------------------------
+  // Renderizado de productos
+  // ---------------------------------
+  function renderProductos() {
+    const productos = currentFilter === "all"
+      ? productosCache
+      : productosCache.filter(p => p.categoria === currentFilter);
+
+    grid.innerHTML = "";
+
+    if (productos.length === 0) {
+      emptyState.classList.remove("hidden");
+      return;
+    }
+    emptyState.classList.add("hidden");
+
+    productos.forEach(p => {
+      const hayStock = p.hayStock !== false;
+      const card = document.createElement("div");
+      card.className = "bg-panel border border-line card-clip p-5 flex flex-col gap-4 relative group transition hover:border-violet";
+
+      const caracteristicas = Array.isArray(p.caracteristicas) ? p.caracteristicas : [];
+
+      card.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden bg-panel2 border border-line">
+            ${
+              p.imagen
+                ? `<img src="${p.imagen}" alt="${p.nombre || ''}" class="w-full h-full object-cover">`
+                : `<span class="font-display font-bold text-violet2 text-lg">${(p.nombre || '?').charAt(0)}</span>`
+            }
+          </div>
+          <div class="flex-1">
+            <b class="font-display text-lg leading-tight block">${p.nombre || "Sin nombre"}</b>
+            <span class="text-cyan font-display font-semibold text-sm">${formatPrecio(p.precio || 0)}</span>
+          </div>
+          <span class="text-[9px] font-display font-bold tracking-widest px-2 py-1 rounded ${hayStock ? 'bg-cyan/10 text-cyan border border-cyan/40' : 'bg-magenta/10 text-magenta border border-magenta/40'}">
+            ${hayStock ? "EN STOCK" : "SIN STOCK"}
+          </span>
+        </div>
+
+        ${caracteristicas.length ? `
+          <ul class="text-xs text-[#a394c9] flex flex-col gap-1.5">
+            ${caracteristicas.map(c => `<li class="flex items-center gap-2"><span class="text-violet2">◆</span>${c}</li>`).join("")}
+          </ul>
+        ` : ""}
+
+        <button
+          data-id="${p.id}"
+          class="btn-comprar mt-auto btn-clip text-sm font-display font-semibold py-2.5 ${
+            hayStock
+              ? 'bg-gradient-to-r from-violet to-magenta text-white cursor-pointer'
+              : 'bg-panel2 text-[#6b5b93] cursor-not-allowed'
+          }"
+          ${hayStock ? "" : "disabled"}
+        >
+          ${hayStock ? "Pedir ahora" : "No disponible"}
+        </button>
+      `;
+
+      grid.appendChild(card);
+    });
+
+    document.querySelectorAll(".btn-comprar:not([disabled])").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.id;
+        selectedProducto = productosCache.find(p => p.id === id);
+        if (selectedProducto) openModalPedido(selectedProducto);
+      });
+    });
+  }
+
+  async function cargarProductos() {
+    try {
+      loadingState.classList.remove("hidden");
+      productosCache = await obtenerProductos();
+      loadingState.classList.add("hidden");
+      renderProductos();
+    } catch (err) {
+      loadingState.textContent = "Error al cargar el catálogo.";
+      console.error(err);
+    }
+  }
+  cargarProductos();
+
+  // ---------------------------------
+  // Modal: Pedido rápido
+  // ---------------------------------
+  const modalPedido = document.getElementById("modal-pedido");
+  const formPedido = document.getElementById("form-pedido");
+  const pedidoStatus = document.getElementById("pedido-status");
+
+  function openModal(modalEl) {
+    modalEl.classList.remove("hidden-modal");
+    modalEl.classList.add("flex");
+  }
+  function closeModal(modalEl) {
+    modalEl.classList.add("hidden-modal");
+    modalEl.classList.remove("flex");
+  }
+
+  function openModalPedido(producto) {
+    document.getElementById("pedido-producto-nombre").textContent = producto.nombre || "Producto";
+    document.getElementById("pedido-producto-precio").textContent = formatPrecio(producto.precio || 0);
+    pedidoStatus.textContent = "";
+    formPedido.reset();
+    openModal(modalPedido);
+  }
+
+  document.querySelectorAll("[data-close]").forEach(btn => {
+    btn.addEventListener("click", () => closeModal(document.getElementById(btn.dataset.close)));
+  });
+  [modalPedido, document.getElementById("modal-login")].forEach(m => {
+    m.addEventListener("click", (e) => {
+      if (e.target === m) closeModal(m);
+    });
+  });
+
+  formPedido.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!selectedProducto) return;
+
+    const nombre = document.getElementById("pedido-nombre").value.trim();
+    const whatsapp = document.getElementById("pedido-whatsapp").value.trim().replace(/\D/g, "");
+
+    if (!nombre || !whatsapp) return;
+
+    pedidoStatus.textContent = "Guardando pedido...";
+
+    try {
+      await guardarCliente({
+        nombre,
+        whatsapp,
+        productoId: selectedProducto.id,
+        productoNombre: selectedProducto.nombre || "",
+        precio: selectedProducto.precio || 0,
+        pagado: false,
+        fechaPedido: new Date().toISOString()
+      });
+
+      const mensaje = encodeURIComponent(
+        `Hola! Soy ${nombre}, quiero pedir: ${selectedProducto.nombre} (${formatPrecio(selectedProducto.precio || 0)})`
+      );
+      const numeroTienda = "5492610000000"; // reemplazar por el número real de la tienda
+      const url = `https://wa.me/${numeroTienda}?text=${mensaje}`;
+
+      pedidoStatus.textContent = "¡Listo! Te llevamos a WhatsApp...";
+      window.open(url, "_blank");
+      setTimeout(() => closeModal(modalPedido), 800);
+    } catch (err) {
+      console.error(err);
+      pedidoStatus.textContent = "Error al guardar el pedido. Intentá de nuevo.";
+    }
+  });
+
+  // ---------------------------------
+  // Modal: Login / Registro
+  // ---------------------------------
+  const modalLogin = document.getElementById("modal-login");
+  const formAuth = document.getElementById("form-auth");
+  const authStatus = document.getElementById("auth-status");
+  const authModeLabel = document.getElementById("auth-mode-label");
+  const btnAuthSubmit = document.getElementById("btn-auth-submit");
+  const btnAuthToggle = document.getElementById("btn-auth-toggle");
+  const authToggleText = document.getElementById("auth-toggle-text");
+  const sessionInfo = document.getElementById("session-info");
+
+  document.getElementById("btn-login").addEventListener("click", () => openModal(modalLogin));
+  document.getElementById("btn-login-mobile").addEventListener("click", () => openModal(modalLogin));
+
+  btnAuthToggle.addEventListener("click", () => {
+    authMode = authMode === "login" ? "register" : "login";
+    if (authMode === "login") {
+      authModeLabel.textContent = "INGRESAR";
+      btnAuthSubmit.textContent = "Ingresar";
+      authToggleText.textContent = "¿No tenés cuenta?";
+      btnAuthToggle.textContent = "Crear cuenta";
+    } else {
+      authModeLabel.textContent = "CREAR CUENTA";
+      btnAuthSubmit.textContent = "Registrarme";
+      authToggleText.textContent = "¿Ya tenés cuenta?";
+      btnAuthToggle.textContent = "Ingresar";
+    }
+    authStatus.textContent = "";
+  });
+
+  formAuth.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("auth-email").value.trim();
+    const password = document.getElementById("auth-password").value;
+
+    authStatus.textContent = "Procesando...";
+
+    try {
+      let userCredential;
+      if (authMode === "login") {
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      }
+
+      const user = userCredential.user;
+      const adminDocRef = doc(db, "admins", user.uid);
+      const adminDocSnap = await getDoc(adminDocRef);
+
+      if (adminDocSnap.exists()) {
+        authStatus.textContent = "Bienvenido, redirigiendo...";
+        window.location.href = "admin.html";
+      } else {
+        authStatus.textContent = "Sesión iniciada.";
+        setTimeout(() => closeModal(modalLogin), 800);
+      }
+    } catch (err) {
+      console.error(err);
+      authStatus.textContent = "Error: revisá tus datos e intentá de nuevo.";
+    }
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      sessionInfo.textContent = `Conectado: ${user.email}`;
+      sessionInfo.classList.remove("hidden");
+    } else {
+      sessionInfo.classList.add("hidden");
+    }
+  });
+</script>
+</body>
+</html>
