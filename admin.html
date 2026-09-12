@@ -204,9 +204,9 @@
     </button>
   </div>
 
-  <!-- ============ TABLA ============ -->
-  <div class="border border-line bg-panel clip-corner overflow-x-auto">
-    <table class="w-full text-sm min-w-[900px]">
+  <!-- ============ TABLA (desktop / tablet) ============ -->
+  <div class="hidden md:block border border-line bg-panel clip-corner overflow-x-auto">
+    <table class="w-full text-sm min-w-[960px]">
       <thead>
         <tr class="text-left text-[11px] text-mute border-b border-line">
           <th class="px-4 py-3 font-medium">#</th>
@@ -214,6 +214,7 @@
           <th class="px-4 py-3 font-medium">Cliente</th>
           <th class="px-4 py-3 font-medium">Teléfono</th>
           <th class="px-4 py-3 font-medium">Servicio</th>
+          <th class="px-4 py-3 font-medium">Vence</th>
           <th class="px-4 py-3 font-medium">Estado</th>
           <th class="px-4 py-3 font-medium">Pago</th>
           <th class="px-4 py-3 font-medium">Acciones</th>
@@ -221,8 +222,12 @@
       </thead>
       <tbody id="tabla-pedidos"></tbody>
     </table>
-    <p id="tabla-vacio" class="hidden-modal text-center text-mute text-sm py-10">No hay pedidos que coincidan con el filtro.</p>
   </div>
+
+  <!-- ============ TARJETAS (mobile): solo nombre, vencimiento y "Ver más" ============ -->
+  <div id="tarjetas-pedidos" class="md:hidden flex flex-col gap-2.5"></div>
+
+  <p id="tabla-vacio" class="hidden-modal text-center text-mute text-sm py-10">No hay pedidos que coincidan con el filtro.</p>
 </main>
 
 <!-- ============ SECCIÓN: PRODUCTOS ============ -->
@@ -239,7 +244,7 @@
     </button>
   </div>
 
-  <div class="border border-line bg-panel clip-corner overflow-x-auto">
+  <div class="hidden md:block border border-line bg-panel clip-corner overflow-x-auto">
     <table class="w-full text-sm min-w-[820px]">
       <thead>
         <tr class="text-left text-[11px] text-mute border-b border-line">
@@ -253,8 +258,12 @@
       </thead>
       <tbody id="tabla-productos"></tbody>
     </table>
-    <p id="tabla-productos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste productos.</p>
   </div>
+
+  <!-- ============ TARJETAS (mobile) ============ -->
+  <div id="tarjetas-productos" class="md:hidden flex flex-col gap-2.5"></div>
+
+  <p id="tabla-productos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste productos.</p>
 </main>
 
 <!-- ============ TEMPLATE: FILA PEDIDO ============ -->
@@ -265,6 +274,7 @@
     <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
     <td class="px-4 py-3 text-mute" data-field="telefono"></td>
     <td class="px-4 py-3" data-field="servicio"></td>
+    <td class="px-4 py-3"><span data-field="vencimiento-badge" class="text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap"></span></td>
     <td class="px-4 py-3">
       <select data-field="estado-select" class="estado-select bg-panel2 border border-line px-2.5 py-1.5 text-xs focus:outline-none focus:border-cyan">
         <option value="espera">En espera</option>
@@ -283,6 +293,19 @@
       </div>
     </td>
   </tr>
+</template>
+
+<!-- ============ TEMPLATE: TARJETA PEDIDO (mobile) ============ -->
+<template id="tpl-tarjeta-pedido">
+  <div class="border border-line bg-panel clip-corner p-4 flex items-center justify-between gap-3">
+    <div class="min-w-0">
+      <p class="font-display font-semibold text-sm text-ink truncate" data-field="nombre"></p>
+      <span data-field="vencimiento-badge" class="inline-block mt-1.5 text-[11px] font-semibold px-2.5 py-1 clip-corner border whitespace-nowrap"></span>
+    </div>
+    <button data-field="btn-ver-mas" class="shrink-0 text-xs font-semibold text-violet2 border border-violet/40 px-3.5 py-2 hover:bg-violet hover:text-bg transition-colors whitespace-nowrap">
+      Ver más
+    </button>
+  </div>
 </template>
 
 <!-- ============ TEMPLATE: FILA PRODUCTO ============ -->
@@ -304,6 +327,23 @@
       </div>
     </td>
   </tr>
+</template>
+
+<!-- ============ TEMPLATE: TARJETA PRODUCTO (mobile) ============ -->
+<template id="tpl-tarjeta-producto">
+  <div class="border border-line bg-panel clip-corner p-4 flex items-center justify-between gap-3">
+    <div class="min-w-0">
+      <p class="font-display font-semibold text-sm text-ink truncate" data-field="nombre"></p>
+      <p class="text-cyan font-display font-bold text-sm mt-0.5" data-field="precio"></p>
+      <div class="flex items-center gap-1.5 mt-1.5">
+        <span data-field="badge-visible" class="toggle-btn"></span>
+        <span data-field="badge-stock" class="toggle-btn"></span>
+      </div>
+    </div>
+    <button data-field="btn-ver-mas" class="shrink-0 text-xs font-semibold text-violet2 border border-violet/40 px-3.5 py-2 hover:bg-violet hover:text-bg transition-colors whitespace-nowrap">
+      Editar
+    </button>
+  </div>
 </template>
 
 <!-- ============ MODAL: AGREGAR / EDITAR CLIENTE ============ -->
@@ -337,6 +377,11 @@
           <option value="activo">Activo</option>
           <option value="cancelado">Cancelado</option>
         </select>
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Vencimiento (opcional)</label>
+        <input id="cliente-vencimiento" type="date"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink focus:outline-none focus:border-cyan" />
       </div>
 
       <p id="cliente-status" class="text-xs text-mute min-h-[1rem]"></p>
@@ -675,9 +720,11 @@
 
   const tabla = document.getElementById("tabla-pedidos");
   const tablaVacio = document.getElementById("tabla-vacio");
+  const tarjetasPedidos = document.getElementById("tarjetas-pedidos");
   const inputBuscar = document.getElementById("input-buscar");
   const selectFiltroEstado = document.getElementById("select-filtro-estado");
   const tpl = document.getElementById("tpl-fila");
+  const tplTarjeta = document.getElementById("tpl-tarjeta-pedido");
 
   function iniciarEscuchaPedidos() {
     const q = query(pedidosRef, orderBy("fecha", "desc"));
@@ -724,9 +771,31 @@
       : "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border transition-colors bg-warn/10 border-warn/50 text-warn";
   }
 
+  // Devuelve { texto, clase } según cuánto falta para el vencimiento cargado.
+  // Sin fecha cargada -> neutro. Vencido -> rojo. 3 días o menos -> naranja (por vencer). Resto -> verde.
+  function estadoVencimiento(vencimientoStr) {
+    const base = "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap";
+    if (!vencimientoStr) {
+      return { texto: "Sin fecha", clase: base + " bg-mute/10 border-mute/30 text-mute" };
+    }
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const fechaVence = new Date(vencimientoStr + "T00:00:00");
+    const diffDias = Math.round((fechaVence - hoy) / (1000 * 60 * 60 * 24));
+
+    if (diffDias < 0) {
+      return { texto: "Vencido", clase: base + " bg-bad/10 border-bad/50 text-bad" };
+    }
+    if (diffDias <= 3) {
+      return { texto: diffDias === 0 ? "Vence hoy" : `Vence en ${diffDias}d`, clase: base + " bg-warn/10 border-warn/50 text-warn" };
+    }
+    return { texto: fechaVence.toLocaleDateString("es-AR"), clase: base + " bg-ok/10 border-ok/40 text-ok" };
+  }
+
   function renderTabla() {
     const lista = pedidosFiltrados();
     tabla.innerHTML = "";
+    tarjetasPedidos.innerHTML = "";
 
     if (lista.length === 0) {
       tablaVacio.classList.remove("hidden-modal");
@@ -742,6 +811,11 @@
       nodo.querySelector('[data-field="nombre"]').textContent = pedido.nombre || "—";
       nodo.querySelector('[data-field="telefono"]').textContent = pedido.telefono || "—";
       nodo.querySelector('[data-field="servicio"]').textContent = pedido.servicio || "—";
+
+      const vencInfo = estadoVencimiento(pedido.vencimiento);
+      const vencBadge = nodo.querySelector('[data-field="vencimiento-badge"]');
+      vencBadge.textContent = vencInfo.texto;
+      vencBadge.className = vencInfo.clase;
 
       const estadoSelect = nodo.querySelector('[data-field="estado-select"]');
       estadoSelect.value = pedido.estado || "espera";
@@ -773,6 +847,15 @@
       });
 
       tabla.appendChild(nodo);
+
+      // Tarjeta mobile: solo nombre + vencimiento + "Ver más" (abre el mismo modal con todo el detalle)
+      const tarjeta = tplTarjeta.content.cloneNode(true);
+      tarjeta.querySelector('[data-field="nombre"]').textContent = pedido.nombre || "—";
+      const vencBadgeTarjeta = tarjeta.querySelector('[data-field="vencimiento-badge"]');
+      vencBadgeTarjeta.textContent = vencInfo.texto;
+      vencBadgeTarjeta.className = "inline-block mt-1.5 " + vencInfo.clase;
+      tarjeta.querySelector('[data-field="btn-ver-mas"]').addEventListener("click", () => abrirModalCliente(pedido));
+      tarjetasPedidos.appendChild(tarjeta);
     });
   }
 
@@ -788,6 +871,7 @@
   const clienteTelefono = document.getElementById("cliente-telefono");
   const clienteServicio = document.getElementById("cliente-servicio");
   const clienteEstado = document.getElementById("cliente-estado");
+  const clienteVencimiento = document.getElementById("cliente-vencimiento");
   const clienteStatus = document.getElementById("cliente-status");
   const modalClienteTitulo = document.getElementById("modal-cliente-titulo");
   const modalClienteEyebrow = document.getElementById("modal-cliente-titulo-eyebrow");
@@ -807,11 +891,13 @@
       clienteTelefono.value = pedido.telefono || "";
       clienteServicio.value = pedido.servicio || "";
       clienteEstado.value = pedido.estado || "espera";
+      clienteVencimiento.value = pedido.vencimiento || "";
     } else {
       pedidoEnEdicionId = null;
       modalClienteEyebrow.textContent = "NUEVO CLIENTE";
       modalClienteTitulo.textContent = "Agregar cliente";
       clienteEstado.value = "espera";
+      clienteVencimiento.value = "";
     }
 
     modalCliente.classList.remove("hidden-modal");
@@ -836,7 +922,8 @@
       nombre: clienteNombre.value.trim(),
       telefono: clienteTelefono.value.trim(),
       servicio: clienteServicio.value.trim(),
-      estado: clienteEstado.value
+      estado: clienteEstado.value,
+      vencimiento: clienteVencimiento.value || null
     };
 
     btnGuardarCliente.disabled = true;
@@ -869,7 +956,9 @@
 
   const tablaProductos = document.getElementById("tabla-productos");
   const tablaProductosVacio = document.getElementById("tabla-productos-vacio");
+  const tarjetasProductos = document.getElementById("tarjetas-productos");
   const tplProducto = document.getElementById("tpl-fila-producto");
+  const tplTarjetaProducto = document.getElementById("tpl-tarjeta-producto");
 
   const CATEGORIA_LABEL = {
     streaming: "Streaming",
@@ -896,6 +985,7 @@
 
   function renderTablaProductos() {
     tablaProductos.innerHTML = "";
+    tarjetasProductos.innerHTML = "";
 
     if (productosCache.length === 0) {
       tablaProductosVacio.classList.remove("hidden-modal");
@@ -904,14 +994,14 @@
     }
 
     productosCache.forEach((producto) => {
+      const visible = producto.visible !== false; // por defecto visible si no está definido
+      const hayStock = producto.hayStock !== false; // por defecto con stock si no está definido
+
       const nodo = tplProducto.content.cloneNode(true);
 
       nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre || "—";
       nodo.querySelector('[data-field="categoria"]').textContent = CATEGORIA_LABEL[producto.categoria] || producto.categoria || "—";
       nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
-
-      const visible = producto.visible !== false; // por defecto visible si no está definido
-      const hayStock = producto.hayStock !== false; // por defecto con stock si no está definido
 
       const btnVisible = nodo.querySelector('[data-field="btn-visible"]');
       pintarToggle(btnVisible, visible, "Visible", "Oculto");
@@ -937,6 +1027,15 @@
       });
 
       tablaProductos.appendChild(nodo);
+
+      // Tarjeta mobile: nombre, precio, badges de visibilidad/stock y botón editar
+      const tarjeta = tplTarjetaProducto.content.cloneNode(true);
+      tarjeta.querySelector('[data-field="nombre"]').textContent = producto.nombre || "—";
+      tarjeta.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
+      pintarToggle(tarjeta.querySelector('[data-field="badge-visible"]'), visible, "Visible", "Oculto");
+      pintarToggle(tarjeta.querySelector('[data-field="badge-stock"]'), hayStock, "Con stock", "Sin stock");
+      tarjeta.querySelector('[data-field="btn-ver-mas"]').addEventListener("click", () => abrirModalProducto(producto));
+      tarjetasProductos.appendChild(tarjeta);
     });
   }
 
