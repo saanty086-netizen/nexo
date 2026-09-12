@@ -44,9 +44,54 @@
   ::-webkit-scrollbar-track { background: #08050f; }
   ::-webkit-scrollbar-thumb { background: #241a3d; border-radius: 4px; }
   tbody tr { border-bottom: 1px solid #241a3d; }
+  .tab-btn { padding: 0.55rem 1.1rem; font-size: 0.8rem; font-weight: 600; border: 1px solid #241a3d; background: #0f0a1c; color: #8b80ab; transition: all .15s; }
+  .tab-btn.tab-activo { background: linear-gradient(to right, #9146ff, #4ff2ff); color: #08050f; border-color: transparent; }
+  .toggle-btn { font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 2px; border: 1px solid; transition: colors .15s; white-space: nowrap; }
+  .toggle-on { background: rgba(79,255,160,0.1); border-color: rgba(79,255,160,0.5); color: #4fffa0; }
+  .toggle-off { background: rgba(255,95,126,0.1); border-color: rgba(255,95,126,0.5); color: #ff5f7e; }
 </style>
 </head>
 <body class="font-mono text-ink min-h-screen">
+
+<!-- ============ PANTALLA DE LOGIN ============ -->
+<div id="pantalla-login" class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-full border-2 border-violet flex items-center justify-center">
+        <span class="font-display font-bold text-cyan text-base">N</span>
+      </div>
+      <div>
+        <p class="font-display font-bold text-base leading-none">NEXO</p>
+        <p class="text-[10px] text-mute tracking-[0.2em] mt-1">ACCESO PRIVADO</p>
+      </div>
+    </div>
+
+    <h3 class="font-display font-bold text-xl mb-5">Iniciar sesión</h3>
+
+    <form id="form-login" class="flex flex-col gap-4">
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Email</label>
+        <input required id="login-email" type="email" autocomplete="username" placeholder="admin@nexo.com"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Contraseña</label>
+        <input required id="login-password" type="password" autocomplete="current-password" placeholder="••••••••"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <p id="login-status" class="text-xs text-bad min-h-[1rem]"></p>
+
+      <button type="submit" id="btn-login"
+        class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+        Ingresar
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ APP ADMIN (oculto hasta loguearse) ============ -->
+<div id="app-admin" class="hidden-modal">
 
 <!-- ============ TOPBAR ============ -->
 <header class="border-b border-line bg-panel px-5 md:px-8 py-4">
@@ -79,7 +124,13 @@
   </div>
 </header>
 
-<main class="max-w-7xl mx-auto px-5 md:px-8 py-8">
+<div class="max-w-7xl mx-auto px-5 md:px-8 pt-6 flex gap-2">
+  <button id="tab-pedidos" class="tab-btn tab-activo">Pedidos</button>
+  <button id="tab-productos" class="tab-btn">Productos</button>
+</div>
+
+<!-- ============ SECCIÓN: PEDIDOS ============ -->
+<main id="seccion-pedidos" class="max-w-7xl mx-auto px-5 md:px-8 py-8">
 
   <!-- ============ FILTROS ============ -->
   <div class="flex flex-wrap items-center gap-3 mb-6">
@@ -121,7 +172,39 @@
   </div>
 </main>
 
-<!-- ============ TEMPLATE: FILA ============ -->
+<!-- ============ SECCIÓN: PRODUCTOS ============ -->
+<main id="seccion-productos" class="hidden-modal max-w-7xl mx-auto px-5 md:px-8 py-8">
+
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <p class="text-mute text-xs max-w-md leading-relaxed">
+      Estos productos son los que se muestran en la tienda. Marcá "Oculto" para sacarlos de la web sin borrarlos,
+      y "Sin stock" para que se vean pero no se puedan pedir.
+    </p>
+    <button id="btn-agregar-producto"
+      class="bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm px-5 py-2.5 hover:opacity-90 transition-opacity whitespace-nowrap">
+      + Agregar producto
+    </button>
+  </div>
+
+  <div class="border border-line bg-panel clip-corner overflow-x-auto">
+    <table class="w-full text-sm min-w-[820px]">
+      <thead>
+        <tr class="text-left text-[11px] text-mute border-b border-line">
+          <th class="px-4 py-3 font-medium">Producto</th>
+          <th class="px-4 py-3 font-medium">Categoría</th>
+          <th class="px-4 py-3 font-medium">Precio</th>
+          <th class="px-4 py-3 font-medium">Visibilidad</th>
+          <th class="px-4 py-3 font-medium">Stock</th>
+          <th class="px-4 py-3 font-medium">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-productos"></tbody>
+    </table>
+    <p id="tabla-productos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste productos.</p>
+  </div>
+</main>
+
+<!-- ============ TEMPLATE: FILA PEDIDO ============ -->
 <template id="tpl-fila">
   <tr class="hover:bg-panel2/60 transition-colors align-middle">
     <td class="px-4 py-3 text-mute" data-field="indice"></td>
@@ -144,6 +227,27 @@
         <button data-field="btn-chat" class="text-[11px] text-cyan border border-cyan/40 px-2.5 py-1.5 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
         <button data-field="btn-editar" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Editar</button>
         <button data-field="btn-eliminar" class="text-[11px] text-bad border border-bad/40 px-2.5 py-1.5 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+      </div>
+    </td>
+  </tr>
+</template>
+
+<!-- ============ TEMPLATE: FILA PRODUCTO ============ -->
+<template id="tpl-fila-producto">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle">
+    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
+    <td class="px-4 py-3 text-mute text-xs" data-field="categoria"></td>
+    <td class="px-4 py-3 text-cyan font-display font-bold" data-field="precio"></td>
+    <td class="px-4 py-3">
+      <button data-field="btn-visible" class="toggle-btn"></button>
+    </td>
+    <td class="px-4 py-3">
+      <button data-field="btn-stock" class="toggle-btn"></button>
+    </td>
+    <td class="px-4 py-3">
+      <div class="flex items-center gap-2 whitespace-nowrap">
+        <button data-field="btn-editar-producto" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+        <button data-field="btn-eliminar-producto" class="text-[11px] text-bad border border-bad/40 px-2.5 py-1.5 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
       </div>
     </td>
   </tr>
@@ -192,6 +296,76 @@
   </div>
 </div>
 
+<!-- ============ MODAL: AGREGAR / EDITAR PRODUCTO ============ -->
+<div id="modal-producto" class="hidden-modal fixed inset-0 z-50 items-center justify-center px-4 bg-bg/80 backdrop-blur-sm overflow-y-auto py-8">
+  <div class="w-full max-w-md bg-panel border border-line clip-corner glow-border p-6 relative my-auto">
+    <button data-close-modal-producto class="absolute top-4 right-4 text-mute hover:text-cyan text-sm">✕</button>
+
+    <p id="modal-producto-titulo-eyebrow" class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">PRODUCTO</p>
+    <h3 id="modal-producto-titulo" class="font-display font-bold text-xl mb-5">Agregar producto</h3>
+
+    <form id="form-producto" class="flex flex-col gap-4">
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Nombre</label>
+        <input required id="producto-nombre" type="text" placeholder="Ej: Netflix Premium"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Categoría</label>
+        <select id="producto-categoria" class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+          <option value="streaming">Streaming</option>
+          <option value="seguidores">Seguidores</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Precio (ARS)</label>
+        <input required id="producto-precio" type="number" min="0" step="1" placeholder="3500"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Descripción corta</label>
+        <input id="producto-descripcion" type="text" placeholder="Perfil individual, calidad 4K, 30 días."
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Detalles / características (uno por línea)</label>
+        <textarea id="producto-caracteristicas" rows="3" placeholder="Pantallas simultáneas: 1&#10;Calidad: 4K&#10;Duración: 30 días"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan resize-none"></textarea>
+      </div>
+
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Imagen (URL, opcional)</label>
+        <input id="producto-imagen" type="url" placeholder="https://..."
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <div class="flex items-center gap-6 pt-1">
+        <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+          <input id="producto-visible" type="checkbox" checked class="w-4 h-4 accent-violet" />
+          Visible en la tienda
+        </label>
+        <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+          <input id="producto-stock" type="checkbox" checked class="w-4 h-4 accent-violet" />
+          Con stock
+        </label>
+      </div>
+
+      <p id="producto-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+      <button type="submit" id="btn-guardar-producto"
+        class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+        Guardar
+      </button>
+    </form>
+  </div>
+</div>
+
+</div><!-- /app-admin -->
+
 <script type="module">
   // -----------------------------
   // Firebase — SDK modular v10
@@ -199,7 +373,10 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import {
     getAuth,
+    setPersistence,
+    browserSessionPersistence,
     onAuthStateChanged,
+    signInWithEmailAndPassword,
     signOut
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
   import {
@@ -230,37 +407,98 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
   const pedidosRef = collection(db, "pedidos_nexo");
+  const productosRef = collection(db, "productos");
 
   // -----------------------------
-  // Guard de acceso: requiere sesión + documento en admins/{uid}
+  // Sesión: no se guarda entre visitas.
+  // Con browserSessionPersistence, cerrar la pestaña/navegador
+  // cierra la sesión y la próxima vez pide loguearse de nuevo.
   // -----------------------------
+  let sesionLista = setPersistence(auth, browserSessionPersistence);
+
+  const pantallaLogin = document.getElementById("pantalla-login");
+  const appAdmin = document.getElementById("app-admin");
+  const formLogin = document.getElementById("form-login");
+  const loginEmail = document.getElementById("login-email");
+  const loginPassword = document.getElementById("login-password");
+  const loginStatus = document.getElementById("login-status");
+  const btnLogin = document.getElementById("btn-login");
+
+  let listenersIniciados = false;
+
+  formLogin.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loginStatus.textContent = "";
+    btnLogin.disabled = true;
+    btnLogin.textContent = "Ingresando...";
+    try {
+      await sesionLista;
+      await signInWithEmailAndPassword(auth, loginEmail.value.trim(), loginPassword.value);
+      // onAuthStateChanged se encarga de mostrar el panel si corresponde
+    } catch (err) {
+      console.error(err);
+      loginStatus.textContent = "Email o contraseña incorrectos.";
+    } finally {
+      btnLogin.disabled = false;
+      btnLogin.textContent = "Ingresar";
+    }
+  });
+
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      window.location.href = "index.html";
+      appAdmin.classList.add("hidden-modal");
+      pantallaLogin.classList.remove("hidden-modal");
+      formLogin.reset();
       return;
     }
+
     const adminDocSnap = await getDoc(doc(db, "admins", user.uid));
     if (!adminDocSnap.exists()) {
-      window.location.href = "index.html";
+      loginStatus.textContent = "Esta cuenta no tiene permisos de administrador.";
+      await signOut(auth);
       return;
     }
-    iniciarEscuchaPedidos();
+
+    pantallaLogin.classList.add("hidden-modal");
+    appAdmin.classList.remove("hidden-modal");
+
+    if (!listenersIniciados) {
+      listenersIniciados = true;
+      iniciarEscuchaPedidos();
+      iniciarEscuchaProductos();
+    }
   });
 
   document.getElementById("btn-logout").addEventListener("click", async () => {
     await signOut(auth);
-    window.location.href = "index.html";
   });
 
   // -----------------------------
-  // Estado en memoria + render
+  // Tabs
+  // -----------------------------
+  const tabPedidos = document.getElementById("tab-pedidos");
+  const tabProductos = document.getElementById("tab-productos");
+  const seccionPedidos = document.getElementById("seccion-pedidos");
+  const seccionProductos = document.getElementById("seccion-productos");
+
+  tabPedidos.addEventListener("click", () => {
+    tabPedidos.classList.add("tab-activo");
+    tabProductos.classList.remove("tab-activo");
+    seccionPedidos.classList.remove("hidden-modal");
+    seccionProductos.classList.add("hidden-modal");
+  });
+
+  tabProductos.addEventListener("click", () => {
+    tabProductos.classList.add("tab-activo");
+    tabPedidos.classList.remove("tab-activo");
+    seccionProductos.classList.remove("hidden-modal");
+    seccionPedidos.classList.add("hidden-modal");
+  });
+
+  // -----------------------------
+  // Estado en memoria + render — PEDIDOS
   // -----------------------------
   let pedidosCache = [];
-  const WHATSAPP_LABEL_ESTADO = {
-    espera: "En espera",
-    activo: "Activo",
-    cancelado: "Cancelado"
-  };
 
   const tabla = document.getElementById("tabla-pedidos");
   const tablaVacio = document.getElementById("tabla-vacio");
@@ -448,6 +686,183 @@
     } finally {
       btnGuardarCliente.disabled = false;
       btnGuardarCliente.textContent = "Guardar";
+    }
+  });
+
+  // -----------------------------
+  // Estado en memoria + render — PRODUCTOS
+  // -----------------------------
+  let productosCache = [];
+
+  const tablaProductos = document.getElementById("tabla-productos");
+  const tablaProductosVacio = document.getElementById("tabla-productos-vacio");
+  const tplProducto = document.getElementById("tpl-fila-producto");
+
+  const CATEGORIA_LABEL = {
+    streaming: "Streaming",
+    seguidores: "Seguidores"
+  };
+
+  function iniciarEscuchaProductos() {
+    const q = query(productosRef, orderBy("nombre", "asc"));
+    onSnapshot(q, (snapshot) => {
+      productosCache = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+      renderTablaProductos();
+    });
+  }
+
+  function formatearPrecio(numero) {
+    const n = Number(numero) || 0;
+    return "$" + n.toLocaleString("es-AR");
+  }
+
+  function pintarToggle(btn, activo, textoOn, textoOff) {
+    btn.textContent = activo ? textoOn : textoOff;
+    btn.className = "toggle-btn " + (activo ? "toggle-on" : "toggle-off");
+  }
+
+  function renderTablaProductos() {
+    tablaProductos.innerHTML = "";
+
+    if (productosCache.length === 0) {
+      tablaProductosVacio.classList.remove("hidden-modal");
+    } else {
+      tablaProductosVacio.classList.add("hidden-modal");
+    }
+
+    productosCache.forEach((producto) => {
+      const nodo = tplProducto.content.cloneNode(true);
+
+      nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre || "—";
+      nodo.querySelector('[data-field="categoria"]').textContent = CATEGORIA_LABEL[producto.categoria] || producto.categoria || "—";
+      nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
+
+      const visible = producto.visible !== false; // por defecto visible si no está definido
+      const hayStock = producto.hayStock !== false; // por defecto con stock si no está definido
+
+      const btnVisible = nodo.querySelector('[data-field="btn-visible"]');
+      pintarToggle(btnVisible, visible, "Visible", "Oculto");
+      btnVisible.addEventListener("click", async () => {
+        await updateDoc(doc(db, "productos", producto.id), { visible: !visible });
+      });
+
+      const btnStock = nodo.querySelector('[data-field="btn-stock"]');
+      pintarToggle(btnStock, hayStock, "Con stock", "Sin stock");
+      btnStock.addEventListener("click", async () => {
+        await updateDoc(doc(db, "productos", producto.id), { hayStock: !hayStock });
+      });
+
+      nodo.querySelector('[data-field="btn-editar-producto"]').addEventListener("click", () => {
+        abrirModalProducto(producto);
+      });
+
+      nodo.querySelector('[data-field="btn-eliminar-producto"]').addEventListener("click", async () => {
+        const confirmar = window.confirm(`¿Eliminar "${producto.nombre || "este producto"}"? Esta acción no se puede deshacer.`);
+        if (confirmar) {
+          await deleteDoc(doc(db, "productos", producto.id));
+        }
+      });
+
+      tablaProductos.appendChild(nodo);
+    });
+  }
+
+  document.getElementById("btn-agregar-producto").addEventListener("click", () => abrirModalProducto(null));
+
+  // -----------------------------
+  // Modal agregar / editar producto
+  // -----------------------------
+  const modalProducto = document.getElementById("modal-producto");
+  const formProducto = document.getElementById("form-producto");
+  const productoNombre = document.getElementById("producto-nombre");
+  const productoCategoria = document.getElementById("producto-categoria");
+  const productoPrecio = document.getElementById("producto-precio");
+  const productoDescripcion = document.getElementById("producto-descripcion");
+  const productoCaracteristicas = document.getElementById("producto-caracteristicas");
+  const productoImagen = document.getElementById("producto-imagen");
+  const productoVisible = document.getElementById("producto-visible");
+  const productoStock = document.getElementById("producto-stock");
+  const productoStatus = document.getElementById("producto-status");
+  const modalProductoTitulo = document.getElementById("modal-producto-titulo");
+  const modalProductoEyebrow = document.getElementById("modal-producto-titulo-eyebrow");
+  const btnGuardarProducto = document.getElementById("btn-guardar-producto");
+
+  let productoEnEdicionId = null;
+
+  function abrirModalProducto(producto) {
+    formProducto.reset();
+    productoStatus.textContent = "";
+
+    if (producto) {
+      productoEnEdicionId = producto.id;
+      modalProductoEyebrow.textContent = "EDITAR PRODUCTO";
+      modalProductoTitulo.textContent = "Editar producto";
+      productoNombre.value = producto.nombre || "";
+      productoCategoria.value = producto.categoria || "streaming";
+      productoPrecio.value = producto.precio || "";
+      productoDescripcion.value = producto.descripcion || "";
+      productoCaracteristicas.value = Array.isArray(producto.caracteristicas) ? producto.caracteristicas.join("\n") : "";
+      productoImagen.value = producto.imagen || "";
+      productoVisible.checked = producto.visible !== false;
+      productoStock.checked = producto.hayStock !== false;
+    } else {
+      productoEnEdicionId = null;
+      modalProductoEyebrow.textContent = "NUEVO PRODUCTO";
+      modalProductoTitulo.textContent = "Agregar producto";
+      productoCategoria.value = "streaming";
+      productoVisible.checked = true;
+      productoStock.checked = true;
+    }
+
+    modalProducto.classList.remove("hidden-modal");
+    modalProducto.classList.add("flex");
+  }
+
+  function cerrarModalProducto() {
+    modalProducto.classList.add("hidden-modal");
+    modalProducto.classList.remove("flex");
+  }
+
+  document.querySelectorAll("[data-close-modal-producto]").forEach((btn) => btn.addEventListener("click", cerrarModalProducto));
+  modalProducto.addEventListener("click", (e) => {
+    if (e.target === modalProducto) cerrarModalProducto();
+  });
+
+  formProducto.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const caracteristicas = productoCaracteristicas.value
+      .split("\n")
+      .map((linea) => linea.trim())
+      .filter(Boolean);
+
+    const datos = {
+      nombre: productoNombre.value.trim(),
+      categoria: productoCategoria.value,
+      precio: Number(productoPrecio.value) || 0,
+      descripcion: productoDescripcion.value.trim(),
+      caracteristicas,
+      imagen: productoImagen.value.trim(),
+      visible: productoVisible.checked,
+      hayStock: productoStock.checked
+    };
+
+    btnGuardarProducto.disabled = true;
+    btnGuardarProducto.textContent = "Guardando...";
+
+    try {
+      if (productoEnEdicionId) {
+        await updateDoc(doc(db, "productos", productoEnEdicionId), datos);
+      } else {
+        await addDoc(productosRef, datos);
+      }
+      cerrarModalProducto();
+    } catch (err) {
+      console.error(err);
+      productoStatus.textContent = "No se pudo guardar. Intentá de nuevo.";
+    } finally {
+      btnGuardarProducto.disabled = false;
+      btnGuardarProducto.textContent = "Guardar";
     }
   });
 </script>

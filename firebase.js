@@ -16,6 +16,7 @@ import {
   doc,
   addDoc,
   updateDoc,
+  deleteDoc,
   getDocs,
   query,
   orderBy
@@ -141,6 +142,16 @@ export async function guardarProducto(producto) {
 export async function actualizarProducto(id, campos) {
   const productoDoc = doc(db, "productos", id);
   await updateDoc(productoDoc, campos);
+}
+
+/**
+ * Elimina un producto de la colección 'productos'.
+ * @param {string} id
+ * @returns {Promise<void>}
+ */
+export async function eliminarProducto(id) {
+  const productoDoc = doc(db, "productos", id);
+  await deleteDoc(productoDoc);
 }
 
 // -----------------------------

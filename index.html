@@ -170,8 +170,10 @@
 <template id="tpl-producto">
   <article class="border border-line bg-panel clip-corner p-5 flex flex-col justify-between glow-border transition-shadow">
     <div>
+      <img data-field="imagen" class="hidden-modal w-full h-32 object-cover rounded mb-3 border border-line" />
       <p class="font-display font-semibold text-base text-ink" data-field="nombre"></p>
       <p class="text-xs text-mute mt-1.5 leading-relaxed" data-field="descripcion"></p>
+      <ul data-field="caracteristicas" class="text-[11px] text-mute mt-2 leading-relaxed list-disc list-inside"></ul>
     </div>
     <div class="flex items-center justify-between mt-5">
       <span class="font-display font-bold text-lg text-cyan" data-field="precio"></span>
@@ -191,6 +193,7 @@
     getFirestore,
     collection,
     addDoc,
+    onSnapshot,
     serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -207,47 +210,86 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const pedidosRef = collection(db, "pedidos_nexo");
+  const productosRef = collection(db, "productos");
 
   // -----------------------------
-  // Catálogo
+  // Catálogo — se lee en vivo desde Firestore (colección "productos").
+  // Solo se muestran los productos con visible !== false, y los productos
+  // con hayStock === false se muestran pero sin poder pedirse.
   // -----------------------------
   const WHATSAPP_NEXO = "5492634273255";
 
-  const streaming = [
-    { nombre: "Netflix Premium", descripcion: "Perfil individual, calidad 4K, 30 días.", precio: 3500 },
-    { nombre: "Spotify Premium", descripcion: "Cuenta individual sin anuncios, 30 días.", precio: 2200 },
-    { nombre: "Crunchyroll Premium", descripcion: "Sin publicidad, simulcast al día, 30 días.", precio: 2800 },
-    { nombre: "Disney+ Premium", descripcion: "Perfil individual 4K, 30 días.", precio: 3200 },
-    { nombre: "HBO Max", descripcion: "Perfil individual, catálogo completo, 30 días.", precio: 3000 },
-    { nombre: "YouTube Premium", descripcion: "Sin anuncios + YouTube Music, 30 días.", precio: 2600 }
-  ];
-
-  const seguidores = [
-    { nombre: "500 seguidores IG", descripcion: "Cuentas activas, entrega gradual en 24-48hs.", precio: 1800 },
-    { nombre: "1.000 seguidores IG", descripcion: "Cuentas activas, entrega gradual en 24-48hs.", precio: 3200 },
-    { nombre: "5.000 seguidores IG", descripcion: "Cuentas activas, entrega gradual en 3-5 días.", precio: 12500 }
-  ];
-
   function formatearPrecio(numero) {
-    return "$" + numero.toLocaleString("es-AR");
+    const n = Number(numero) || 0;
+    return "$" + n.toLocaleString("es-AR");
   }
 
   function renderCatalogo(lista, contenedorId) {
     const contenedor = document.getElementById(contenedorId);
     const tpl = document.getElementById("tpl-producto");
+    contenedor.innerHTML = "";
+
+    if (lista.length === 0) {
+      const vacio = document.createElement("p");
+      vacio.className = "text-mute text-xs col-span-full";
+      vacio.textContent = "Sin productos disponibles por el momento.";
+      contenedor.appendChild(vacio);
+      return;
+    }
 
     lista.forEach((producto) => {
       const nodo = tpl.content.cloneNode(true);
+
+      const imagenEl = nodo.querySelector('[data-field="imagen"]');
+      if (producto.imagen) {
+        imagenEl.src = producto.imagen;
+        imagenEl.alt = producto.nombre || "";
+        imagenEl.classList.remove("hidden-modal");
+      }
+
       nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre;
-      nodo.querySelector('[data-field="descripcion"]').textContent = producto.descripcion;
+      nodo.querySelector('[data-field="descripcion"]').textContent = producto.descripcion || "";
+
+      const listaCaracteristicas = nodo.querySelector('[data-field="caracteristicas"]');
+      if (Array.isArray(producto.caracteristicas) && producto.caracteristicas.length > 0) {
+        producto.caracteristicas.forEach((item) => {
+          const li = document.createElement("li");
+          li.textContent = item;
+          listaCaracteristicas.appendChild(li);
+        });
+      }
+
       nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
-      nodo.querySelector('[data-field="btn"]').addEventListener("click", () => abrirModalPedido(producto));
+
+      const btn = nodo.querySelector('[data-field="btn"]');
+      const hayStock = producto.hayStock !== false;
+      if (hayStock) {
+        btn.addEventListener("click", () => abrirModalPedido(producto));
+      } else {
+        btn.textContent = "Sin stock";
+        btn.disabled = true;
+        btn.className = "text-xs font-semibold px-3.5 py-2 border border-line text-mute cursor-not-allowed opacity-60";
+      }
+
       contenedor.appendChild(nodo);
     });
   }
 
-  renderCatalogo(streaming, "grid-streaming");
-  renderCatalogo(seguidores, "grid-seguidores");
+  function iniciarEscuchaCatalogo() {
+    onSnapshot(productosRef, (snapshot) => {
+      const productos = snapshot.docs
+        .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
+        .filter((producto) => producto.visible !== false);
+
+      const streaming = productos.filter((p) => p.categoria === "streaming");
+      const seguidores = productos.filter((p) => p.categoria === "seguidores");
+
+      renderCatalogo(streaming, "grid-streaming");
+      renderCatalogo(seguidores, "grid-seguidores");
+    });
+  }
+
+  iniciarEscuchaCatalogo();
 
   // -----------------------------
   // Modal de pedido rápido
