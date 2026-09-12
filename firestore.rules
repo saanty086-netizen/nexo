@@ -2,18 +2,15 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // true solo si el usuario logueado tiene un documento en /admins/{su uid}
+    // Lista de emails autorizados como admin.
+    // Para agregar otro admin, sumá su email acá (todo en minúsculas).
     function esAdmin() {
       return request.auth != null &&
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
-    }
-
-    // Cada usuario solo puede leer SU PROPIO documento de admin
-    // (así el panel puede chequear "¿soy admin?"). Nadie puede escribir acá
-    // desde el cliente: esos documentos se crean a mano en la consola.
-    match /admins/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      allow write: if false;
+        request.auth.token.email != null &&
+        request.auth.token.email in [
+          'saanty086@gmail.com'
+          // , 'otro-admin@gmail.com'
+        ];
     }
 
     // El catálogo lo tiene que poder LEER cualquiera (es la tienda pública),
