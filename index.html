@@ -87,14 +87,14 @@
   <!-- ============ TOPBAR fijo (mobile) ============ -->
   <header class="md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-between px-4 py-3 bg-[#08050f]/90 backdrop-blur border-b border-line">
     <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-full border-2 border-violet flex items-center justify-center shrink-0">
-        <span class="font-display font-bold text-cyan text-xs">N</span>
+      <div class="w-9 h-9 rounded-full border-2 border-violet flex items-center justify-center shrink-0">
+        <span class="font-display font-bold text-cyan text-sm">N</span>
       </div>
-      <span class="font-display font-bold text-sm tracking-wide">NEXO STORE</span>
+      <span class="font-display font-bold text-base tracking-wide">NEXO STORE</span>
     </div>
     <a href="admin.html" aria-label="Acceso interno"
-      class="w-9 h-9 flex items-center justify-center rounded-full border border-line text-mute hover:text-cyan hover:border-cyan transition-colors">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-4 h-4">
+      class="w-10 h-10 flex items-center justify-center rounded-full border border-line text-mute hover:text-cyan hover:border-cyan transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-5 h-5">
         <circle cx="12" cy="8" r="3.2" />
         <path d="M4.5 20c1.2-3.4 4-5.2 7.5-5.2s6.3 1.8 7.5 5.2" stroke-linecap="round" />
       </svg>
@@ -106,7 +106,7 @@
 
     <!-- Tira de plataformas — scroll táctil, tipo app -->
     <div class="md:hidden pt-14 sticky top-14 z-30 bg-[#08050f]/90 backdrop-blur border-b border-line">
-      <div id="chips-plataforma" class="flex overflow-x-auto gap-2.5 py-3 px-4 scrollbar-none snap-x">
+      <div id="chips-plataforma" class="flex overflow-x-auto gap-3 py-3.5 px-4 scrollbar-none snap-x">
         <!-- Se completa por JS -->
       </div>
     </div>
@@ -116,11 +116,11 @@
       <!-- Hero -->
       <section id="inicio" class="mb-10 md:mb-16 px-2 md:px-0">
         <p class="text-cyan text-xs tracking-[0.25em] font-semibold mb-3">CATÁLOGO NEXO</p>
-        <h1 class="font-display font-bold text-3xl md:text-6xl leading-[1.05] tracking-tight">
+        <h1 class="font-display font-bold text-4xl md:text-6xl leading-[1.05] tracking-tight">
           Streaming y seguidores,<br class="hidden md:block" />
           <span class="text-violet2">sin esperar hasta mañana.</span>
         </h1>
-        <p class="text-mute mt-5 max-w-md text-sm leading-relaxed">
+        <p class="text-mute mt-5 max-w-md text-sm md:text-sm leading-relaxed">
           Elegís el servicio, mandás el pedido por WhatsApp y coordinamos el pago. Activación apenas se confirma.
         </p>
       </section>
@@ -128,19 +128,19 @@
       <!-- Streaming -->
       <section id="streaming" class="mb-10 md:mb-16">
         <div class="flex items-baseline justify-between mb-4 px-2 md:px-0">
-          <h2 class="font-display font-semibold text-lg md:text-xl text-violet2">Streaming</h2>
-          <span class="text-[11px] text-mute">Cuentas y perfiles, 30 días</span>
+          <h2 class="font-display font-semibold text-xl text-violet2">Streaming</h2>
+          <span class="text-xs text-mute">Cuentas y perfiles, 30 días</span>
         </div>
-        <div id="grid-streaming" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 px-2 md:px-0"></div>
+        <div id="grid-streaming" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 md:gap-4 px-2 md:px-0"></div>
       </section>
 
       <!-- Seguidores -->
       <section id="seguidores" class="mb-10">
         <div class="flex items-baseline justify-between mb-4 px-2 md:px-0">
-          <h2 class="font-display font-semibold text-lg md:text-xl text-violet2">Seguidores Instagram</h2>
-          <span class="text-[11px] text-mute">Entrega gradual, cuentas activas</span>
+          <h2 class="font-display font-semibold text-xl text-violet2">Seguidores Instagram</h2>
+          <span class="text-xs text-mute">Entrega gradual, cuentas activas</span>
         </div>
-        <div id="grid-seguidores" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 px-2 md:px-0"></div>
+        <div id="grid-seguidores" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 md:gap-4 px-2 md:px-0"></div>
       </section>
 
     </div>
@@ -192,16 +192,16 @@
           <span class="font-display font-bold text-cyan text-sm">N</span>
         </div>
       </div>
-      <div data-field="badge-stock" class="hidden-modal absolute top-1.5 left-1.5 bg-bad/90 text-white text-[9px] font-display font-bold tracking-wide px-2 py-1 clip-corner">
+      <div data-field="badge-stock" class="hidden-modal absolute top-2 left-2 bg-bad/90 text-white text-[10px] font-display font-bold tracking-wide px-2.5 py-1.5 clip-corner">
         SIN EXISTENCIAS
       </div>
     </div>
-    <div class="p-2.5 md:p-3.5 flex flex-col flex-1">
-      <p class="font-display font-semibold text-[13px] md:text-base text-ink leading-snug line-clamp-2" data-field="nombre"></p>
-      <p class="text-[11px] text-mute mt-1 leading-relaxed line-clamp-2 hidden md:block" data-field="descripcion"></p>
-      <div class="flex items-center justify-between mt-2.5 md:mt-4 gap-2">
-        <span class="font-display font-bold text-sm md:text-lg text-cyan whitespace-nowrap" data-field="precio"></span>
-        <button data-field="btn" class="text-[11px] md:text-xs font-semibold px-2.5 md:px-3.5 py-1.5 md:py-2 border border-violet text-violet2 hover:bg-violet hover:text-bg transition-colors whitespace-nowrap">
+    <div class="p-3 md:p-3.5 flex flex-col flex-1">
+      <p class="font-display font-semibold text-[15px] md:text-base text-ink leading-snug line-clamp-2" data-field="nombre"></p>
+      <p class="text-xs text-mute mt-1 leading-relaxed line-clamp-2 hidden md:block" data-field="descripcion"></p>
+      <div class="flex items-center justify-between mt-3 md:mt-4 gap-2">
+        <span class="font-display font-bold text-base md:text-lg text-cyan whitespace-nowrap" data-field="precio"></span>
+        <button data-field="btn" class="text-xs font-semibold px-3 md:px-3.5 py-2 border border-violet text-violet2 hover:bg-violet hover:text-bg transition-colors whitespace-nowrap">
           Pedir
         </button>
       </div>
@@ -271,14 +271,14 @@
     chip.type = "button";
     chip.dataset.filtro = plataforma.id;
     chip.className =
-      "chip shrink-0 flex items-center gap-1.5 border border-line bg-panel2 text-[11px] font-semibold text-mute px-3 py-2 rounded-full whitespace-nowrap transition-colors" +
+      "chip shrink-0 flex items-center gap-2 border border-line bg-panel2 text-xs md:text-[11px] font-semibold text-mute px-3.5 py-2.5 rounded-full whitespace-nowrap transition-colors" +
       (plataforma.id === "todos" ? " chip-activo" : "");
 
     if (plataforma.icono) {
       const icono = document.createElement("img");
       icono.src = plataforma.icono;
       icono.alt = "";
-      icono.className = "w-4 h-4 rounded-full object-cover";
+      icono.className = "w-7 h-7 rounded-full object-cover shrink-0";
       icono.onerror = () => icono.remove();
       chip.appendChild(icono);
     }
@@ -345,7 +345,7 @@
 
     if (listaFiltrada.length === 0) {
       const vacio = document.createElement("p");
-      vacio.className = "text-mute text-xs col-span-full";
+      vacio.className = "text-mute text-sm col-span-full";
       vacio.textContent =
         lista.length === 0
           ? "Sin productos disponibles por el momento."
@@ -373,7 +373,7 @@
         badgeStock.classList.remove("hidden-modal");
         btn.textContent = "Sin stock";
         btn.disabled = true;
-        btn.className = "text-[11px] md:text-xs font-semibold px-2.5 md:px-3.5 py-1.5 md:py-2 border border-line text-mute cursor-not-allowed opacity-60 whitespace-nowrap";
+        btn.className = "text-xs font-semibold px-3 md:px-3.5 py-2 border border-line text-mute cursor-not-allowed opacity-60 whitespace-nowrap";
       }
 
       contenedor.appendChild(nodo);
