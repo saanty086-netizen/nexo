@@ -182,11 +182,6 @@
         <input required id="input-nombre" type="text" placeholder="Como te llamás"
           class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
       </div>
-      <div>
-        <label class="text-xs text-mute block mb-1.5">Número de WhatsApp</label>
-        <input required id="input-telefono" type="tel" placeholder="+549 261 xxxxxxx"
-          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-      </div>
 
       <div id="campo-enlace-perfil" class="hidden-modal">
         <label class="text-xs text-mute block mb-1.5">Enlace de tu perfil de Instagram</label>
@@ -458,7 +453,6 @@
   const resumenPrecio = document.getElementById("resumen-precio");
   const formPedido = document.getElementById("form-pedido");
   const inputNombre = document.getElementById("input-nombre");
-  const inputTelefono = document.getElementById("input-telefono");
   const campoEnlacePerfil = document.getElementById("campo-enlace-perfil");
   const inputEnlacePerfil = document.getElementById("input-enlace-perfil");
   const pedidoStatus = document.getElementById("pedido-status");
@@ -549,7 +543,6 @@
     if (!productoSeleccionado) return;
 
     const nombre = inputNombre.value.trim();
-    const telefono = inputTelefono.value.trim();
     const esSeguidores = productoSeleccionado.categoria === "seguidores";
     const enlacePerfil = esSeguidores ? inputEnlacePerfil.value.trim() : "";
 
@@ -560,7 +553,7 @@
     try {
       const datosPedido = {
         nombre,
-        telefono,
+        telefono: "",
         servicio: productoSeleccionado.nombre,
         precio: productoSeleccionado.precio,
         estado: "espera",
@@ -573,7 +566,7 @@
 
       let mensaje =
         `Hola NEXO! Quiero encargar ${productoSeleccionado.nombre} por ${formatearPrecio(productoSeleccionado.precio)}. ` +
-        `Mi nombre es ${nombre} y mi WhatsApp es ${telefono}.`;
+        `Mi nombre es ${nombre}.`;
       if (esSeguidores) {
         mensaje += ` Mi perfil de Instagram (público) es: ${enlacePerfil}`;
       }

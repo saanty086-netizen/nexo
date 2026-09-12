@@ -362,7 +362,7 @@
       </div>
       <div>
         <label class="text-xs text-mute block mb-1.5">Número de WhatsApp</label>
-        <input required id="cliente-telefono" type="tel" placeholder="+549 261 xxxxxxx"
+        <input id="cliente-telefono" type="tel" placeholder="+549 261 xxxxxxx"
           class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
       </div>
       <div>
@@ -834,11 +834,18 @@
         await updateDoc(doc(db, "pedidos_nexo", pedido.id), { pagado: !pedido.pagado });
       });
 
-      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", () => {
-        const mensaje = `Hola ${pedido.nombre || ""}! Te escribimos por tu pedido de ${pedido.servicio || "tu servicio"} en NEXO.`;
-        const telefonoLimpio = (pedido.telefono || "").replace(/[^0-9]/g, "");
-        window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
-      });
+      const btnChat = nodo.querySelector('[data-field="btn-chat"]');
+      if (!pedido.telefono) {
+        btnChat.disabled = true;
+        btnChat.title = "Cargá el teléfono en Editar para poder escribirle";
+        btnChat.className = "text-[11px] text-mute border border-line px-2.5 py-1.5 opacity-50 cursor-not-allowed";
+      } else {
+        btnChat.addEventListener("click", () => {
+          const mensaje = `Hola ${pedido.nombre || ""}! Te escribimos por tu pedido de ${pedido.servicio || "tu servicio"} en NEXO.`;
+          const telefonoLimpio = pedido.telefono.replace(/[^0-9]/g, "");
+          window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
+        });
+      }
 
       nodo.querySelector('[data-field="btn-editar"]').addEventListener("click", () => {
         abrirModalCliente(pedido);
