@@ -25,12 +25,12 @@ import {
 // Configuración de Firebase
 // -----------------------------
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_AUTH_DOMAIN",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_STORAGE_BUCKET",
-  messagingSenderId: "TU_MESSAGING_SENDER_ID",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyD16l3a-H3llIYRK_7La-3IUiCIM7uRi3k",
+  authDomain: "nexo-aeb5a.firebaseapp.com",
+  projectId: "nexo-aeb5a",
+  storageBucket: "nexo-aeb5a.firebasestorage.app",
+  messagingSenderId: "553737684793",
+  appId: "1:553737684793:web:0267a5bbfbc2c0c575cae8"
 };
 
 // -----------------------------
