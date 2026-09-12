@@ -452,9 +452,20 @@
       return;
     }
 
-    const adminDocSnap = await getDoc(doc(db, "admins", user.uid));
+    let adminDocSnap;
+    try {
+      adminDocSnap = await getDoc(doc(db, "admins", user.uid));
+    } catch (err) {
+      console.error("Error chequeando admins/{uid}:", err);
+      loginStatus.textContent =
+        "No se pudo verificar el permiso de admin (revisá las reglas de Firestore). UID: " + user.uid;
+      await signOut(auth);
+      return;
+    }
+
     if (!adminDocSnap.exists()) {
-      loginStatus.textContent = "Esta cuenta no tiene permisos de administrador.";
+      loginStatus.textContent =
+        "Esta cuenta no tiene permisos de administrador (falta el documento admins/" + user.uid + ").";
       await signOut(auth);
       return;
     }
