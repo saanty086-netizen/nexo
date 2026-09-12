@@ -27,6 +27,7 @@ import {
 const firebaseConfig = {
   apiKey: "AIzaSyD16l3a-H3llIYRK_7La-3IUiCIM7uRi3k",
   authDomain: "nexo-aeb5a.firebaseapp.com",
+  databaseURL: "https://nexo-aeb5a-default-rtdb.firebaseio.com",
   projectId: "nexo-aeb5a",
   storageBucket: "nexo-aeb5a.firebasestorage.app",
   messagingSenderId: "553737684793",
