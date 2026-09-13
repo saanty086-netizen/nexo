@@ -22,8 +22,7 @@
           cyan: '#4ff2ff',
           ink: '#ece6fa',
           mute: '#8b80ab',
-          bad: '#ff5f7e',
-          warn: '#ffb84f'
+          bad: '#ff5f7e'
         },
         fontFamily: {
           display: ['"Chakra Petch"', 'sans-serif'],
@@ -33,7 +32,115 @@
     }
   };
 </script>
-<link rel="stylesheet" href="style.css?v=5" />
+<style>
+  body { background-color: #08050f; }
+  .glow-border { box-shadow: 0 0 0 1px rgba(145,70,255,0.25), 0 0 24px -8px rgba(79,242,255,0.15); }
+  .glow-border:hover { box-shadow: 0 0 0 1px rgba(79,242,255,0.5), 0 0 30px -6px rgba(145,70,255,0.4); }
+  .glass { background: rgba(15,10,28,0.55); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+
+  /* ============ gem-card: corte de diamante, como settingstore/1 ============ */
+  .gem-card {
+    position: relative;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+    border-radius: 4px;
+    transition: box-shadow .3s ease, border-color .3s ease, transform .2s ease;
+  }
+  .gem-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+    background: linear-gradient(135deg, rgba(79,242,255,.55), rgba(145,70,255,0) 40%, rgba(145,70,255,0) 60%, rgba(145,70,255,.5));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .pack-card__media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: radial-gradient(80% 80% at 50% 30%, rgba(145,70,255,0.14), transparent 70%), #150e28;
+  }
+  .pack-card__media img { width: 100%; height: 100%; object-fit: cover; }
+  .pack-card__body { padding: 14px 14px 16px; display: flex; flex-direction: column; flex: 1; }
+  .pack-card__title {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    line-height: 1.2;
+    font-size: 1.02rem;
+    color: #ece6fa;
+    margin: 0 0 6px;
+  }
+  .pack-card__detail { font-size: 0.78rem; color: #8b80ab; margin: 0 0 10px; }
+  .pack-card__price-row { margin-bottom: 12px; margin-top: auto; }
+  .pack-card__price { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1.15rem; color: #4ff2ff; }
+  .pack-card__buy {
+    width: 100%;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 10px 14px;
+    border: 1px solid #9146ff;
+    color: #c9a3ff;
+    background: transparent;
+    transition: background-color .15s ease, color .15s ease;
+  }
+  .pack-card__buy:hover:not(:disabled) { background: #9146ff; color: #08050f; }
+  .pack-card__buy:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #241a3d;
+    color: #8b80ab;
+  }
+  .stock-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 2;
+    background: rgba(15,10,28,0.92);
+    color: #ff5f7e;
+    border: 1px solid rgba(255,95,126,0.5);
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 999px;
+  }
+  .pack-card--oos .pack-card__media { filter: grayscale(0.5) brightness(0.65); }
+
+  @media (max-width: 639px) {
+    .pack-card__body { padding: 10px 10px 12px; }
+    .pack-card__title { font-size: 0.92rem; margin-bottom: 4px; }
+    .pack-card__detail { font-size: 0.7rem; margin-bottom: 8px; }
+    .pack-card__price { font-size: 1rem; }
+    .pack-card__buy { padding: 9px 10px; font-size: 0.74rem; }
+    .stock-badge { font-size: 8px; padding: 3px 7px; }
+  }
+  .grid-veins {
+    background-image:
+      linear-gradient(rgba(145,70,255,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(145,70,255,0.06) 1px, transparent 1px);
+    background-size: 42px 42px;
+  }
+  .clip-corner {
+    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  }
+  .hidden-modal { display: none !important; }
+  ::selection { background: #9146ff; color: #08050f; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: #08050f; }
+  ::-webkit-scrollbar-thumb { background: #241a3d; border-radius: 4px; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  .chip { scroll-snap-align: start; }
+  .chip.chip-activo { background: linear-gradient(to right, #9146ff, #4ff2ff); color: #08050f; border-color: transparent; }
+</style>
 </head>
 <body class="font-mono text-ink min-h-screen">
 
@@ -66,14 +173,14 @@
   <!-- ============ TOPBAR fijo (mobile) ============ -->
   <header class="md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-between px-4 py-3 bg-[#08050f]/90 backdrop-blur border-b border-line">
     <div class="flex items-center gap-2">
-      <div class="w-9 h-9 rounded-full border-2 border-violet flex items-center justify-center shrink-0">
-        <span class="font-display font-bold text-cyan text-sm">N</span>
+      <div class="w-8 h-8 rounded-full border-2 border-violet flex items-center justify-center shrink-0">
+        <span class="font-display font-bold text-cyan text-xs">N</span>
       </div>
-      <span class="font-display font-bold text-base tracking-wide">NEXO STORE</span>
+      <span class="font-display font-bold text-sm tracking-wide">NEXO STORE</span>
     </div>
     <a href="admin.html" aria-label="Acceso interno"
-      class="w-10 h-10 flex items-center justify-center rounded-full border border-line text-mute hover:text-cyan hover:border-cyan transition-colors">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-5 h-5">
+      class="w-9 h-9 flex items-center justify-center rounded-full border border-line text-mute hover:text-cyan hover:border-cyan transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-4 h-4">
         <circle cx="12" cy="8" r="3.2" />
         <path d="M4.5 20c1.2-3.4 4-5.2 7.5-5.2s6.3 1.8 7.5 5.2" stroke-linecap="round" />
       </svg>
@@ -85,7 +192,7 @@
 
     <!-- Tira de plataformas — scroll táctil, tipo app -->
     <div class="md:hidden pt-14 sticky top-14 z-30 bg-[#08050f]/90 backdrop-blur border-b border-line">
-      <div id="chips-plataforma" class="flex overflow-x-auto gap-3 py-3.5 px-4 scrollbar-none snap-x">
+      <div id="chips-plataforma" class="flex overflow-x-auto gap-2.5 py-3 px-4 scrollbar-none snap-x">
         <!-- Se completa por JS -->
       </div>
     </div>
@@ -95,11 +202,11 @@
       <!-- Hero -->
       <section id="inicio" class="mb-10 md:mb-16 px-2 md:px-0">
         <p class="text-cyan text-xs tracking-[0.25em] font-semibold mb-3">CATÁLOGO NEXO</p>
-        <h1 class="font-display font-bold text-4xl md:text-6xl leading-[1.05] tracking-tight">
+        <h1 class="font-display font-bold text-3xl md:text-6xl leading-[1.05] tracking-tight">
           Streaming y seguidores,<br class="hidden md:block" />
           <span class="text-violet2">sin esperar hasta mañana.</span>
         </h1>
-        <p class="text-mute mt-5 max-w-md text-sm md:text-sm leading-relaxed">
+        <p class="text-mute mt-5 max-w-md text-sm leading-relaxed">
           Elegís el servicio, mandás el pedido por WhatsApp y coordinamos el pago. Activación apenas se confirma.
         </p>
       </section>
@@ -107,34 +214,19 @@
       <!-- Streaming -->
       <section id="streaming" class="mb-10 md:mb-16">
         <div class="flex items-baseline justify-between mb-4 px-2 md:px-0">
-          <h2 class="font-display font-semibold text-xl text-violet2">Streaming</h2>
-          <span class="text-xs text-mute">Cuentas y perfiles, 30 días</span>
+          <h2 class="font-display font-semibold text-lg md:text-xl text-violet2">Streaming</h2>
+          <span class="text-[11px] text-mute">Cuentas y perfiles, 30 días</span>
         </div>
-        <div id="grid-streaming" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 md:gap-4 px-2 md:px-0"></div>
+        <div id="grid-streaming" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 px-2 md:px-0"></div>
       </section>
 
       <!-- Seguidores -->
-      <section id="seguidores" class="mb-10 px-2 md:px-0">
-        <div class="flex items-baseline justify-between mb-4">
-          <h2 class="font-display font-semibold text-xl text-violet2">Seguidores Instagram</h2>
-          <span class="text-xs text-mute">Entrega gradual, cuentas activas</span>
+      <section id="seguidores" class="mb-10">
+        <div class="flex items-baseline justify-between mb-4 px-2 md:px-0">
+          <h2 class="font-display font-semibold text-lg md:text-xl text-violet2">Seguidores Instagram</h2>
+          <span class="text-[11px] text-mute">Entrega gradual, cuentas activas</span>
         </div>
-
-        <article class="border border-line bg-panel clip-corner glow-border p-5 md:p-7 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-          <div>
-            <p class="font-display font-bold text-lg md:text-xl text-ink">Elegí cuántos seguidores querés</p>
-            <p class="text-sm text-mute mt-1.5 max-w-md leading-relaxed">
-              Varios planes disponibles, desde paquetes chicos hasta grandes. Elegís el que te sirve y coordinamos por WhatsApp.
-            </p>
-            <p class="text-xs text-warn mt-3 max-w-md leading-relaxed">
-              ⚠ La cuenta tiene que estar <strong>pública</strong> y vas a tener que mandarnos el <strong>enlace de tu perfil</strong> de Instagram.
-            </p>
-          </div>
-          <button id="btn-ver-planes-seguidores"
-            class="shrink-0 bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm px-6 py-3 hover:opacity-90 transition-opacity whitespace-nowrap">
-            Ver planes
-          </button>
-        </article>
+        <div id="grid-seguidores" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 px-2 md:px-0"></div>
       </section>
 
     </div>
@@ -160,12 +252,10 @@
         <input required id="input-nombre" type="text" placeholder="Como te llamás"
           class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
       </div>
-
-      <div id="campo-enlace-perfil" class="hidden-modal">
-        <label class="text-xs text-mute block mb-1.5">Enlace de tu perfil de Instagram</label>
-        <input id="input-enlace-perfil" type="url" placeholder="https://instagram.com/tu_usuario"
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Número de WhatsApp</label>
+        <input required id="input-telefono" type="tel" placeholder="+549 261 xxxxxxx"
           class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-        <p class="text-[11px] text-warn mt-1.5">⚠ La cuenta tiene que estar pública para poder cargar los seguidores.</p>
       </div>
 
       <p id="pedido-status" class="text-xs text-mute min-h-[1rem]"></p>
@@ -178,43 +268,20 @@
   </div>
 </div>
 
-<!-- ============ MODAL: ELEGÍ UN PLAN (seguidores) ============ -->
-<div id="modal-planes-seguidores" class="hidden-modal fixed inset-0 z-50 items-center justify-center px-4 bg-bg/80 backdrop-blur-sm">
-  <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6 relative max-h-[85vh] overflow-y-auto">
-    <button data-close-modal-planes class="absolute top-4 right-4 text-mute hover:text-cyan text-sm">✕</button>
-    <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">SEGUIDORES INSTAGRAM</p>
-    <h3 class="font-display font-bold text-xl mb-2">Elegí un plan</h3>
-    <p class="text-xs text-warn mb-5 leading-relaxed">
-      ⚠ La cuenta debe estar <strong>pública</strong>. Al confirmar te vamos a pedir el <strong>enlace de tu perfil</strong>.
-    </p>
-    <div id="lista-planes-seguidores" class="flex flex-col gap-2.5"></div>
-    <p id="planes-seguidores-vacio" class="hidden-modal text-mute text-sm">Sin planes disponibles por el momento.</p>
-  </div>
-</div>
-
-<!-- ============ TEMPLATE: FILA DE PLAN (seguidores) ============ -->
-<template id="tpl-plan-seguidores">
-  <button data-field="fila" class="w-full flex items-center justify-between gap-3 border border-line bg-panel2 clip-corner px-4 py-3.5 text-left hover:border-cyan transition-colors disabled:opacity-40 disabled:hover:border-line disabled:cursor-not-allowed">
-    <div class="min-w-0">
-      <p class="font-display font-semibold text-sm text-ink" data-field="nombre"></p>
-      <p class="text-[11px] text-mute mt-0.5" data-field="descripcion"></p>
-    </div>
-    <span class="font-display font-bold text-cyan text-base whitespace-nowrap" data-field="precio"></span>
-  </button>
-</template>
-
-<!-- ============ TEMPLATE: TARJETA DE PRODUCTO (compacta, tipo app) ============ -->
+<!-- ============ TEMPLATE: TARJETA DE PRODUCTO (gem-card, base settingstore/1) ============ -->
 <template id="tpl-producto">
-  <article class="pack-card">
+  <article class="gem-card pack-card glass glow-border relative" data-field="card">
+    <div data-field="badge-stock" class="hidden-modal stock-badge">SIN EXISTENCIAS</div>
     <div class="pack-card__media" data-field="imagen-wrap">
-      <img data-field="imagen" class="hidden-modal" />
-      <div data-field="imagen-fallback" class="pack-card__fallback">
-        <span>N</span>
+      <img data-field="imagen" class="hidden-modal absolute inset-0 w-full h-full object-cover" />
+      <div data-field="imagen-fallback" class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-violet/25 via-panel2 to-cyan/10">
+        <div class="w-10 h-10 rounded-full border-2 border-violet/70 flex items-center justify-center">
+          <span class="font-display font-bold text-cyan text-sm">N</span>
+        </div>
       </div>
-      <div data-field="badge-stock" class="hidden-modal pack-card__stock-badge">SIN EXISTENCIAS</div>
     </div>
     <div class="pack-card__body">
-      <p class="pack-card__title" data-field="nombre"></p>
+      <h3 class="pack-card__title" data-field="nombre"></h3>
       <p class="pack-card__detail" data-field="descripcion"></p>
       <div class="pack-card__price-row">
         <span class="pack-card__price" data-field="precio"></span>
@@ -286,14 +353,14 @@
     chip.type = "button";
     chip.dataset.filtro = plataforma.id;
     chip.className =
-      "chip shrink-0 flex items-center gap-2 border border-line bg-panel2 text-xs md:text-[11px] font-semibold text-mute px-3.5 py-2.5 rounded-full whitespace-nowrap transition-colors" +
+      "chip shrink-0 flex items-center gap-1.5 border border-line bg-panel2 text-[11px] font-semibold text-mute px-3 py-2 rounded-full whitespace-nowrap transition-colors" +
       (plataforma.id === "todos" ? " chip-activo" : "");
 
     if (plataforma.icono) {
       const icono = document.createElement("img");
       icono.src = plataforma.icono;
       icono.alt = "";
-      icono.className = "w-7 h-7 rounded-full object-cover shrink-0";
+      icono.className = "w-4 h-4 rounded-full object-cover";
       icono.onerror = () => icono.remove();
       chip.appendChild(icono);
     }
@@ -303,10 +370,6 @@
     chip.appendChild(texto);
 
     chip.addEventListener("click", () => {
-      if (plataforma.id === "seguidores") {
-        abrirModalPlanes();
-        return;
-      }
       filtroActivo = plataforma.id;
       document.querySelectorAll(".chip").forEach((c) => c.classList.remove("chip-activo"));
       chip.classList.add("chip-activo");
@@ -364,7 +427,7 @@
 
     if (listaFiltrada.length === 0) {
       const vacio = document.createElement("p");
-      vacio.className = "grid-empty-msg";
+      vacio.className = "text-mute text-xs col-span-full";
       vacio.textContent =
         lista.length === 0
           ? "Sin productos disponibles por el momento."
@@ -384,16 +447,16 @@
 
       const btn = nodo.querySelector('[data-field="btn"]');
       const badgeStock = nodo.querySelector('[data-field="badge-stock"]');
-      const article = nodo.querySelector(".pack-card");
+      const cardEl = nodo.querySelector('[data-field="card"]');
       const hayStock = producto.hayStock !== false;
 
       if (hayStock) {
         btn.addEventListener("click", () => abrirModalPedido(producto));
       } else {
         badgeStock.classList.remove("hidden-modal");
+        cardEl.classList.add("pack-card--oos");
         btn.textContent = "Sin stock";
         btn.disabled = true;
-        article.classList.add("pack-card--oos");
       }
 
       contenedor.appendChild(nodo);
@@ -402,8 +465,9 @@
 
   function aplicarFiltroYRenderizar() {
     const streaming = productosCache.filter((p) => p.categoria === "streaming");
+    const seguidores = productosCache.filter((p) => p.categoria === "seguidores");
     renderCatalogo(streaming, "grid-streaming");
-    renderPlanesSeguidores();
+    renderCatalogo(seguidores, "grid-seguidores");
   }
 
   function iniciarEscuchaCatalogo() {
@@ -426,8 +490,7 @@
   const resumenPrecio = document.getElementById("resumen-precio");
   const formPedido = document.getElementById("form-pedido");
   const inputNombre = document.getElementById("input-nombre");
-  const campoEnlacePerfil = document.getElementById("campo-enlace-perfil");
-  const inputEnlacePerfil = document.getElementById("input-enlace-perfil");
+  const inputTelefono = document.getElementById("input-telefono");
   const pedidoStatus = document.getElementById("pedido-status");
   const btnConfirmar = document.getElementById("btn-confirmar");
 
@@ -439,11 +502,6 @@
     resumenPrecio.textContent = formatearPrecio(producto.precio);
     pedidoStatus.textContent = "";
     formPedido.reset();
-
-    const esSeguidores = producto.categoria === "seguidores";
-    campoEnlacePerfil.classList.toggle("hidden-modal", !esSeguidores);
-    inputEnlacePerfil.required = esSeguidores;
-
     modal.classList.remove("hidden-modal");
     modal.classList.add("flex");
   }
@@ -460,89 +518,31 @@
     if (e.target === modal) cerrarModalPedido();
   });
 
-  // -----------------------------
-  // Modal "Elegí un plan" — seguidores Instagram
-  // -----------------------------
-  const modalPlanes = document.getElementById("modal-planes-seguidores");
-  const listaPlanes = document.getElementById("lista-planes-seguidores");
-  const planesVacio = document.getElementById("planes-seguidores-vacio");
-  const tplPlan = document.getElementById("tpl-plan-seguidores");
-
-  function renderPlanesSeguidores() {
-    const planes = productosCache.filter((p) => p.categoria === "seguidores");
-    listaPlanes.innerHTML = "";
-    planesVacio.classList.toggle("hidden-modal", planes.length > 0);
-
-    planes.forEach((plan) => {
-      const nodo = tplPlan.content.cloneNode(true);
-      const fila = nodo.querySelector('[data-field="fila"]');
-      nodo.querySelector('[data-field="nombre"]').textContent = plan.nombre;
-      nodo.querySelector('[data-field="descripcion"]').textContent =
-        (plan.caracteristicas && plan.caracteristicas.length) ? plan.caracteristicas.join(" · ") : (plan.descripcion || "");
-      nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(plan.precio);
-
-      if (plan.hayStock === false) {
-        fila.disabled = true;
-        nodo.querySelector('[data-field="precio"]').textContent = "Sin stock";
-      } else {
-        fila.addEventListener("click", () => {
-          cerrarModalPlanes();
-          abrirModalPedido(plan);
-        });
-      }
-
-      listaPlanes.appendChild(nodo);
-    });
-  }
-
-  function abrirModalPlanes() {
-    renderPlanesSeguidores();
-    modalPlanes.classList.remove("hidden-modal");
-    modalPlanes.classList.add("flex");
-  }
-  function cerrarModalPlanes() {
-    modalPlanes.classList.add("hidden-modal");
-    modalPlanes.classList.remove("flex");
-  }
-
-  document.getElementById("btn-ver-planes-seguidores").addEventListener("click", abrirModalPlanes);
-  modalPlanes.querySelectorAll("[data-close-modal-planes]").forEach((btn) => btn.addEventListener("click", cerrarModalPlanes));
-  modalPlanes.addEventListener("click", (e) => {
-    if (e.target === modalPlanes) cerrarModalPlanes();
-  });
-
   formPedido.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!productoSeleccionado) return;
 
     const nombre = inputNombre.value.trim();
-    const esSeguidores = productoSeleccionado.categoria === "seguidores";
-    const enlacePerfil = esSeguidores ? inputEnlacePerfil.value.trim() : "";
+    const telefono = inputTelefono.value.trim();
 
     btnConfirmar.disabled = true;
     btnConfirmar.textContent = "Guardando...";
     pedidoStatus.textContent = "";
 
     try {
-      const datosPedido = {
+      await addDoc(pedidosRef, {
         nombre,
-        telefono: "",
+        telefono,
         servicio: productoSeleccionado.nombre,
         precio: productoSeleccionado.precio,
         estado: "espera",
         pagado: false,
         fecha: serverTimestamp()
-      };
-      if (esSeguidores) datosPedido.enlacePerfil = enlacePerfil;
+      });
 
-      await addDoc(pedidosRef, datosPedido);
-
-      let mensaje =
+      const mensaje =
         `Hola NEXO! Quiero encargar ${productoSeleccionado.nombre} por ${formatearPrecio(productoSeleccionado.precio)}. ` +
-        `Mi nombre es ${nombre}.`;
-      if (esSeguidores) {
-        mensaje += ` Mi perfil de Instagram (público) es: ${enlacePerfil}`;
-      }
+        `Mi nombre es ${nombre} y mi WhatsApp es ${telefono}.`;
 
       const url = `https://wa.me/${WHATSAPP_NEXO}?text=${encodeURIComponent(mensaje)}`;
       window.location.href = url;

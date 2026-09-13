@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Lista de emails autorizados como admin.
+    // Para agregar otro admin, sumá su email acá (todo en minúsculas).
+    function esAdmin() {
+      return request.auth != null &&
+        request.auth.token.email != null &&
+        request.auth.token.email in [
+          'saanty086@gmail.com'
+          // , 'otro-admin@gmail.com'
+        ];
+    }
+
+    // El catálogo lo tiene que poder LEER cualquiera (es la tienda pública),
+    // pero solo un admin logueado puede crear/editar/borrar productos.
+    match /productos/{id} {
+      allow read: if true;
+      allow write: if esAdmin();
+    }
+
+    // Cualquiera puede CREAR un pedido (cliente pidiendo por WhatsApp),
+    // pero solo un admin puede verlos, editarlos o borrarlos.
+    match /pedidos_nexo/{id} {
+      allow create: if true;
+      allow read, update, delete: if esAdmin();
+    }
+
+    // Clientes (vencimientos) — solo admin.
+    match /clientes/{id} {
+      allow read, write: if esAdmin();
+    }
+  }
+}
