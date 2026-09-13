@@ -205,24 +205,24 @@
 
 <!-- ============ TEMPLATE: TARJETA DE PRODUCTO (compacta, tipo app) ============ -->
 <template id="tpl-producto">
-  <article class="border border-line bg-panel clip-corner flex flex-col justify-between glow-border transition-shadow overflow-hidden">
-    <div class="relative aspect-square w-full bg-panel2" data-field="imagen-wrap">
+  <article class="border border-line bg-panel clip-corner flex flex-col glow-border transition-shadow overflow-hidden">
+    <div class="relative aspect-[4/3] w-full bg-panel2" data-field="imagen-wrap">
       <img data-field="imagen" class="hidden-modal absolute inset-0 w-full h-full object-cover" />
       <div data-field="imagen-fallback" class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-violet/25 via-panel2 to-cyan/10">
-        <div class="w-10 h-10 rounded-full border-2 border-violet/70 flex items-center justify-center">
-          <span class="font-display font-bold text-cyan text-sm">N</span>
+        <div class="w-12 h-12 rounded-full border-2 border-violet/70 flex items-center justify-center">
+          <span class="font-display font-bold text-cyan text-lg">N</span>
         </div>
       </div>
       <div data-field="badge-stock" class="hidden-modal absolute top-2 left-2 bg-bad/90 text-white text-[10px] font-display font-bold tracking-wide px-2.5 py-1.5 clip-corner">
         SIN EXISTENCIAS
       </div>
     </div>
-    <div class="p-3 md:p-3.5 flex flex-col flex-1">
-      <p class="font-display font-semibold text-[15px] md:text-base text-ink leading-snug line-clamp-2" data-field="nombre"></p>
-      <p class="text-xs text-mute mt-1 leading-relaxed line-clamp-2 hidden md:block" data-field="descripcion"></p>
-      <div class="flex items-center justify-between mt-3 md:mt-4 gap-2">
-        <span class="font-display font-bold text-base md:text-lg text-cyan whitespace-nowrap" data-field="precio"></span>
-        <button data-field="btn" class="text-xs font-semibold px-3 md:px-3.5 py-2 border border-violet text-violet2 hover:bg-violet hover:text-bg transition-colors whitespace-nowrap">
+    <div class="p-3.5 md:p-4 flex flex-col flex-1">
+      <p class="font-display font-bold text-base md:text-xl text-ink uppercase leading-tight line-clamp-2" data-field="nombre"></p>
+      <p class="text-xs text-mute mt-1.5 leading-relaxed line-clamp-2" data-field="descripcion"></p>
+      <div class="mt-auto pt-3">
+        <span class="block font-display font-bold text-lg md:text-xl text-cyan mb-2.5" data-field="precio"></span>
+        <button data-field="btn" class="w-full text-sm font-semibold py-2.5 border border-violet text-violet2 hover:bg-violet hover:text-bg transition-colors">
           Pedir
         </button>
       </div>
@@ -398,7 +398,7 @@
         badgeStock.classList.remove("hidden-modal");
         btn.textContent = "Sin stock";
         btn.disabled = true;
-        btn.className = "text-xs font-semibold px-3 md:px-3.5 py-2 border border-line text-mute cursor-not-allowed opacity-60 whitespace-nowrap";
+        btn.className = "w-full text-sm font-semibold py-2.5 border border-line text-mute cursor-not-allowed opacity-60";
       }
 
       contenedor.appendChild(nodo);
