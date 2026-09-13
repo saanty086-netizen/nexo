@@ -140,3 +140,37 @@ tbody tr {
     row-gap: 0.6rem;
   }
 }
+
+/* ===========================================================
+   Refuerzo "a prueba de fallos" para lo esencial del layout.
+   No depende de que Tailwind termine de aplicar sus clases —
+   si por lo que sea tarda o no corre en algún celular/red, esto
+   garantiza que la grilla de productos y la tira de plataformas
+   sigan funcionando igual.
+   =========================================================== */
+#grid-streaming {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+@media (min-width: 640px) {
+  #grid-streaming { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
+@media (min-width: 1024px) {
+  #grid-streaming { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}
+#grid-streaming > * {
+  min-width: 0 !important; /* evita que una imagen/texto largo empuje la columna y rompa las 2 columnas */
+}
+
+#chips-plataforma {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+#chips-plataforma .chip {
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+}
