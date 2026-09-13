@@ -33,7 +33,7 @@
   };
 </script>
 <style>
-  body { background-color: #08050f; }
+  body { background-color: #08050f; overflow-x: hidden; }
   .glow-border { box-shadow: 0 0 0 1px rgba(145,70,255,0.25), 0 0 24px -8px rgba(79,242,255,0.15); }
   .glow-border:hover { box-shadow: 0 0 0 1px rgba(79,242,255,0.5), 0 0 30px -6px rgba(145,70,255,0.4); }
   .glass { background: rgba(15,10,28,0.55); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
@@ -171,7 +171,7 @@
   </aside>
 
   <!-- ============ TOPBAR fijo (mobile) ============ -->
-  <header class="md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-between px-4 py-3 bg-[#08050f]/90 backdrop-blur border-b border-line">
+  <header class="md:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center justify-between px-4 bg-[#08050f]/95 backdrop-blur border-b border-line">
     <div class="flex items-center gap-2">
       <div class="w-8 h-8 rounded-full border-2 border-violet flex items-center justify-center shrink-0">
         <span class="font-display font-bold text-cyan text-xs">N</span>
@@ -188,45 +188,43 @@
   </header>
 
   <!-- ============ MAIN ============ -->
-  <main class="flex-1 grid-veins">
+  <main class="flex-1 grid-veins pt-14 md:pt-0">
 
     <!-- Tira de plataformas — scroll táctil, tipo app -->
-    <div class="md:hidden pt-14 sticky top-14 z-30 bg-[#08050f]/90 backdrop-blur border-b border-line">
-      <div id="chips-plataforma" class="flex overflow-x-auto gap-2.5 py-3 px-4 scrollbar-none snap-x">
-        <!-- Se completa por JS -->
-      </div>
+    <div class="md:hidden sticky top-14 z-30 bg-[#08050f]/95 backdrop-blur border-b border-line">
+      <div id="chips-plataforma" class="flex overflow-x-auto gap-2.5 py-3 px-4 scrollbar-none snap-x"></div>
     </div>
 
-    <div class="max-w-5xl mx-auto px-3 md:px-10 pt-5 md:pt-16 pb-24">
+    <div class="max-w-5xl mx-auto px-4 md:px-10 pt-7 md:pt-16 pb-24">
 
       <!-- Hero -->
-      <section id="inicio" class="mb-10 md:mb-16 px-2 md:px-0">
+      <section id="inicio" class="mb-9 md:mb-16">
         <p class="text-cyan text-xs tracking-[0.25em] font-semibold mb-3">CATÁLOGO NEXO</p>
-        <h1 class="font-display font-bold text-3xl md:text-6xl leading-[1.05] tracking-tight">
+        <h1 class="font-display font-bold text-[1.9rem] leading-[1.15] md:text-6xl md:leading-[1.05] tracking-tight">
           Streaming y seguidores,<br class="hidden md:block" />
           <span class="text-violet2">sin esperar hasta mañana.</span>
         </h1>
-        <p class="text-mute mt-5 max-w-md text-sm leading-relaxed">
+        <p class="text-mute mt-4 max-w-md text-sm leading-relaxed">
           Elegís el servicio, mandás el pedido por WhatsApp y coordinamos el pago. Activación apenas se confirma.
         </p>
       </section>
 
       <!-- Streaming -->
-      <section id="streaming" class="mb-10 md:mb-16">
-        <div class="flex items-baseline justify-between mb-4 px-2 md:px-0">
+      <section id="streaming" class="mb-9 md:mb-16">
+        <div class="flex items-baseline justify-between mb-4">
           <h2 class="font-display font-semibold text-lg md:text-xl text-violet2">Streaming</h2>
           <span class="text-[11px] text-mute">Cuentas y perfiles, 30 días</span>
         </div>
-        <div id="grid-streaming" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 px-2 md:px-0"></div>
+        <div id="grid-streaming" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6"></div>
       </section>
 
       <!-- Seguidores -->
-      <section id="seguidores" class="mb-10">
-        <div class="flex items-baseline justify-between mb-4 px-2 md:px-0">
+      <section id="seguidores" class="mb-6">
+        <div class="flex items-baseline justify-between mb-4">
           <h2 class="font-display font-semibold text-lg md:text-xl text-violet2">Seguidores Instagram</h2>
           <span class="text-[11px] text-mute">Entrega gradual, cuentas activas</span>
         </div>
-        <div id="grid-seguidores" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 px-2 md:px-0"></div>
+        <div id="grid-seguidores" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6"></div>
       </section>
 
     </div>
@@ -234,37 +232,39 @@
 </div>
 
 <!-- ============ MODAL: PEDIDO RÁPIDO ============ -->
-<div id="modal-pedido" class="hidden-modal fixed inset-0 z-50 items-center justify-center px-4 bg-bg/80 backdrop-blur-sm">
-  <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6 relative">
-    <button data-close-modal class="absolute top-4 right-4 text-mute hover:text-cyan text-sm">✕</button>
+<div id="modal-pedido" class="hidden-modal fixed inset-0 z-50 items-center justify-center p-0 sm:p-4 bg-bg/85 backdrop-blur-sm">
+  <div class="w-full h-full sm:h-auto sm:max-w-sm bg-panel border-0 sm:border sm:border-line sm:clip-corner sm:glow-border p-6 pt-8 relative overflow-y-auto flex flex-col justify-center">
+    <button data-close-modal class="absolute top-5 right-5 text-mute hover:text-cyan text-lg leading-none">✕</button>
 
-    <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">PEDIDO RÁPIDO</p>
-    <h3 class="font-display font-bold text-xl mb-5">Confirmá tus datos</h3>
+    <div class="w-full max-w-sm mx-auto">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">PEDIDO RÁPIDO</p>
+      <h3 class="font-display font-bold text-2xl sm:text-xl mb-6 sm:mb-5">Confirmá tus datos</h3>
 
-    <div id="resumen-producto" class="mb-5 px-4 py-3 bg-panel2 border border-line text-sm">
-      <p id="resumen-nombre" class="text-ink font-semibold"></p>
-      <p id="resumen-precio" class="text-cyan font-display font-bold text-lg mt-1"></p>
+      <div id="resumen-producto" class="mb-6 sm:mb-5 px-4 py-3.5 bg-panel2 border border-line text-sm">
+        <p id="resumen-nombre" class="text-ink font-semibold"></p>
+        <p id="resumen-precio" class="text-cyan font-display font-bold text-lg mt-1"></p>
+      </div>
+
+      <form id="form-pedido" class="flex flex-col gap-5 sm:gap-4">
+        <div>
+          <label class="text-xs text-mute block mb-2 sm:mb-1.5">Nombre completo</label>
+          <input required id="input-nombre" type="text" placeholder="Como te llamás"
+            class="w-full bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        </div>
+        <div>
+          <label class="text-xs text-mute block mb-2 sm:mb-1.5">Número de WhatsApp</label>
+          <input required id="input-telefono" type="tel" placeholder="+549 261 xxxxxxx"
+            class="w-full bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        </div>
+
+        <p id="pedido-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+        <button type="submit" id="btn-confirmar"
+          class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-4 sm:py-3 mt-1 hover:opacity-90 transition-opacity">
+          Confirmar y abrir WhatsApp
+        </button>
+      </form>
     </div>
-
-    <form id="form-pedido" class="flex flex-col gap-4">
-      <div>
-        <label class="text-xs text-mute block mb-1.5">Nombre completo</label>
-        <input required id="input-nombre" type="text" placeholder="Como te llamás"
-          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-      </div>
-      <div>
-        <label class="text-xs text-mute block mb-1.5">Número de WhatsApp</label>
-        <input required id="input-telefono" type="tel" placeholder="+549 261 xxxxxxx"
-          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-      </div>
-
-      <p id="pedido-status" class="text-xs text-mute min-h-[1rem]"></p>
-
-      <button type="submit" id="btn-confirmar"
-        class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
-        Confirmar y abrir WhatsApp
-      </button>
-    </form>
   </div>
 </div>
 
