@@ -88,10 +88,24 @@
     font-weight: 600;
     font-size: 0.8rem;
     padding: 10px 14px;
+    min-height: 42px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid #9146ff;
     color: #c9a3ff;
     background: transparent;
     transition: background-color .15s ease, color .15s ease;
+  }
+  .pedir-fija {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 96px;
+    min-height: 36px;
+    box-sizing: border-box;
+    text-align: center;
   }
   .pack-card__buy:hover:not(:disabled) { background: #9146ff; color: #08050f; }
   .pack-card__buy:disabled {
@@ -123,7 +137,8 @@
     .pack-card__title { font-size: 0.92rem; margin-bottom: 4px; }
     .pack-card__detail { font-size: 0.7rem; margin-bottom: 8px; }
     .pack-card__price { font-size: 1rem; }
-    .pack-card__buy { padding: 9px 10px; font-size: 0.74rem; }
+    .pack-card__buy { padding: 9px 10px; font-size: 0.74rem; min-height: 38px; }
+    .pedir-fija { width: 84px; min-height: 34px; }
     .stock-badge { font-size: 8px; padding: 3px 7px; }
   }
   .grid-veins {
@@ -266,6 +281,7 @@
       <div id="resumen-producto" class="mb-6 sm:mb-5 px-4 py-3.5 bg-panel2 border border-line text-sm">
         <p id="resumen-nombre" class="text-ink font-semibold"></p>
         <p id="resumen-precio" class="text-cyan font-display font-bold text-lg mt-1"></p>
+        <p id="resumen-precio-descuento" class="hidden-modal text-cyan font-display font-bold text-sm mt-1"></p>
       </div>
 
       <form id="form-pedido" class="flex flex-col gap-5 sm:gap-4">
@@ -273,6 +289,19 @@
           <label class="text-xs text-mute block mb-2 sm:mb-1.5">Nombre completo</label>
           <input required id="input-nombre" type="text" placeholder="Como te llamás"
             class="w-full bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        </div>
+
+        <div>
+          <label class="text-xs text-mute block mb-2 sm:mb-1.5">Código de descuento (opcional)</label>
+          <div class="flex gap-2">
+            <input id="input-codigo-descuento" type="text" placeholder="Ej: NEXO10"
+              class="flex-1 min-w-0 bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+            <button type="button" id="btn-aplicar-descuento"
+              class="shrink-0 border border-violet text-violet2 text-xs font-display font-semibold px-4 whitespace-nowrap hover:bg-violet hover:text-bg transition-colors">
+              Aplicar
+            </button>
+          </div>
+          <p id="descuento-status" class="text-xs text-mute min-h-[1rem] mt-1.5"></p>
         </div>
 
         <div id="campos-seguidor" class="hidden-modal flex-col gap-5 sm:gap-4">
@@ -333,7 +362,7 @@
     <td class="px-4 py-3 text-cyan font-display font-bold whitespace-nowrap" data-field="precio"></td>
     <td class="px-4 py-3 text-right">
       <button data-field="btn"
-        class="text-[11px] font-semibold border border-violet text-violet2 px-3 py-2 hover:bg-violet hover:text-bg transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:border-line disabled:text-mute disabled:hover:bg-transparent">
+        class="pedir-fija text-[11px] font-semibold border border-violet text-violet2 px-3 py-2 hover:bg-violet hover:text-bg transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:border-line disabled:text-mute disabled:hover:bg-transparent">
         Pedir
       </button>
     </td>
@@ -348,6 +377,8 @@
   import {
     getFirestore,
     collection,
+    doc,
+    getDoc,
     addDoc,
     onSnapshot,
     serverTimestamp
@@ -367,6 +398,7 @@
   const db = getFirestore(app);
   const pedidosRef = collection(db, "pedidos_nexo");
   const productosRef = collection(db, "productos");
+  const configuracionRef = doc(db, "configuracion", "descuento");
 
   const WHATSAPP_NEXO = "5492634273255";
 
@@ -599,6 +631,7 @@
   const modal = document.getElementById("modal-pedido");
   const resumenNombre = document.getElementById("resumen-nombre");
   const resumenPrecio = document.getElementById("resumen-precio");
+  const resumenPrecioDescuento = document.getElementById("resumen-precio-descuento");
   const formPedido = document.getElementById("form-pedido");
   const inputNombre = document.getElementById("input-nombre");
   const camposSeguidor = document.getElementById("campos-seguidor");
@@ -606,15 +639,94 @@
   const inputCuentaPublica = document.getElementById("input-cuenta-publica");
   const pedidoStatus = document.getElementById("pedido-status");
   const btnConfirmar = document.getElementById("btn-confirmar");
+  const inputCodigoDescuento = document.getElementById("input-codigo-descuento");
+  const btnAplicarDescuento = document.getElementById("btn-aplicar-descuento");
+  const descuentoStatus = document.getElementById("descuento-status");
 
   let productoSeleccionado = null;
+  let descuentoActivo = null; // { codigo, porcentaje }
+  let precioFinalActual = 0;
+
+  // -----------------------------
+  // Descuento: se define desde el admin (apartado Finanzas), en
+  // configuracion/descuento -> { codigo, porcentaje, activo }.
+  // -----------------------------
+  function actualizarResumenPrecio() {
+    if (!productoSeleccionado) return;
+    precioFinalActual = productoSeleccionado.precio;
+
+    if (descuentoActivo) {
+      precioFinalActual = Math.max(
+        0,
+        Math.round(productoSeleccionado.precio * (1 - descuentoActivo.porcentaje / 100))
+      );
+      resumenPrecio.textContent = formatearPrecio(productoSeleccionado.precio);
+      resumenPrecio.classList.add("line-through", "text-mute", "text-sm", "font-normal");
+      resumenPrecio.classList.remove("text-cyan", "text-lg", "font-bold");
+      resumenPrecioDescuento.textContent =
+        `${formatearPrecio(precioFinalActual)} · código ${descuentoActivo.codigo} (-${descuentoActivo.porcentaje}%)`;
+      resumenPrecioDescuento.classList.remove("hidden-modal");
+    } else {
+      resumenPrecio.textContent = formatearPrecio(productoSeleccionado.precio);
+      resumenPrecio.classList.remove("line-through", "text-mute", "text-sm", "font-normal");
+      resumenPrecio.classList.add("text-cyan", "text-lg", "font-bold");
+      resumenPrecioDescuento.classList.add("hidden-modal");
+    }
+  }
+
+  btnAplicarDescuento.addEventListener("click", async () => {
+    const codigoIngresado = inputCodigoDescuento.value.trim().toUpperCase();
+    descuentoStatus.classList.remove("text-bad", "text-cyan");
+    descuentoStatus.textContent = "";
+
+    if (!codigoIngresado) {
+      descuentoStatus.textContent = "Ingresá un código.";
+      descuentoStatus.classList.add("text-bad");
+      return;
+    }
+
+    btnAplicarDescuento.disabled = true;
+    const textoOriginal = btnAplicarDescuento.textContent;
+    btnAplicarDescuento.textContent = "Verificando...";
+
+    try {
+      const snap = await getDoc(configuracionRef);
+      const data = snap.exists() ? snap.data() : {};
+      const codigoGuardado = (data.codigo || "").trim().toUpperCase();
+      const porcentaje = Number(data.porcentaje) || 0;
+      const activo = data.activo === true;
+
+      if (activo && codigoGuardado && porcentaje > 0 && codigoGuardado === codigoIngresado) {
+        descuentoActivo = { codigo: codigoGuardado, porcentaje };
+        descuentoStatus.textContent = `Código aplicado: -${porcentaje}% de descuento.`;
+        descuentoStatus.classList.add("text-cyan");
+      } else {
+        descuentoActivo = null;
+        descuentoStatus.textContent = "Código inválido o no disponible.";
+        descuentoStatus.classList.add("text-bad");
+      }
+    } catch (err) {
+      console.error(err);
+      descuentoActivo = null;
+      descuentoStatus.textContent = "No se pudo verificar el código. Intentá de nuevo.";
+      descuentoStatus.classList.add("text-bad");
+    } finally {
+      actualizarResumenPrecio();
+      btnAplicarDescuento.disabled = false;
+      btnAplicarDescuento.textContent = textoOriginal;
+    }
+  });
 
   function abrirModalPedido(producto) {
     productoSeleccionado = producto;
     resumenNombre.textContent = producto.nombre;
-    resumenPrecio.textContent = formatearPrecio(producto.precio);
     pedidoStatus.textContent = "";
     formPedido.reset();
+
+    descuentoActivo = null;
+    descuentoStatus.textContent = "";
+    descuentoStatus.classList.remove("text-bad", "text-cyan");
+    actualizarResumenPrecio();
 
     const esSeguidor = producto.categoria === "seguidores";
     if (esSeguidor) {
@@ -662,14 +774,23 @@
     pedidoStatus.textContent = "";
 
     try {
+      const precioOriginal = productoSeleccionado.precio;
+      const precioAPagar = descuentoActivo ? precioFinalActual : precioOriginal;
+
       const datosPedido = {
         nombre,
         servicio: productoSeleccionado.nombre,
-        precio: productoSeleccionado.precio,
+        precio: precioAPagar,
+        precioOriginal,
         estado: "espera",
         pagado: false,
         fecha: serverTimestamp()
       };
+
+      if (descuentoActivo) {
+        datosPedido.codigoDescuento = descuentoActivo.codigo;
+        datosPedido.descuentoPorcentaje = descuentoActivo.porcentaje;
+      }
 
       if (esSeguidor) {
         datosPedido.linkCuenta = linkCuenta;
@@ -679,8 +800,12 @@
       await addDoc(pedidosRef, datosPedido);
 
       let mensaje =
-        `Hola NEXO! Quiero encargar ${productoSeleccionado.nombre} por ${formatearPrecio(productoSeleccionado.precio)}. ` +
+        `Hola NEXO! Quiero encargar ${productoSeleccionado.nombre} por ${formatearPrecio(precioAPagar)}. ` +
         `Mi nombre es ${nombre}.`;
+
+      if (descuentoActivo) {
+        mensaje += ` Usé el código ${descuentoActivo.codigo} (-${descuentoActivo.porcentaje}%, precio normal ${formatearPrecio(precioOriginal)}).`;
+      }
 
       if (esSeguidor) {
         mensaje += ` Mi cuenta: ${linkCuenta} (${cuentaPublica === "si" ? "pública" : "privada"}).`;

@@ -181,6 +181,7 @@
   <button id="tab-pedidos" class="tab-btn tab-activo">Pedidos</button>
   <button id="tab-productos" class="tab-btn">Productos</button>
   <button id="tab-vencimientos" class="tab-btn">Vencimientos</button>
+  <button id="tab-finanzas" class="tab-btn">Finanzas</button>
 </div>
 
 <!-- ============ SECCIÓN: PEDIDOS ============ -->
@@ -293,6 +294,46 @@
       <tbody id="tabla-vencimientos"></tbody>
     </table>
     <p id="tabla-vencimientos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste clientes.</p>
+  </div>
+</main>
+
+<!-- ============ SECCIÓN: FINANZAS ============ -->
+<main id="seccion-finanzas" class="hidden-modal max-w-7xl mx-auto px-5 md:px-8 py-8">
+
+  <div class="max-w-md">
+    <p class="text-mute text-xs mb-6 leading-relaxed">
+      Definí acá el código de descuento que los clientes pueden ingresar al hacer un pedido en la tienda,
+      junto con el porcentaje que se les aplica. Podés desactivarlo cuando quieras sin perder los datos cargados.
+    </p>
+
+    <div class="border border-line bg-panel clip-corner p-6">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">DESCUENTOS</p>
+      <h3 class="font-display font-bold text-xl mb-5">Código de descuento</h3>
+
+      <form id="form-descuento" class="flex flex-col gap-4">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Código</label>
+          <input id="descuento-codigo" type="text" placeholder="Ej: NEXO10"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        </div>
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Porcentaje de descuento</label>
+          <input id="descuento-porcentaje" type="number" min="0" max="100" step="1" placeholder="10"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        </div>
+        <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+          <input id="descuento-activo" type="checkbox" class="w-4 h-4 accent-violet" />
+          Código activo (visible para los clientes)
+        </label>
+
+        <p id="descuento-config-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+        <button type="submit" id="btn-guardar-descuento"
+          class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+          Guardar
+        </button>
+      </form>
+    </div>
   </div>
 </main>
 
@@ -591,12 +632,14 @@
     doc,
     addDoc,
     updateDoc,
+    setDoc,
     deleteDoc,
     serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const pedidosRef = collection(db, "pedidos_nexo");
   const productosRef = collection(db, "productos");
+  const configuracionRef = doc(db, "configuracion", "descuento");
 
   // -----------------------------
   // Sesión: no se guarda entre visitas.
@@ -781,6 +824,7 @@
       iniciarEscuchaPedidos();
       iniciarEscuchaProductos();
       iniciarEscuchaVencimientos();
+      iniciarEscuchaDescuento();
     }
   });
 
@@ -794,13 +838,15 @@
   const tabPedidos = document.getElementById("tab-pedidos");
   const tabProductos = document.getElementById("tab-productos");
   const tabVencimientos = document.getElementById("tab-vencimientos");
+  const tabFinanzas = document.getElementById("tab-finanzas");
   const seccionPedidos = document.getElementById("seccion-pedidos");
   const seccionProductos = document.getElementById("seccion-productos");
   const seccionVencimientos = document.getElementById("seccion-vencimientos");
+  const seccionFinanzas = document.getElementById("seccion-finanzas");
 
   function activarTab(activa) {
-    [tabPedidos, tabProductos, tabVencimientos].forEach((t) => t.classList.remove("tab-activo"));
-    [seccionPedidos, seccionProductos, seccionVencimientos].forEach((s) => s.classList.add("hidden-modal"));
+    [tabPedidos, tabProductos, tabVencimientos, tabFinanzas].forEach((t) => t.classList.remove("tab-activo"));
+    [seccionPedidos, seccionProductos, seccionVencimientos, seccionFinanzas].forEach((s) => s.classList.add("hidden-modal"));
     activa.tab.classList.add("tab-activo");
     activa.seccion.classList.remove("hidden-modal");
   }
@@ -808,6 +854,7 @@
   tabPedidos.addEventListener("click", () => activarTab({ tab: tabPedidos, seccion: seccionPedidos }));
   tabProductos.addEventListener("click", () => activarTab({ tab: tabProductos, seccion: seccionProductos }));
   tabVencimientos.addEventListener("click", () => activarTab({ tab: tabVencimientos, seccion: seccionVencimientos }));
+  tabFinanzas.addEventListener("click", () => activarTab({ tab: tabFinanzas, seccion: seccionFinanzas }));
 
   // -----------------------------
   // Estado en memoria + render — PEDIDOS
@@ -1450,6 +1497,51 @@
     } finally {
       btnGuardarVencimiento.disabled = false;
       btnGuardarVencimiento.textContent = "Guardar";
+    }
+  });
+
+  // -----------------------------
+  // FINANZAS: código de descuento global de la tienda.
+  // Se guarda en configuracion/descuento -> { codigo, porcentaje, activo }.
+  // -----------------------------
+  const formDescuento = document.getElementById("form-descuento");
+  const descuentoCodigo = document.getElementById("descuento-codigo");
+  const descuentoPorcentaje = document.getElementById("descuento-porcentaje");
+  const descuentoActivoCheckbox = document.getElementById("descuento-activo");
+  const descuentoConfigStatus = document.getElementById("descuento-config-status");
+  const btnGuardarDescuento = document.getElementById("btn-guardar-descuento");
+
+  function iniciarEscuchaDescuento() {
+    onSnapshot(configuracionRef, (snap) => {
+      const data = snap.exists() ? snap.data() : {};
+      descuentoCodigo.value = data.codigo || "";
+      descuentoPorcentaje.value = data.porcentaje ?? "";
+      descuentoActivoCheckbox.checked = data.activo === true;
+    });
+  }
+
+  formDescuento.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const datos = {
+      codigo: descuentoCodigo.value.trim().toUpperCase(),
+      porcentaje: Number(descuentoPorcentaje.value) || 0,
+      activo: descuentoActivoCheckbox.checked
+    };
+
+    btnGuardarDescuento.disabled = true;
+    btnGuardarDescuento.textContent = "Guardando...";
+    descuentoConfigStatus.textContent = "";
+
+    try {
+      await setDoc(configuracionRef, datos, { merge: true });
+      descuentoConfigStatus.textContent = "Descuento guardado.";
+    } catch (err) {
+      console.error(err);
+      descuentoConfigStatus.textContent = "No se pudo guardar. Intentá de nuevo.";
+    } finally {
+      btnGuardarDescuento.disabled = false;
+      btnGuardarDescuento.textContent = "Guardar";
     }
   });
 </script>
