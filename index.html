@@ -33,7 +33,7 @@
     }
   };
 </script>
-<link rel="stylesheet" href="style.css?v=3" />
+<link rel="stylesheet" href="style.css?v=4" />
 </head>
 <body class="font-mono text-ink min-h-screen">
 
@@ -205,27 +205,21 @@
 
 <!-- ============ TEMPLATE: TARJETA DE PRODUCTO (compacta, tipo app) ============ -->
 <template id="tpl-producto">
-  <article class="border border-line bg-panel clip-corner flex flex-col glow-border transition-shadow overflow-hidden">
-    <div class="relative aspect-[4/3] w-full bg-panel2" data-field="imagen-wrap">
-      <img data-field="imagen" class="hidden-modal absolute inset-0 w-full h-full object-cover" />
-      <div data-field="imagen-fallback" class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-violet/25 via-panel2 to-cyan/10">
-        <div class="w-12 h-12 rounded-full border-2 border-violet/70 flex items-center justify-center">
-          <span class="font-display font-bold text-cyan text-lg">N</span>
-        </div>
+  <article class="pack-card">
+    <div class="pack-card__media" data-field="imagen-wrap">
+      <img data-field="imagen" class="hidden-modal" />
+      <div data-field="imagen-fallback" class="pack-card__fallback">
+        <span>N</span>
       </div>
-      <div data-field="badge-stock" class="hidden-modal absolute top-2 left-2 bg-bad/90 text-white text-[10px] font-display font-bold tracking-wide px-2.5 py-1.5 clip-corner">
-        SIN EXISTENCIAS
-      </div>
+      <div data-field="badge-stock" class="hidden-modal pack-card__stock-badge">SIN EXISTENCIAS</div>
     </div>
-    <div class="p-3.5 md:p-4 flex flex-col flex-1">
-      <p class="font-display font-bold text-base md:text-xl text-ink uppercase leading-tight line-clamp-2" data-field="nombre"></p>
-      <p class="text-xs text-mute mt-1.5 leading-relaxed line-clamp-2" data-field="descripcion"></p>
-      <div class="mt-auto pt-3">
-        <span class="block font-display font-bold text-lg md:text-xl text-cyan mb-2.5" data-field="precio"></span>
-        <button data-field="btn" class="w-full text-sm font-semibold py-2.5 border border-violet text-violet2 hover:bg-violet hover:text-bg transition-colors">
-          Pedir
-        </button>
+    <div class="pack-card__body">
+      <p class="pack-card__title" data-field="nombre"></p>
+      <p class="pack-card__detail" data-field="descripcion"></p>
+      <div class="pack-card__price-row">
+        <span class="pack-card__price" data-field="precio"></span>
       </div>
+      <button data-field="btn" class="pack-card__buy">Pedir</button>
     </div>
   </article>
 </template>
@@ -370,7 +364,7 @@
 
     if (listaFiltrada.length === 0) {
       const vacio = document.createElement("p");
-      vacio.className = "text-mute text-sm col-span-full";
+      vacio.className = "grid-empty-msg";
       vacio.textContent =
         lista.length === 0
           ? "Sin productos disponibles por el momento."
@@ -390,6 +384,7 @@
 
       const btn = nodo.querySelector('[data-field="btn"]');
       const badgeStock = nodo.querySelector('[data-field="badge-stock"]');
+      const article = nodo.querySelector(".pack-card");
       const hayStock = producto.hayStock !== false;
 
       if (hayStock) {
@@ -398,7 +393,7 @@
         badgeStock.classList.remove("hidden-modal");
         btn.textContent = "Sin stock";
         btn.disabled = true;
-        btn.className = "w-full text-sm font-semibold py-2.5 border border-line text-mute cursor-not-allowed opacity-60";
+        article.classList.add("pack-card--oos");
       }
 
       contenedor.appendChild(nodo);
