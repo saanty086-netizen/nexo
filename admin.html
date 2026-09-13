@@ -177,9 +177,10 @@
   </div>
 </header>
 
-<div class="max-w-7xl mx-auto px-5 md:px-8 pt-6 flex gap-2">
+<div class="max-w-7xl mx-auto px-5 md:px-8 pt-6 flex gap-2 flex-wrap">
   <button id="tab-pedidos" class="tab-btn tab-activo">Pedidos</button>
   <button id="tab-productos" class="tab-btn">Productos</button>
+  <button id="tab-vencimientos" class="tab-btn">Vencimientos</button>
 </div>
 
 <!-- ============ SECCIÓN: PEDIDOS ============ -->
@@ -246,6 +247,7 @@
           <th class="px-4 py-3 font-medium">Producto</th>
           <th class="px-4 py-3 font-medium">Categoría</th>
           <th class="px-4 py-3 font-medium">Precio</th>
+          <th class="px-4 py-3 font-medium">Orden</th>
           <th class="px-4 py-3 font-medium">Visibilidad</th>
           <th class="px-4 py-3 font-medium">Stock</th>
           <th class="px-4 py-3 font-medium">Acciones</th>
@@ -254,6 +256,40 @@
       <tbody id="tabla-productos"></tbody>
     </table>
     <p id="tabla-productos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste productos.</p>
+  </div>
+</main>
+
+<!-- ============ SECCIÓN: VENCIMIENTOS ============ -->
+<main id="seccion-vencimientos" class="hidden-modal max-w-7xl mx-auto px-5 md:px-8 py-8">
+
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <p class="text-mute text-xs max-w-md leading-relaxed">
+      Cuentas vendidas con fecha límite. Se marcan en amarillo cuando faltan 5 días o menos ("Por vencer")
+      y en rojo cuando ya vencieron.
+    </p>
+    <button id="btn-agregar-vencimiento"
+      class="bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm px-5 py-2.5 hover:opacity-90 transition-opacity whitespace-nowrap">
+      + Agregar cliente
+    </button>
+  </div>
+
+  <div class="border border-line bg-panel clip-corner overflow-x-auto">
+    <table class="w-full text-sm min-w-[960px]">
+      <thead>
+        <tr class="text-left text-[11px] text-mute border-b border-line">
+          <th class="px-4 py-3 font-medium">Nombre</th>
+          <th class="px-4 py-3 font-medium">WhatsApp</th>
+          <th class="px-4 py-3 font-medium">Cuenta</th>
+          <th class="px-4 py-3 font-medium">Correo</th>
+          <th class="px-4 py-3 font-medium">Contraseña</th>
+          <th class="px-4 py-3 font-medium">Vencimiento</th>
+          <th class="px-4 py-3 font-medium">Estado</th>
+          <th class="px-4 py-3 font-medium">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-vencimientos"></tbody>
+    </table>
+    <p id="tabla-vencimientos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste clientes.</p>
   </div>
 </main>
 
@@ -292,6 +328,10 @@
     <td class="px-4 py-3 text-mute text-xs" data-field="categoria"></td>
     <td class="px-4 py-3 text-cyan font-display font-bold" data-field="precio"></td>
     <td class="px-4 py-3">
+      <input data-field="input-orden" type="number" step="1"
+        class="w-16 bg-panel2 border border-line px-2 py-1.5 text-xs text-ink focus:outline-none focus:border-cyan" />
+    </td>
+    <td class="px-4 py-3">
       <button data-field="btn-visible" class="toggle-btn"></button>
     </td>
     <td class="px-4 py-3">
@@ -301,6 +341,28 @@
       <div class="flex items-center gap-2 whitespace-nowrap">
         <button data-field="btn-editar-producto" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Editar</button>
         <button data-field="btn-eliminar-producto" class="text-[11px] text-bad border border-bad/40 px-2.5 py-1.5 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+      </div>
+    </td>
+  </tr>
+</template>
+
+<!-- ============ TEMPLATE: FILA VENCIMIENTO ============ -->
+<template id="tpl-fila-vencimiento">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle">
+    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
+    <td class="px-4 py-3 text-mute" data-field="telefono"></td>
+    <td class="px-4 py-3" data-field="cuenta"></td>
+    <td class="px-4 py-3 text-mute text-xs" data-field="correo"></td>
+    <td class="px-4 py-3 font-mono text-xs" data-field="password"></td>
+    <td class="px-4 py-3 text-mute text-xs whitespace-nowrap" data-field="vencimiento"></td>
+    <td class="px-4 py-3">
+      <span data-field="badge-estado" class="text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap"></span>
+    </td>
+    <td class="px-4 py-3">
+      <div class="flex items-center gap-2 whitespace-nowrap">
+        <button data-field="btn-chat" class="text-[11px] text-cyan border border-cyan/40 px-2.5 py-1.5 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
+        <button data-field="btn-editar-vencimiento" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+        <button data-field="btn-eliminar-vencimiento" class="text-[11px] text-bad border border-bad/40 px-2.5 py-1.5 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
       </div>
     </td>
   </tr>
@@ -379,6 +441,12 @@
       </div>
 
       <div>
+        <label class="text-xs text-mute block mb-1.5">Orden (menor número aparece primero)</label>
+        <input id="producto-orden" type="number" step="1" placeholder="0"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <div>
         <label class="text-xs text-mute block mb-1.5">Descripción corta</label>
         <input id="producto-descripcion" type="text" placeholder="Perfil individual, calidad 4K, 30 días."
           class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
@@ -411,6 +479,56 @@
       <p id="producto-status" class="text-xs text-mute min-h-[1rem]"></p>
 
       <button type="submit" id="btn-guardar-producto"
+        class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+        Guardar
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: AGREGAR / EDITAR VENCIMIENTO ============ -->
+<div id="modal-vencimiento" class="hidden-modal fixed inset-0 z-50 items-center justify-center px-4 bg-bg/80 backdrop-blur-sm overflow-y-auto py-8">
+  <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6 relative my-auto">
+    <button data-close-modal-vencimiento class="absolute top-4 right-4 text-mute hover:text-cyan text-sm">✕</button>
+
+    <p id="modal-vencimiento-titulo-eyebrow" class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">CLIENTE</p>
+    <h3 id="modal-vencimiento-titulo" class="font-display font-bold text-xl mb-5">Agregar cliente</h3>
+
+    <form id="form-vencimiento" class="flex flex-col gap-4">
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Nombre completo</label>
+        <input required id="vencimiento-nombre" type="text" placeholder="Nombre del cliente"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Número de WhatsApp</label>
+        <input required id="vencimiento-telefono" type="tel" placeholder="+549 261 xxxxxxx"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Cuenta / Servicio</label>
+        <input required id="vencimiento-cuenta" type="text" placeholder="Ej: Netflix Premium"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Correo de la cuenta</label>
+        <input id="vencimiento-correo" type="text" placeholder="correo@ejemplo.com"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Contraseña de la cuenta</label>
+        <input id="vencimiento-password" type="text" placeholder="••••••••"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Fecha límite</label>
+        <input required id="vencimiento-fecha" type="date"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink focus:outline-none focus:border-cyan" />
+      </div>
+
+      <p id="vencimiento-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+      <button type="submit" id="btn-guardar-vencimiento"
         class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
         Guardar
       </button>
@@ -639,6 +757,7 @@
       listenersIniciados = true;
       iniciarEscuchaPedidos();
       iniciarEscuchaProductos();
+      iniciarEscuchaVencimientos();
     }
   });
 
@@ -651,22 +770,21 @@
   // -----------------------------
   const tabPedidos = document.getElementById("tab-pedidos");
   const tabProductos = document.getElementById("tab-productos");
+  const tabVencimientos = document.getElementById("tab-vencimientos");
   const seccionPedidos = document.getElementById("seccion-pedidos");
   const seccionProductos = document.getElementById("seccion-productos");
+  const seccionVencimientos = document.getElementById("seccion-vencimientos");
 
-  tabPedidos.addEventListener("click", () => {
-    tabPedidos.classList.add("tab-activo");
-    tabProductos.classList.remove("tab-activo");
-    seccionPedidos.classList.remove("hidden-modal");
-    seccionProductos.classList.add("hidden-modal");
-  });
+  function activarTab(activa) {
+    [tabPedidos, tabProductos, tabVencimientos].forEach((t) => t.classList.remove("tab-activo"));
+    [seccionPedidos, seccionProductos, seccionVencimientos].forEach((s) => s.classList.add("hidden-modal"));
+    activa.tab.classList.add("tab-activo");
+    activa.seccion.classList.remove("hidden-modal");
+  }
 
-  tabProductos.addEventListener("click", () => {
-    tabProductos.classList.add("tab-activo");
-    tabPedidos.classList.remove("tab-activo");
-    seccionProductos.classList.remove("hidden-modal");
-    seccionPedidos.classList.add("hidden-modal");
-  });
+  tabPedidos.addEventListener("click", () => activarTab({ tab: tabPedidos, seccion: seccionPedidos }));
+  tabProductos.addEventListener("click", () => activarTab({ tab: tabProductos, seccion: seccionProductos }));
+  tabVencimientos.addEventListener("click", () => activarTab({ tab: tabVencimientos, seccion: seccionVencimientos }));
 
   // -----------------------------
   // Estado en memoria + render — PEDIDOS
@@ -910,6 +1028,12 @@
       nodo.querySelector('[data-field="categoria"]').textContent = CATEGORIA_LABEL[producto.categoria] || producto.categoria || "—";
       nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
 
+      const inputOrden = nodo.querySelector('[data-field="input-orden"]');
+      inputOrden.value = producto.orden ?? 0;
+      inputOrden.addEventListener("change", async () => {
+        await updateDoc(doc(db, "productos", producto.id), { orden: Number(inputOrden.value) || 0 });
+      });
+
       const visible = producto.visible !== false; // por defecto visible si no está definido
       const hayStock = producto.hayStock !== false; // por defecto con stock si no está definido
 
@@ -953,6 +1077,7 @@
   const productoDescripcion = document.getElementById("producto-descripcion");
   const productoCaracteristicas = document.getElementById("producto-caracteristicas");
   const productoImagen = document.getElementById("producto-imagen");
+  const productoOrden = document.getElementById("producto-orden");
   const productoVisible = document.getElementById("producto-visible");
   const productoStock = document.getElementById("producto-stock");
   const productoStatus = document.getElementById("producto-status");
@@ -976,6 +1101,7 @@
       productoDescripcion.value = producto.descripcion || "";
       productoCaracteristicas.value = Array.isArray(producto.caracteristicas) ? producto.caracteristicas.join("\n") : "";
       productoImagen.value = producto.imagen || "";
+      productoOrden.value = producto.orden ?? 0;
       productoVisible.checked = producto.visible !== false;
       productoStock.checked = producto.hayStock !== false;
     } else {
@@ -983,6 +1109,7 @@
       modalProductoEyebrow.textContent = "NUEVO PRODUCTO";
       modalProductoTitulo.textContent = "Agregar producto";
       productoCategoria.value = "streaming";
+      productoOrden.value = 0;
       productoVisible.checked = true;
       productoStock.checked = true;
     }
@@ -1016,6 +1143,7 @@
       descripcion: productoDescripcion.value.trim(),
       caracteristicas,
       imagen: productoImagen.value.trim(),
+      orden: Number(productoOrden.value) || 0,
       visible: productoVisible.checked,
       hayStock: productoStock.checked
     };
@@ -1036,6 +1164,187 @@
     } finally {
       btnGuardarProducto.disabled = false;
       btnGuardarProducto.textContent = "Guardar";
+    }
+  });
+
+  // -----------------------------
+  // Estado en memoria + render — VENCIMIENTOS (clientes)
+  // -----------------------------
+  const clientesRef = collection(db, "clientes");
+  let clientesCache = [];
+
+  const tablaVencimientos = document.getElementById("tabla-vencimientos");
+  const tablaVencimientosVacio = document.getElementById("tabla-vencimientos-vacio");
+  const tplVencimiento = document.getElementById("tpl-fila-vencimiento");
+
+  function iniciarEscuchaVencimientos() {
+    const q = query(clientesRef, orderBy("fechaVencimiento", "asc"));
+    onSnapshot(q, (snapshot) => {
+      clientesCache = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+      renderTablaVencimientos();
+    });
+  }
+
+  function diasRestantes(fechaStr) {
+    if (!fechaStr) return null;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const venc = new Date(fechaStr + "T00:00:00");
+    return Math.round((venc - hoy) / (1000 * 60 * 60 * 24));
+  }
+
+  function formatearFechaSimple(fechaStr) {
+    if (!fechaStr) return "—";
+    const [y, m, d] = fechaStr.split("-");
+    return `${d}/${m}/${y}`;
+  }
+
+  function pintarBadgeEstadoVencimiento(el, dias) {
+    if (dias === null) {
+      el.textContent = "—";
+      el.className = "text-[11px] text-mute";
+      return;
+    }
+    if (dias <= 0) {
+      el.textContent = "Vencido";
+      el.className = "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap bg-bad/10 border-bad/50 text-bad";
+    } else if (dias <= 5) {
+      el.textContent = `Por vencer (${dias}d)`;
+      el.className = "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap bg-warn/10 border-warn/50 text-warn";
+    } else {
+      el.textContent = `Activo (${dias}d)`;
+      el.className = "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap bg-ok/10 border-ok/50 text-ok";
+    }
+  }
+
+  function renderTablaVencimientos() {
+    tablaVencimientos.innerHTML = "";
+
+    if (clientesCache.length === 0) {
+      tablaVencimientosVacio.classList.remove("hidden-modal");
+    } else {
+      tablaVencimientosVacio.classList.add("hidden-modal");
+    }
+
+    clientesCache.forEach((cliente) => {
+      const nodo = tplVencimiento.content.cloneNode(true);
+
+      nodo.querySelector('[data-field="nombre"]').textContent = cliente.nombre || "—";
+      nodo.querySelector('[data-field="telefono"]').textContent = cliente.telefono || "—";
+      nodo.querySelector('[data-field="cuenta"]').textContent = cliente.cuenta || "—";
+      nodo.querySelector('[data-field="correo"]').textContent = cliente.correo || "—";
+      nodo.querySelector('[data-field="password"]').textContent = cliente.password || "—";
+      nodo.querySelector('[data-field="vencimiento"]').textContent = formatearFechaSimple(cliente.fechaVencimiento);
+
+      const dias = diasRestantes(cliente.fechaVencimiento);
+      pintarBadgeEstadoVencimiento(nodo.querySelector('[data-field="badge-estado"]'), dias);
+
+      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", () => {
+        const mensaje =
+          `Hola ${cliente.nombre || ""}! Te avisamos que tu servicio de ${cliente.cuenta || "tu cuenta"} ` +
+          `va a vencer el día ${formatearFechaSimple(cliente.fechaVencimiento)}. ` +
+          `¿Deseas renovar para no perder tu historial ni tu cuenta?`;
+        const telefonoLimpio = (cliente.telefono || "").replace(/[^0-9]/g, "");
+        window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
+      });
+
+      nodo.querySelector('[data-field="btn-editar-vencimiento"]').addEventListener("click", () => {
+        abrirModalVencimiento(cliente);
+      });
+
+      nodo.querySelector('[data-field="btn-eliminar-vencimiento"]').addEventListener("click", async () => {
+        const confirmar = window.confirm(`¿Eliminar a "${cliente.nombre || "este cliente"}"? Esta acción no se puede deshacer.`);
+        if (confirmar) {
+          await deleteDoc(doc(db, "clientes", cliente.id));
+        }
+      });
+
+      tablaVencimientos.appendChild(nodo);
+    });
+  }
+
+  document.getElementById("btn-agregar-vencimiento").addEventListener("click", () => abrirModalVencimiento(null));
+
+  // -----------------------------
+  // Modal agregar / editar vencimiento
+  // -----------------------------
+  const modalVencimiento = document.getElementById("modal-vencimiento");
+  const formVencimiento = document.getElementById("form-vencimiento");
+  const vencimientoNombre = document.getElementById("vencimiento-nombre");
+  const vencimientoTelefono = document.getElementById("vencimiento-telefono");
+  const vencimientoCuenta = document.getElementById("vencimiento-cuenta");
+  const vencimientoCorreo = document.getElementById("vencimiento-correo");
+  const vencimientoPassword = document.getElementById("vencimiento-password");
+  const vencimientoFecha = document.getElementById("vencimiento-fecha");
+  const vencimientoStatus = document.getElementById("vencimiento-status");
+  const modalVencimientoTitulo = document.getElementById("modal-vencimiento-titulo");
+  const modalVencimientoEyebrow = document.getElementById("modal-vencimiento-titulo-eyebrow");
+  const btnGuardarVencimiento = document.getElementById("btn-guardar-vencimiento");
+
+  let vencimientoEnEdicionId = null;
+
+  function abrirModalVencimiento(cliente) {
+    formVencimiento.reset();
+    vencimientoStatus.textContent = "";
+
+    if (cliente) {
+      vencimientoEnEdicionId = cliente.id;
+      modalVencimientoEyebrow.textContent = "EDITAR CLIENTE";
+      modalVencimientoTitulo.textContent = "Editar cliente";
+      vencimientoNombre.value = cliente.nombre || "";
+      vencimientoTelefono.value = cliente.telefono || "";
+      vencimientoCuenta.value = cliente.cuenta || "";
+      vencimientoCorreo.value = cliente.correo || "";
+      vencimientoPassword.value = cliente.password || "";
+      vencimientoFecha.value = cliente.fechaVencimiento || "";
+    } else {
+      vencimientoEnEdicionId = null;
+      modalVencimientoEyebrow.textContent = "NUEVO CLIENTE";
+      modalVencimientoTitulo.textContent = "Agregar cliente";
+    }
+
+    modalVencimiento.classList.remove("hidden-modal");
+    modalVencimiento.classList.add("flex");
+  }
+
+  function cerrarModalVencimiento() {
+    modalVencimiento.classList.add("hidden-modal");
+    modalVencimiento.classList.remove("flex");
+  }
+
+  document.querySelectorAll("[data-close-modal-vencimiento]").forEach((btn) => btn.addEventListener("click", cerrarModalVencimiento));
+  modalVencimiento.addEventListener("click", (e) => {
+    if (e.target === modalVencimiento) cerrarModalVencimiento();
+  });
+
+  formVencimiento.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const datos = {
+      nombre: vencimientoNombre.value.trim(),
+      telefono: vencimientoTelefono.value.trim(),
+      cuenta: vencimientoCuenta.value.trim(),
+      correo: vencimientoCorreo.value.trim(),
+      password: vencimientoPassword.value.trim(),
+      fechaVencimiento: vencimientoFecha.value
+    };
+
+    btnGuardarVencimiento.disabled = true;
+    btnGuardarVencimiento.textContent = "Guardando...";
+
+    try {
+      if (vencimientoEnEdicionId) {
+        await updateDoc(doc(db, "clientes", vencimientoEnEdicionId), datos);
+      } else {
+        await addDoc(clientesRef, datos);
+      }
+      cerrarModalVencimiento();
+    } catch (err) {
+      console.error(err);
+      vencimientoStatus.textContent = "No se pudo guardar. Intentá de nuevo.";
+    } finally {
+      btnGuardarVencimiento.disabled = false;
+      btnGuardarVencimiento.textContent = "Guardar";
     }
   });
 </script>

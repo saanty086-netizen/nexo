@@ -228,7 +228,20 @@
           <h2 class="font-display font-semibold text-lg md:text-xl text-violet2">Seguidores Instagram</h2>
           <span class="text-[11px] text-mute">Entrega gradual, cuentas activas</span>
         </div>
-        <div id="grid-seguidores" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6"></div>
+        <div class="border border-line bg-panel clip-corner overflow-x-auto">
+          <table class="w-full text-sm min-w-[480px]">
+            <thead>
+              <tr class="text-left text-[11px] text-mute border-b border-line">
+                <th class="px-4 py-3 font-medium">Paquete</th>
+                <th class="px-4 py-3 font-medium hidden sm:table-cell">Detalle</th>
+                <th class="px-4 py-3 font-medium">Precio</th>
+                <th class="px-4 py-3 font-medium text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-seguidores"></tbody>
+          </table>
+          <p id="tabla-seguidores-vacio" class="hidden-modal text-center text-mute text-xs py-10">Sin paquetes disponibles por el momento.</p>
+        </div>
       </section>
 
     </div>
@@ -255,10 +268,21 @@
           <input required id="input-nombre" type="text" placeholder="Como te llamás"
             class="w-full bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
         </div>
-        <div>
-          <label class="text-xs text-mute block mb-2 sm:mb-1.5">Número de WhatsApp</label>
-          <input required id="input-telefono" type="tel" placeholder="+549 261 xxxxxxx"
-            class="w-full bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+
+        <div id="campos-seguidor" class="hidden-modal flex-col gap-5 sm:gap-4">
+          <div>
+            <label class="text-xs text-mute block mb-2 sm:mb-1.5">Link o usuario de tu cuenta</label>
+            <input id="input-link-cuenta" type="text" placeholder="https://instagram.com/tuusuario"
+              class="w-full bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+          </div>
+          <div>
+            <label class="text-xs text-mute block mb-2 sm:mb-1.5">¿Tu cuenta está en público?</label>
+            <select id="input-cuenta-publica"
+              class="w-full bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink focus:outline-none focus:border-cyan">
+              <option value="si">Sí, está en público</option>
+              <option value="no">No, está en privado</option>
+            </select>
+          </div>
         </div>
 
         <p id="pedido-status" class="text-xs text-mute min-h-[1rem]"></p>
@@ -293,6 +317,21 @@
       <button data-field="btn" class="pack-card__buy">Pedir</button>
     </div>
   </article>
+</template>
+
+<!-- ============ TEMPLATE: FILA TABLA SEGUIDORES ============ -->
+<template id="tpl-seguidor-fila">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle border-b border-line last:border-b-0">
+    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
+    <td class="px-4 py-3 text-mute text-xs hidden sm:table-cell" data-field="descripcion"></td>
+    <td class="px-4 py-3 text-cyan font-display font-bold whitespace-nowrap" data-field="precio"></td>
+    <td class="px-4 py-3 text-right">
+      <button data-field="btn"
+        class="text-[11px] font-semibold border border-violet text-violet2 px-3 py-2 hover:bg-violet hover:text-bg transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:border-line disabled:text-mute disabled:hover:bg-transparent">
+        Pedir
+      </button>
+    </td>
+  </tr>
 </template>
 
 <script type="module">
@@ -422,6 +461,51 @@
     };
   }
 
+  // -----------------------------
+  // Orden manual: se define desde el admin (campo "orden", número).
+  // Menor número aparece primero. Sin orden asignado = 0.
+  // -----------------------------
+  function ordenarPorOrden(a, b) {
+    const oa = Number(a.orden) || 0;
+    const ob = Number(b.orden) || 0;
+    if (oa !== ob) return oa - ob;
+    return (a.nombre || "").localeCompare(b.nombre || "");
+  }
+
+  function renderTablaSeguidores(lista) {
+    const tbody = document.getElementById("tabla-seguidores");
+    const vacio = document.getElementById("tabla-seguidores-vacio");
+    const tpl = document.getElementById("tpl-seguidor-fila");
+    tbody.innerHTML = "";
+
+    const listaFiltrada = lista.filter(productoCoincideConFiltro);
+
+    if (listaFiltrada.length === 0) {
+      vacio.classList.remove("hidden-modal");
+      return;
+    }
+    vacio.classList.add("hidden-modal");
+
+    listaFiltrada.forEach((producto) => {
+      const nodo = tpl.content.cloneNode(true);
+      nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre;
+      nodo.querySelector('[data-field="descripcion"]').textContent = producto.descripcion || "";
+      nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
+
+      const btn = nodo.querySelector('[data-field="btn"]');
+      const hayStock = producto.hayStock !== false;
+
+      if (hayStock) {
+        btn.addEventListener("click", () => abrirModalPedido(producto));
+      } else {
+        btn.textContent = "Sin stock";
+        btn.disabled = true;
+      }
+
+      tbody.appendChild(nodo);
+    });
+  }
+
   function renderCatalogo(lista, contenedorId) {
     const contenedor = document.getElementById(contenedorId);
     const tpl = document.getElementById("tpl-producto");
@@ -468,10 +552,10 @@
   }
 
   function aplicarFiltroYRenderizar() {
-    const streaming = productosCache.filter((p) => p.categoria === "streaming");
-    const seguidores = productosCache.filter((p) => p.categoria === "seguidores");
+    const streaming = productosCache.filter((p) => p.categoria === "streaming").sort(ordenarPorOrden);
+    const seguidores = productosCache.filter((p) => p.categoria === "seguidores").sort(ordenarPorOrden);
     renderCatalogo(streaming, "grid-streaming");
-    renderCatalogo(seguidores, "grid-seguidores");
+    renderTablaSeguidores(seguidores);
   }
 
   function iniciarEscuchaCatalogo() {
@@ -494,7 +578,9 @@
   const resumenPrecio = document.getElementById("resumen-precio");
   const formPedido = document.getElementById("form-pedido");
   const inputNombre = document.getElementById("input-nombre");
-  const inputTelefono = document.getElementById("input-telefono");
+  const camposSeguidor = document.getElementById("campos-seguidor");
+  const inputLinkCuenta = document.getElementById("input-link-cuenta");
+  const inputCuentaPublica = document.getElementById("input-cuenta-publica");
   const pedidoStatus = document.getElementById("pedido-status");
   const btnConfirmar = document.getElementById("btn-confirmar");
 
@@ -506,6 +592,18 @@
     resumenPrecio.textContent = formatearPrecio(producto.precio);
     pedidoStatus.textContent = "";
     formPedido.reset();
+
+    const esSeguidor = producto.categoria === "seguidores";
+    if (esSeguidor) {
+      camposSeguidor.classList.remove("hidden-modal");
+      camposSeguidor.classList.add("flex");
+      inputLinkCuenta.setAttribute("required", "required");
+    } else {
+      camposSeguidor.classList.add("hidden-modal");
+      camposSeguidor.classList.remove("flex");
+      inputLinkCuenta.removeAttribute("required");
+    }
+
     modal.classList.remove("hidden-modal");
     modal.classList.add("flex");
   }
@@ -527,26 +625,43 @@
     if (!productoSeleccionado) return;
 
     const nombre = inputNombre.value.trim();
-    const telefono = inputTelefono.value.trim();
+    const esSeguidor = productoSeleccionado.categoria === "seguidores";
+    const linkCuenta = esSeguidor ? inputLinkCuenta.value.trim() : "";
+    const cuentaPublica = esSeguidor ? inputCuentaPublica.value : "";
+
+    if (esSeguidor && !linkCuenta) {
+      pedidoStatus.textContent = "Falta el link o usuario de tu cuenta.";
+      return;
+    }
 
     btnConfirmar.disabled = true;
     btnConfirmar.textContent = "Guardando...";
     pedidoStatus.textContent = "";
 
     try {
-      await addDoc(pedidosRef, {
+      const datosPedido = {
         nombre,
-        telefono,
         servicio: productoSeleccionado.nombre,
         precio: productoSeleccionado.precio,
         estado: "espera",
         pagado: false,
         fecha: serverTimestamp()
-      });
+      };
 
-      const mensaje =
+      if (esSeguidor) {
+        datosPedido.linkCuenta = linkCuenta;
+        datosPedido.cuentaPublica = cuentaPublica === "si";
+      }
+
+      await addDoc(pedidosRef, datosPedido);
+
+      let mensaje =
         `Hola NEXO! Quiero encargar ${productoSeleccionado.nombre} por ${formatearPrecio(productoSeleccionado.precio)}. ` +
-        `Mi nombre es ${nombre} y mi WhatsApp es ${telefono}.`;
+        `Mi nombre es ${nombre}.`;
+
+      if (esSeguidor) {
+        mensaje += ` Mi cuenta: ${linkCuenta} (${cuentaPublica === "si" ? "pública" : "privada"}).`;
+      }
 
       const url = `https://wa.me/${WHATSAPP_NEXO}?text=${encodeURIComponent(mensaje)}`;
       window.location.href = url;
