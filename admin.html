@@ -317,6 +317,13 @@
             class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
         </div>
         <div>
+          <label class="text-xs text-mute block mb-1.5">Aplicar a</label>
+          <select id="descuento-producto"
+            class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+            <option value="todos">Todos los productos</option>
+          </select>
+        </div>
+        <div>
           <label class="text-xs text-mute block mb-1.5">Porcentaje de descuento</label>
           <input id="descuento-porcentaje" type="number" min="0" max="100" step="1" placeholder="10"
             class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
@@ -1083,6 +1090,7 @@
     onSnapshot(q, (snapshot) => {
       productosCache = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
       renderTablaProductos();
+      actualizarOpcionesProductoDescuento();
     });
   }
 
@@ -1506,10 +1514,29 @@
   // -----------------------------
   const formDescuento = document.getElementById("form-descuento");
   const descuentoCodigo = document.getElementById("descuento-codigo");
+  const descuentoProducto = document.getElementById("descuento-producto");
   const descuentoPorcentaje = document.getElementById("descuento-porcentaje");
   const descuentoActivoCheckbox = document.getElementById("descuento-activo");
   const descuentoConfigStatus = document.getElementById("descuento-config-status");
   const btnGuardarDescuento = document.getElementById("btn-guardar-descuento");
+
+  let descuentoProductoActual = "todos";
+
+  function aplicarSeleccionProductoDescuento() {
+    const existe = Array.from(descuentoProducto.options).some((o) => o.value === descuentoProductoActual);
+    descuentoProducto.value = existe ? descuentoProductoActual : "todos";
+  }
+
+  function actualizarOpcionesProductoDescuento() {
+    descuentoProducto.innerHTML = '<option value="todos">Todos los productos</option>';
+    productosCache.forEach((p) => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = p.nombre || "(sin nombre)";
+      descuentoProducto.appendChild(opt);
+    });
+    aplicarSeleccionProductoDescuento();
+  }
 
   function iniciarEscuchaDescuento() {
     onSnapshot(configuracionRef, (snap) => {
@@ -1517,14 +1544,24 @@
       descuentoCodigo.value = data.codigo || "";
       descuentoPorcentaje.value = data.porcentaje ?? "";
       descuentoActivoCheckbox.checked = data.activo === true;
+      descuentoProductoActual = data.productoId || "todos";
+      aplicarSeleccionProductoDescuento();
     });
   }
 
   formDescuento.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const productoIdSeleccionado = descuentoProducto.value;
+    const productoNombreSeleccionado =
+      productoIdSeleccionado === "todos"
+        ? ""
+        : descuentoProducto.options[descuentoProducto.selectedIndex].textContent;
+
     const datos = {
       codigo: descuentoCodigo.value.trim().toUpperCase(),
+      productoId: productoIdSeleccionado,
+      productoNombre: productoNombreSeleccionado,
       porcentaje: Number(descuentoPorcentaje.value) || 0,
       activo: descuentoActivoCheckbox.checked
     };

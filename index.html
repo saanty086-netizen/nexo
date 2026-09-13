@@ -45,6 +45,9 @@
   /* ============ gem-card: corte de diamante, como settingstore/1 ============ */
   .gem-card {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
     border-radius: 4px;
     transition: box-shadow .3s ease, border-color .3s ease, transform .2s ease;
@@ -65,6 +68,7 @@
     position: relative;
     width: 100%;
     aspect-ratio: 4 / 3;
+    flex-shrink: 0;
     overflow: hidden;
     background: radial-gradient(80% 80% at 50% 30%, rgba(145,70,255,0.14), transparent 70%), #150e28;
   }
@@ -695,14 +699,21 @@
       const codigoGuardado = (data.codigo || "").trim().toUpperCase();
       const porcentaje = Number(data.porcentaje) || 0;
       const activo = data.activo === true;
+      const productoId = data.productoId || "todos";
+      const codigoCoincide = codigoGuardado && codigoGuardado === codigoIngresado;
+      const aplicaAlProducto = productoId === "todos" || productoId === productoSeleccionado.id;
 
-      if (activo && codigoGuardado && porcentaje > 0 && codigoGuardado === codigoIngresado) {
+      if (activo && codigoCoincide && porcentaje > 0 && aplicaAlProducto) {
         descuentoActivo = { codigo: codigoGuardado, porcentaje };
         descuentoStatus.textContent = `Código aplicado: -${porcentaje}% de descuento.`;
         descuentoStatus.classList.add("text-cyan");
       } else {
         descuentoActivo = null;
-        descuentoStatus.textContent = "Código inválido o no disponible.";
+        if (activo && codigoCoincide && porcentaje > 0 && !aplicaAlProducto) {
+          descuentoStatus.textContent = "Ese código no aplica para este producto.";
+        } else {
+          descuentoStatus.textContent = "Código inválido o no disponible.";
+        }
         descuentoStatus.classList.add("text-bad");
       }
     } catch (err) {
