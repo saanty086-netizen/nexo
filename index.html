@@ -213,6 +213,12 @@
         </p>
       </section>
 
+      <!-- Buscador -->
+      <div class="mb-9 md:mb-12">
+        <input id="input-buscar-catalogo" type="text" placeholder="Buscar producto... (ej: Netflix, 500 seguidores)"
+          class="w-full bg-panel2 border border-line px-4 py-3.5 text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
       <!-- Streaming -->
       <section id="streaming" class="mb-9 md:mb-16">
         <div class="flex items-baseline justify-between flex-wrap gap-x-2 gap-y-1 mb-4">
@@ -387,6 +393,7 @@
   ];
 
   let filtroActivo = "todos";
+  let textoBusqueda = "";
   let productosCache = [];
 
   const chipsContenedor = document.getElementById("chips-plataforma");
@@ -430,6 +437,20 @@
     const categoria = (producto.categoria || "").toLowerCase();
     return nombre.includes(plataforma.palabra) || categoria.includes(plataforma.palabra);
   }
+
+  function productoCoincideConBusqueda(producto) {
+    if (!textoBusqueda) return true;
+    const texto = textoBusqueda.toLowerCase();
+    const nombre = (producto.nombre || "").toLowerCase();
+    const descripcion = (producto.descripcion || "").toLowerCase();
+    return nombre.includes(texto) || descripcion.includes(texto);
+  }
+
+  const inputBuscarCatalogo = document.getElementById("input-buscar-catalogo");
+  inputBuscarCatalogo.addEventListener("input", () => {
+    textoBusqueda = inputBuscarCatalogo.value.trim();
+    aplicarFiltroYRenderizar();
+  });
 
   // -----------------------------
   // Imagen del producto: soporta URL externa (http/https) o ruta local
@@ -478,9 +499,11 @@
     const tpl = document.getElementById("tpl-seguidor-fila");
     tbody.innerHTML = "";
 
-    const listaFiltrada = lista.filter(productoCoincideConFiltro);
+    const listaFiltrada = lista.filter((p) => productoCoincideConFiltro(p) && productoCoincideConBusqueda(p));
 
     if (listaFiltrada.length === 0) {
+      vacio.textContent =
+        lista.length === 0 ? "Sin paquetes disponibles por el momento." : "No hay resultados para tu búsqueda.";
       vacio.classList.remove("hidden-modal");
       return;
     }
@@ -511,7 +534,7 @@
     const tpl = document.getElementById("tpl-producto");
     contenedor.innerHTML = "";
 
-    const listaFiltrada = lista.filter(productoCoincideConFiltro);
+    const listaFiltrada = lista.filter((p) => productoCoincideConFiltro(p) && productoCoincideConBusqueda(p));
 
     if (listaFiltrada.length === 0) {
       const vacio = document.createElement("p");
@@ -519,7 +542,7 @@
       vacio.textContent =
         lista.length === 0
           ? "Sin productos disponibles por el momento."
-          : "No hay resultados para este filtro.";
+          : "No hay resultados para tu búsqueda o filtro.";
       contenedor.appendChild(vacio);
       return;
     }

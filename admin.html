@@ -229,7 +229,7 @@
 <!-- ============ SECCIÓN: PRODUCTOS ============ -->
 <main id="seccion-productos" class="hidden-modal max-w-7xl mx-auto px-5 md:px-8 py-8">
 
-  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
     <p class="text-mute text-xs max-w-md leading-relaxed">
       Estos productos son los que se muestran en la tienda. Marcá "Oculto" para sacarlos de la web sin borrarlos,
       y "Sin stock" para que se vean pero no se puedan pedir.
@@ -239,6 +239,9 @@
       + Agregar producto
     </button>
   </div>
+
+  <input id="input-buscar-productos" type="text" placeholder="Buscar producto por nombre o categoría..."
+    class="w-full sm:max-w-sm bg-panel2 border border-line px-3.5 py-2.5 text-sm mb-6 placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
 
   <div class="border border-line bg-panel clip-corner overflow-x-auto">
     <table class="w-full text-sm min-w-[820px]">
@@ -264,8 +267,8 @@
 
   <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
     <p class="text-mute text-xs max-w-md leading-relaxed">
-      Cuentas vendidas con fecha límite. Se marcan en amarillo cuando faltan 5 días o menos ("Por vencer")
-      y en rojo cuando ya vencieron.
+      Cuentas vendidas con fecha límite. Los pedidos nuevos aparecen acá solos para que cargues correo, contraseña
+      y fecha límite. Se marcan en amarillo cuando faltan 5 días o menos ("Por vencer") y en rojo cuando ya vencieron.
     </p>
     <button id="btn-agregar-vencimiento"
       class="bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm px-5 py-2.5 hover:opacity-90 transition-opacity whitespace-nowrap">
@@ -363,6 +366,26 @@
         <button data-field="btn-chat" class="text-[11px] text-cyan border border-cyan/40 px-2.5 py-1.5 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
         <button data-field="btn-editar-vencimiento" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Editar</button>
         <button data-field="btn-eliminar-vencimiento" class="text-[11px] text-bad border border-bad/40 px-2.5 py-1.5 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+      </div>
+    </td>
+  </tr>
+</template>
+
+<!-- ============ TEMPLATE: FILA PEDIDO PENDIENTE DE COMPLETAR (Vencimientos) ============ -->
+<template id="tpl-fila-pendiente">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle opacity-90">
+    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
+    <td class="px-4 py-3 text-mute" data-field="telefono"></td>
+    <td class="px-4 py-3" data-field="cuenta"></td>
+    <td class="px-4 py-3 text-mute text-xs" colspan="2">Todavía sin correo/contraseña</td>
+    <td class="px-4 py-3 text-mute text-xs whitespace-nowrap">Sin definir</td>
+    <td class="px-4 py-3">
+      <span class="text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap bg-panel2 border-line text-mute">Pedido nuevo</span>
+    </td>
+    <td class="px-4 py-3">
+      <div class="flex items-center gap-2 whitespace-nowrap">
+        <button data-field="btn-chat" class="text-[11px] text-cyan border border-cyan/40 px-2.5 py-1.5 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
+        <button data-field="btn-completar" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Completar datos</button>
       </div>
     </td>
   </tr>
@@ -803,6 +826,7 @@
       pedidosCache = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
       actualizarContadores();
       renderTabla();
+      renderTablaVencimientos();
     });
   }
 
@@ -988,11 +1012,24 @@
   const tablaProductos = document.getElementById("tabla-productos");
   const tablaProductosVacio = document.getElementById("tabla-productos-vacio");
   const tplProducto = document.getElementById("tpl-fila-producto");
+  const inputBuscarProductos = document.getElementById("input-buscar-productos");
 
   const CATEGORIA_LABEL = {
     streaming: "Streaming",
     seguidores: "Seguidores"
   };
+
+  function productosFiltrados() {
+    const texto = inputBuscarProductos.value.trim().toLowerCase();
+    if (!texto) return productosCache;
+    return productosCache.filter((p) => {
+      const nombre = (p.nombre || "").toLowerCase();
+      const categoria = (CATEGORIA_LABEL[p.categoria] || p.categoria || "").toLowerCase();
+      return nombre.includes(texto) || categoria.includes(texto);
+    });
+  }
+
+  inputBuscarProductos.addEventListener("input", renderTablaProductos);
 
   function iniciarEscuchaProductos() {
     const q = query(productosRef, orderBy("nombre", "asc"));
@@ -1015,13 +1052,17 @@
   function renderTablaProductos() {
     tablaProductos.innerHTML = "";
 
-    if (productosCache.length === 0) {
+    const lista = productosFiltrados();
+
+    if (lista.length === 0) {
+      tablaProductosVacio.textContent =
+        productosCache.length === 0 ? "Todavía no cargaste productos." : "No hay productos que coincidan con la búsqueda.";
       tablaProductosVacio.classList.remove("hidden-modal");
     } else {
       tablaProductosVacio.classList.add("hidden-modal");
     }
 
-    productosCache.forEach((producto) => {
+    lista.forEach((producto) => {
       const nodo = tplProducto.content.cloneNode(true);
 
       nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre || "—";
@@ -1220,7 +1261,12 @@
   function renderTablaVencimientos() {
     tablaVencimientos.innerHTML = "";
 
-    if (clientesCache.length === 0) {
+    const idsConvertidos = new Set(clientesCache.filter((c) => c.pedidoId).map((c) => c.pedidoId));
+    const pendientes = pedidosCache.filter(
+      (p) => p.estado !== "cancelado" && !idsConvertidos.has(p.id)
+    );
+
+    if (clientesCache.length === 0 && pendientes.length === 0) {
       tablaVencimientosVacio.classList.remove("hidden-modal");
     } else {
       tablaVencimientosVacio.classList.add("hidden-modal");
@@ -1245,6 +1291,10 @@
           `va a vencer el día ${formatearFechaSimple(cliente.fechaVencimiento)}. ` +
           `¿Deseas renovar para no perder tu historial ni tu cuenta?`;
         const telefonoLimpio = (cliente.telefono || "").replace(/[^0-9]/g, "");
+        if (!telefonoLimpio) {
+          alert("Este cliente no tiene un WhatsApp cargado todavía. Editalo para agregarlo.");
+          return;
+        }
         window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
       });
 
@@ -1257,6 +1307,43 @@
         if (confirmar) {
           await deleteDoc(doc(db, "clientes", cliente.id));
         }
+      });
+
+      tablaVencimientos.appendChild(nodo);
+    });
+
+    // Pedidos que todavía no tienen ficha de cliente/vencimiento cargada:
+    // aparecen solos acá para que se les complete correo, contraseña y fecha límite.
+    const tplPendiente = document.getElementById("tpl-fila-pendiente");
+    pendientes.forEach((pedido) => {
+      const nodo = tplPendiente.content.cloneNode(true);
+
+      nodo.querySelector('[data-field="nombre"]').textContent = pedido.nombre || "—";
+      nodo.querySelector('[data-field="telefono"]').textContent = pedido.telefono || "—";
+      nodo.querySelector('[data-field="cuenta"]').textContent = pedido.servicio || "—";
+
+      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", () => {
+        const telefonoLimpio = (pedido.telefono || "").replace(/[^0-9]/g, "");
+        if (!telefonoLimpio) {
+          alert("Este pedido todavía no tiene WhatsApp cargado. Usá 'Completar datos' para agregarlo.");
+          return;
+        }
+        const mensaje = `Hola ${pedido.nombre || ""}! Te escribimos por tu pedido de ${pedido.servicio || "tu servicio"} en NEXO.`;
+        window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
+      });
+
+      nodo.querySelector('[data-field="btn-completar"]').addEventListener("click", () => {
+        abrirModalVencimiento(
+          {
+            nombre: pedido.nombre || "",
+            telefono: pedido.telefono || "",
+            cuenta: pedido.servicio || "",
+            correo: "",
+            password: "",
+            fechaVencimiento: ""
+          },
+          pedido.id
+        );
       });
 
       tablaVencimientos.appendChild(nodo);
@@ -1282,12 +1369,14 @@
   const btnGuardarVencimiento = document.getElementById("btn-guardar-vencimiento");
 
   let vencimientoEnEdicionId = null;
+  let pedidoIdParaVincular = null;
 
-  function abrirModalVencimiento(cliente) {
+  function abrirModalVencimiento(cliente, pedidoId) {
     formVencimiento.reset();
     vencimientoStatus.textContent = "";
+    pedidoIdParaVincular = pedidoId || null;
 
-    if (cliente) {
+    if (cliente && cliente.id) {
       vencimientoEnEdicionId = cliente.id;
       modalVencimientoEyebrow.textContent = "EDITAR CLIENTE";
       modalVencimientoTitulo.textContent = "Editar cliente";
@@ -1297,6 +1386,17 @@
       vencimientoCorreo.value = cliente.correo || "";
       vencimientoPassword.value = cliente.password || "";
       vencimientoFecha.value = cliente.fechaVencimiento || "";
+    } else if (cliente) {
+      // Viene de un pedido sin ficha todavía: se precargan sus datos.
+      vencimientoEnEdicionId = null;
+      modalVencimientoEyebrow.textContent = "COMPLETAR DATOS";
+      modalVencimientoTitulo.textContent = "Completar datos del pedido";
+      vencimientoNombre.value = cliente.nombre || "";
+      vencimientoTelefono.value = cliente.telefono || "";
+      vencimientoCuenta.value = cliente.cuenta || "";
+      vencimientoCorreo.value = "";
+      vencimientoPassword.value = "";
+      vencimientoFecha.value = "";
     } else {
       vencimientoEnEdicionId = null;
       modalVencimientoEyebrow.textContent = "NUEVO CLIENTE";
@@ -1329,6 +1429,10 @@
       fechaVencimiento: vencimientoFecha.value
     };
 
+    if (!vencimientoEnEdicionId && pedidoIdParaVincular) {
+      datos.pedidoId = pedidoIdParaVincular;
+    }
+
     btnGuardarVencimiento.disabled = true;
     btnGuardarVencimiento.textContent = "Guardando...";
 
@@ -1338,6 +1442,7 @@
       } else {
         await addDoc(clientesRef, datos);
       }
+      pedidoIdParaVincular = null;
       cerrarModalVencimiento();
     } catch (err) {
       console.error(err);
