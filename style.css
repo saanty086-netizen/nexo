@@ -1,0 +1,134 @@
+/* ===========================================================
+   NEXO STORE — estilos compartidos (tienda + panel admin)
+   Se cargan con <link rel="stylesheet" href="style.css">
+   =========================================================== */
+
+body {
+  background-color: #08050f;
+}
+
+/* Corte de esquinas estilo "cyberpunk" — usado en cards, modales, botones y badges */
+.clip-corner {
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
+
+/* Resplandor violeta/cian sutil para paneles y modales */
+.glow-border {
+  box-shadow: 0 0 0 1px rgba(145, 70, 255, 0.25), 0 0 24px -8px rgba(79, 242, 255, 0.15);
+}
+.glow-border:hover {
+  box-shadow: 0 0 0 1px rgba(79, 242, 255, 0.5), 0 0 30px -6px rgba(145, 70, 255, 0.4);
+}
+
+/* Fondo con grilla tenue (hero de la tienda) */
+.grid-veins {
+  background-image:
+    linear-gradient(rgba(145, 70, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(145, 70, 255, 0.06) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+/* Utilidad para mostrar/ocultar modales y bloques */
+.hidden-modal {
+  display: none !important;
+}
+
+/* Selects sin flecha nativa del navegador */
+select.estado-select {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Selección de texto */
+::selection {
+  background: #9146ff;
+  color: #08050f;
+}
+
+/* Scrollbar (desktop) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #08050f;
+}
+::-webkit-scrollbar-thumb {
+  background: #241a3d;
+  border-radius: 4px;
+}
+
+/* Tira de chips de plataformas (mobile, sin scrollbar visible) */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.chip {
+  scroll-snap-align: start;
+}
+.chip.chip-activo {
+  background: linear-gradient(to right, #9146ff, #4ff2ff);
+  color: #08050f;
+  border-color: transparent;
+}
+
+/* Filas de tabla (panel admin) */
+tbody tr {
+  border-bottom: 1px solid #241a3d;
+}
+
+/* Tabs del panel admin */
+.tab-btn {
+  padding: 0.55rem 1.1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid #241a3d;
+  background: #0f0a1c;
+  color: #8b80ab;
+  transition: all 0.15s;
+}
+.tab-btn.tab-activo {
+  background: linear-gradient(to right, #9146ff, #4ff2ff);
+  color: #08050f;
+  border-color: transparent;
+}
+
+/* Badges tipo toggle (visible/oculto, con stock/sin stock) */
+.toggle-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 2px;
+  border: 1px solid;
+  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.toggle-on {
+  background: rgba(79, 255, 160, 0.1);
+  border-color: rgba(79, 255, 160, 0.5);
+  color: #4fffa0;
+}
+.toggle-off {
+  background: rgba(255, 95, 126, 0.1);
+  border-color: rgba(255, 95, 126, 0.5);
+  color: #ff5f7e;
+}
+
+/* ===========================================================
+   Ajustes responsive (mobile)
+   =========================================================== */
+@media (max-width: 767px) {
+  /* Corte de esquina más chico en mobile para que no coma tanto texto en badges pequeños */
+  .clip-corner {
+    clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  }
+
+  /* Los contadores del panel admin y la tira de filtros no deben forzar scroll horizontal */
+  #tab-pedidos .flex.flex-wrap,
+  #tab-productos .flex.flex-wrap {
+    row-gap: 0.6rem;
+  }
+}

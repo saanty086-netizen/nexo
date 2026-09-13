@@ -33,29 +33,7 @@
     }
   };
 </script>
-<style>
-  body { background-color: #08050f; }
-  .glow-border { box-shadow: 0 0 0 1px rgba(145,70,255,0.25), 0 0 24px -8px rgba(79,242,255,0.15); }
-  .glow-border:hover { box-shadow: 0 0 0 1px rgba(79,242,255,0.5), 0 0 30px -6px rgba(145,70,255,0.4); }
-  .grid-veins {
-    background-image:
-      linear-gradient(rgba(145,70,255,0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(145,70,255,0.06) 1px, transparent 1px);
-    background-size: 42px 42px;
-  }
-  .clip-corner {
-    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
-  }
-  .hidden-modal { display: none !important; }
-  ::selection { background: #9146ff; color: #08050f; }
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: #08050f; }
-  ::-webkit-scrollbar-thumb { background: #241a3d; border-radius: 4px; }
-  .scrollbar-none::-webkit-scrollbar { display: none; }
-  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
-  .chip { scroll-snap-align: start; }
-  .chip.chip-activo { background: linear-gradient(to right, #9146ff, #4ff2ff); color: #08050f; border-color: transparent; }
-</style>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body class="font-mono text-ink min-h-screen">
 
