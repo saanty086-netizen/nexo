@@ -3,8 +3,16 @@
    Se cargan con <link rel="stylesheet" href="style.css">
    =========================================================== */
 
+html {
+  overflow-x: hidden;
+}
 body {
   background-color: #08050f;
+  overflow-x: hidden;
+  width: 100%;
+}
+img {
+  max-width: 100%;
 }
 
 /* Corte de esquinas estilo "cyberpunk" — usado en cards, modales, botones y badges */
