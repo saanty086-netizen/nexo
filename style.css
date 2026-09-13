@@ -182,13 +182,30 @@ tbody tr {
    tiempo en el celular.
    =========================================================== */
 .pack-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   background: #0f0a1c;
-  border: 1px solid #241a3d;
   border-radius: 4px;
   overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(145, 70, 255, 0.25);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+  box-shadow: 0 0 0 1px rgba(145, 70, 255, 0.35), 0 0 22px -10px rgba(79, 242, 255, 0.35);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.pack-card:active {
+  transform: scale(0.98);
+}
+.pack-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+  background: linear-gradient(135deg, rgba(79, 242, 255, 0.55), rgba(145, 70, 255, 0) 40%, rgba(145, 70, 255, 0) 60%, rgba(145, 70, 255, 0.5));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 .pack-card__media {
   position: relative;
