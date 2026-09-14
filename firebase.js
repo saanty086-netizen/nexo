@@ -199,6 +199,44 @@ export async function incrementarUsoCupon(codigo) {
 }
 
 // -----------------------------
+// Helpers: Nuevos códigos de descuento (colección "descuentos")
+// -----------------------------
+const descuentosRef = collection(db, "descuentos");
+
+/**
+ * Crea un nuevo código de descuento en la colección 'descuentos'.
+ * @param {{nombre: string, tipo: "percentage"|"fixed", valor: number|string}} datos
+ * @returns {Promise<string>} id del documento creado
+ */
+export async function crearCodigoDescuento({ nombre, tipo, valor }) {
+  const nombreLimpio = (nombre || "").trim().toUpperCase();
+  const valorNumerico = Number(valor);
+
+  if (!nombreLimpio) {
+    throw new Error("El nombre del código es obligatorio.");
+  }
+  if (tipo !== "percentage" && tipo !== "fixed") {
+    throw new Error("El tipo de descuento no es válido.");
+  }
+  if (!Number.isFinite(valorNumerico) || valorNumerico <= 0) {
+    throw new Error("El valor debe ser un número mayor a 0.");
+  }
+  if (tipo === "percentage" && valorNumerico > 100) {
+    throw new Error("El porcentaje no puede ser mayor a 100.");
+  }
+
+  const docRef = await addDoc(descuentosRef, {
+    nombre: nombreLimpio,
+    tipo,
+    valor: valorNumerico,
+    activo: true,
+    creadoEn: new Date().toISOString()
+  });
+
+  return docRef.id;
+}
+
+// -----------------------------
 // Helpers: Clientes
 // -----------------------------
 

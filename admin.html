@@ -360,6 +360,42 @@
         </button>
       </form>
     </div>
+
+    <div class="border border-line bg-panel clip-corner p-6 mt-6">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">DESCUENTOS</p>
+      <h3 class="font-display font-bold text-xl mb-5">Nuevo código de descuento</h3>
+
+      <form id="form-nuevo-descuento" class="flex flex-col gap-4">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Nombre del código</label>
+          <input required id="nuevo-descuento-nombre" type="text" placeholder="Ej: VERANO25"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-mute block mb-1.5">Tipo</label>
+            <select id="nuevo-descuento-tipo"
+              class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+              <option value="percentage">Porcentaje (%)</option>
+              <option value="fixed">Monto fijo ($)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-mute block mb-1.5">Valor</label>
+            <input required id="nuevo-descuento-valor" type="number" min="0" step="0.01" placeholder="10"
+              class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan" />
+          </div>
+        </div>
+
+        <p id="nuevo-descuento-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+        <button type="submit" id="btn-guardar-nuevo-descuento"
+          class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+          Crear código
+        </button>
+      </form>
+    </div>
   </div>
 </main>
 
@@ -779,7 +815,8 @@
     auth,
     db,
     loginConGoogle,
-    loginAnonimo
+    loginAnonimo,
+    crearCodigoDescuento
   } from "./firebase.js";
   import {
     setPersistence,
@@ -1699,6 +1736,43 @@
     } finally {
       btnGuardarDescuento.disabled = false;
       btnGuardarDescuento.textContent = "Guardar";
+    }
+  });
+
+  // -----------------------------
+  // DESCUENTOS: creación de nuevos códigos (colección "descuentos")
+  // -----------------------------
+  const formNuevoDescuento = document.getElementById("form-nuevo-descuento");
+  const nuevoDescuentoNombre = document.getElementById("nuevo-descuento-nombre");
+  const nuevoDescuentoTipo = document.getElementById("nuevo-descuento-tipo");
+  const nuevoDescuentoValor = document.getElementById("nuevo-descuento-valor");
+  const nuevoDescuentoStatus = document.getElementById("nuevo-descuento-status");
+  const btnGuardarNuevoDescuento = document.getElementById("btn-guardar-nuevo-descuento");
+
+  formNuevoDescuento.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    btnGuardarNuevoDescuento.disabled = true;
+    btnGuardarNuevoDescuento.textContent = "Guardando...";
+    nuevoDescuentoStatus.textContent = "";
+    nuevoDescuentoStatus.className = "text-xs text-mute min-h-[1rem]";
+
+    try {
+      await crearCodigoDescuento({
+        nombre: nuevoDescuentoNombre.value,
+        tipo: nuevoDescuentoTipo.value,
+        valor: nuevoDescuentoValor.value
+      });
+      nuevoDescuentoStatus.textContent = "Código creado correctamente.";
+      nuevoDescuentoStatus.className = "text-xs text-cyan min-h-[1rem]";
+      formNuevoDescuento.reset();
+    } catch (err) {
+      console.error(err);
+      nuevoDescuentoStatus.textContent = err.message || "No se pudo crear el código. Intentá de nuevo.";
+      nuevoDescuentoStatus.className = "text-xs text-bad min-h-[1rem]";
+    } finally {
+      btnGuardarNuevoDescuento.disabled = false;
+      btnGuardarNuevoDescuento.textContent = "Crear código";
     }
   });
 
