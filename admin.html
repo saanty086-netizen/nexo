@@ -34,22 +34,7 @@
     }
   };
 </script>
-<style>
-  body { background-color: #08050f; }
-  .glow-border { box-shadow: 0 0 0 1px rgba(145,70,255,0.25); }
-  .clip-corner { clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
-  .hidden-modal { display: none !important; }
-  select.estado-select { -webkit-appearance: none; appearance: none; }
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: #08050f; }
-  ::-webkit-scrollbar-thumb { background: #241a3d; border-radius: 4px; }
-  tbody tr { border-bottom: 1px solid #241a3d; }
-  .tab-btn { padding: 0.55rem 1.1rem; font-size: 0.8rem; font-weight: 600; border: 1px solid #241a3d; background: #0f0a1c; color: #8b80ab; transition: all .15s; }
-  .tab-btn.tab-activo { background: linear-gradient(to right, #9146ff, #4ff2ff); color: #08050f; border-color: transparent; }
-  .toggle-btn { font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 2px; border: 1px solid; transition: colors .15s; white-space: nowrap; }
-  .toggle-on { background: rgba(79,255,160,0.1); border-color: rgba(79,255,160,0.5); color: #4fffa0; }
-  .toggle-off { background: rgba(255,95,126,0.1); border-color: rgba(255,95,126,0.5); color: #ff5f7e; }
-</style>
+<link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body class="font-mono text-ink min-h-screen">
 
@@ -177,11 +162,10 @@
   </div>
 </header>
 
-<div class="max-w-7xl mx-auto px-5 md:px-8 pt-6 flex gap-2 flex-wrap">
+<div class="max-w-7xl mx-auto px-5 md:px-8 pt-6 flex gap-2">
   <button id="tab-pedidos" class="tab-btn tab-activo">Pedidos</button>
   <button id="tab-productos" class="tab-btn">Productos</button>
-  <button id="tab-vencimientos" class="tab-btn">Vencimientos</button>
-  <button id="tab-finanzas" class="tab-btn">Finanzas</button>
+  <button id="tab-cupones" class="tab-btn">Cupones</button>
 </div>
 
 <!-- ============ SECCIÓN: PEDIDOS ============ -->
@@ -206,9 +190,9 @@
     </button>
   </div>
 
-  <!-- ============ TABLA ============ -->
-  <div class="border border-line bg-panel clip-corner overflow-x-auto">
-    <table class="w-full text-sm min-w-[900px]">
+  <!-- ============ TABLA (desktop / tablet) ============ -->
+  <div class="hidden md:block border border-line bg-panel clip-corner overflow-x-auto">
+    <table class="w-full text-sm min-w-[960px]">
       <thead>
         <tr class="text-left text-[11px] text-mute border-b border-line">
           <th class="px-4 py-3 font-medium">#</th>
@@ -216,6 +200,7 @@
           <th class="px-4 py-3 font-medium">Cliente</th>
           <th class="px-4 py-3 font-medium">Teléfono</th>
           <th class="px-4 py-3 font-medium">Servicio</th>
+          <th class="px-4 py-3 font-medium">Vence</th>
           <th class="px-4 py-3 font-medium">Estado</th>
           <th class="px-4 py-3 font-medium">Pago</th>
           <th class="px-4 py-3 font-medium">Acciones</th>
@@ -223,14 +208,18 @@
       </thead>
       <tbody id="tabla-pedidos"></tbody>
     </table>
-    <p id="tabla-vacio" class="hidden-modal text-center text-mute text-sm py-10">No hay pedidos que coincidan con el filtro.</p>
   </div>
+
+  <!-- ============ TARJETAS (mobile): solo nombre, vencimiento y "Ver más" ============ -->
+  <div id="tarjetas-pedidos" class="md:hidden flex flex-col gap-2.5"></div>
+
+  <p id="tabla-vacio" class="hidden-modal text-center text-mute text-sm py-10">No hay pedidos que coincidan con el filtro.</p>
 </main>
 
 <!-- ============ SECCIÓN: PRODUCTOS ============ -->
 <main id="seccion-productos" class="hidden-modal max-w-7xl mx-auto px-5 md:px-8 py-8">
 
-  <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
     <p class="text-mute text-xs max-w-md leading-relaxed">
       Estos productos son los que se muestran en la tienda. Marcá "Oculto" para sacarlos de la web sin borrarlos,
       y "Sin stock" para que se vean pero no se puedan pedir.
@@ -241,17 +230,13 @@
     </button>
   </div>
 
-  <input id="input-buscar-productos" type="text" placeholder="Buscar producto por nombre o categoría..."
-    class="w-full sm:max-w-sm bg-panel2 border border-line px-3.5 py-2.5 text-sm mb-6 placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-
-  <div class="border border-line bg-panel clip-corner overflow-x-auto">
+  <div class="hidden md:block border border-line bg-panel clip-corner overflow-x-auto">
     <table class="w-full text-sm min-w-[820px]">
       <thead>
         <tr class="text-left text-[11px] text-mute border-b border-line">
           <th class="px-4 py-3 font-medium">Producto</th>
           <th class="px-4 py-3 font-medium">Categoría</th>
           <th class="px-4 py-3 font-medium">Precio</th>
-          <th class="px-4 py-3 font-medium">Orden</th>
           <th class="px-4 py-3 font-medium">Visibilidad</th>
           <th class="px-4 py-3 font-medium">Stock</th>
           <th class="px-4 py-3 font-medium">Acciones</th>
@@ -259,151 +244,48 @@
       </thead>
       <tbody id="tabla-productos"></tbody>
     </table>
-    <p id="tabla-productos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste productos.</p>
   </div>
+
+  <!-- ============ TARJETAS (mobile) ============ -->
+  <div id="tarjetas-productos" class="md:hidden flex flex-col gap-2.5"></div>
+
+  <p id="tabla-productos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste productos.</p>
 </main>
 
-<!-- ============ SECCIÓN: VENCIMIENTOS ============ -->
-<main id="seccion-vencimientos" class="hidden-modal max-w-7xl mx-auto px-5 md:px-8 py-8">
+<!-- ============ SECCIÓN: CUPONES ============ -->
+<main id="seccion-cupones" class="hidden-modal max-w-7xl mx-auto px-5 md:px-8 py-8">
 
   <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
     <p class="text-mute text-xs max-w-md leading-relaxed">
-      Cuentas vendidas con fecha límite. Los pedidos nuevos aparecen acá solos para que cargues correo, contraseña
-      y fecha límite. Se marcan en amarillo cuando faltan 5 días o menos ("Por vencer") y en rojo cuando ya vencieron.
+      Cupones de descuento aplicables desde el pedido rápido de la tienda. "Usados" cuenta cuántas veces ya se usó.
     </p>
-    <button id="btn-agregar-vencimiento"
+    <button id="btn-agregar-cupon"
       class="bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm px-5 py-2.5 hover:opacity-90 transition-opacity whitespace-nowrap">
-      + Agregar cliente
+      + Agregar cupón
     </button>
   </div>
 
-  <div class="border border-line bg-panel clip-corner overflow-x-auto">
-    <table class="w-full text-sm min-w-[960px]">
+  <div class="hidden md:block border border-line bg-panel clip-corner overflow-x-auto">
+    <table class="w-full text-sm min-w-[760px]">
       <thead>
         <tr class="text-left text-[11px] text-mute border-b border-line">
-          <th class="px-4 py-3 font-medium">Nombre</th>
-          <th class="px-4 py-3 font-medium">WhatsApp</th>
-          <th class="px-4 py-3 font-medium">Cuenta</th>
-          <th class="px-4 py-3 font-medium">Correo</th>
-          <th class="px-4 py-3 font-medium">Contraseña</th>
-          <th class="px-4 py-3 font-medium">Vencimiento</th>
-          <th class="px-4 py-3 font-medium">Estado</th>
+          <th class="px-4 py-3 font-medium">Código</th>
+          <th class="px-4 py-3 font-medium">Descuento</th>
+          <th class="px-4 py-3 font-medium">Vence</th>
+          <th class="px-4 py-3 font-medium">Usados</th>
+          <th class="px-4 py-3 font-medium">Activo</th>
           <th class="px-4 py-3 font-medium">Acciones</th>
         </tr>
       </thead>
-      <tbody id="tabla-vencimientos"></tbody>
+      <tbody id="tabla-cupones"></tbody>
     </table>
-    <p id="tabla-vencimientos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste clientes.</p>
   </div>
+
+  <!-- ============ TARJETAS (mobile) ============ -->
+  <div id="tarjetas-cupones" class="md:hidden flex flex-col gap-2.5"></div>
+
+  <p id="tabla-cupones-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste cupones.</p>
 </main>
-
-<!-- ============ SECCIÓN: FINANZAS ============ -->
-<main id="seccion-finanzas" class="hidden-modal max-w-7xl mx-auto px-5 md:px-8 py-8">
-
-  <div class="mb-10">
-    <p class="text-mute text-xs mb-6 leading-relaxed max-w-2xl">
-      Cargá el costo en dólares de cada producto. Elegí el tipo de dólar y tocá "Aplicar" para traer la
-      cotización actual y calcular el costo en pesos, la ganancia y el margen de cada uno. La cotización
-      no se actualiza sola: solo cambia cuando volvés a tocar Aplicar.
-    </p>
-
-    <div class="border border-line bg-panel clip-corner p-6 mb-6">
-      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">COTIZACIÓN</p>
-      <h3 class="font-display font-bold text-xl mb-5">Dólar para calcular costos</h3>
-      <div class="flex flex-wrap items-end gap-3">
-        <div>
-          <label class="text-xs text-mute block mb-1.5">Tipo de dólar</label>
-          <select id="rentabilidad-tipo-dolar"
-            class="estado-select bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
-            <option value="blue">Blue</option>
-            <option value="oficial">Oficial</option>
-            <option value="tarjeta">Tarjeta</option>
-          </select>
-        </div>
-        <button type="button" id="btn-aplicar-cotizacion"
-          class="border border-violet text-violet2 text-sm font-display font-semibold px-5 py-2.5 hover:bg-violet hover:text-bg transition-colors">
-          Aplicar
-        </button>
-      </div>
-      <p id="rentabilidad-cotizacion-status" class="text-xs text-mute min-h-[1rem] mt-3"></p>
-    </div>
-
-    <div class="border border-line bg-panel clip-corner overflow-x-auto">
-      <table class="w-full text-sm min-w-[720px]">
-        <thead>
-          <tr class="text-left text-[11px] text-mute border-b border-line">
-            <th class="px-4 py-3 font-medium">Producto</th>
-            <th class="px-4 py-3 font-medium">Precio (ARS)</th>
-            <th class="px-4 py-3 font-medium">Costo (USD)</th>
-            <th class="px-4 py-3 font-medium">Costo (ARS)</th>
-            <th class="px-4 py-3 font-medium">Ganancia</th>
-            <th class="px-4 py-3 font-medium">Margen</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-rentabilidad"></tbody>
-      </table>
-      <p id="tabla-rentabilidad-vacio" class="hidden-modal text-center text-mute text-xs py-10">Todavía no cargaste productos.</p>
-    </div>
-  </div>
-
-  <div class="max-w-md">
-    <p class="text-mute text-xs mb-6 leading-relaxed">
-      Definí acá el código de descuento que los clientes pueden ingresar al hacer un pedido en la tienda,
-      junto con el porcentaje que se les aplica. Podés desactivarlo cuando quieras sin perder los datos cargados.
-    </p>
-
-    <div class="border border-line bg-panel clip-corner p-6">
-      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">DESCUENTOS</p>
-      <h3 class="font-display font-bold text-xl mb-5">Código de descuento</h3>
-
-      <form id="form-descuento" class="flex flex-col gap-4">
-        <div>
-          <label class="text-xs text-mute block mb-1.5">Código</label>
-          <input id="descuento-codigo" type="text" placeholder="Ej: NEXO10"
-            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-        </div>
-        <div>
-          <label class="text-xs text-mute block mb-1.5">Aplicar a</label>
-          <select id="descuento-producto"
-            class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
-            <option value="todos">Todos los productos</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-xs text-mute block mb-1.5">Porcentaje de descuento</label>
-          <input id="descuento-porcentaje" type="number" min="0" max="100" step="1" placeholder="10"
-            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-        </div>
-        <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
-          <input id="descuento-activo" type="checkbox" class="w-4 h-4 accent-violet" />
-          Código activo (visible para los clientes)
-        </label>
-
-        <p id="descuento-config-status" class="text-xs text-mute min-h-[1rem]"></p>
-
-        <button type="submit" id="btn-guardar-descuento"
-          class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
-          Guardar
-        </button>
-      </form>
-    </div>
-  </div>
-</main>
-
-<!-- ============ TEMPLATE: FILA RENTABILIDAD ============ -->
-<template id="tpl-fila-rentabilidad">
-  <tr class="hover:bg-panel2/60 transition-colors align-middle">
-    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
-    <td class="px-4 py-3 text-cyan font-display font-bold whitespace-nowrap" data-field="precio"></td>
-    <td class="px-4 py-3">
-      <input data-field="input-costo-usd" type="number" min="0" step="0.01" placeholder="0.00"
-        class="w-24 bg-panel2 border border-line px-2 py-1.5 text-sm focus:outline-none focus:border-cyan" />
-    </td>
-    <td class="px-4 py-3 text-mute whitespace-nowrap" data-field="costo-ars">—</td>
-    <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="ganancia">—</td>
-    <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="margen">—</td>
-  </tr>
-</template>
 
 <!-- ============ TEMPLATE: FILA PEDIDO ============ -->
 <template id="tpl-fila">
@@ -413,6 +295,7 @@
     <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
     <td class="px-4 py-3 text-mute" data-field="telefono"></td>
     <td class="px-4 py-3" data-field="servicio"></td>
+    <td class="px-4 py-3"><span data-field="vencimiento-badge" class="text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap"></span></td>
     <td class="px-4 py-3">
       <select data-field="estado-select" class="estado-select bg-panel2 border border-line px-2.5 py-1.5 text-xs focus:outline-none focus:border-cyan">
         <option value="espera">En espera</option>
@@ -433,16 +316,41 @@
   </tr>
 </template>
 
+<!-- ============ TEMPLATE: TARJETA PEDIDO (mobile) ============ -->
+<template id="tpl-tarjeta-pedido">
+  <div class="border border-line bg-panel clip-corner p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-display font-semibold text-sm text-ink truncate" data-field="nombre"></p>
+        <p class="text-xs text-mute mt-0.5" data-field="servicio-telefono"></p>
+        <p class="text-[11px] text-mute mt-0.5" data-field="fecha"></p>
+      </div>
+      <span data-field="vencimiento-badge" class="shrink-0 whitespace-nowrap text-[11px] font-semibold px-2.5 py-1 clip-corner border"></span>
+    </div>
+
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <select data-field="estado-select" class="estado-select bg-panel2 border border-line px-2.5 py-1.5 text-xs focus:outline-none focus:border-cyan">
+        <option value="espera">En espera</option>
+        <option value="activo">Activo</option>
+        <option value="cancelado">Cancelado</option>
+      </select>
+      <button data-field="pago-badge" class="text-[11px] font-semibold px-2.5 py-1.5 clip-corner border transition-colors"></button>
+    </div>
+
+    <div class="mt-3 flex items-center gap-2">
+      <button data-field="btn-chat" class="flex-1 text-[11px] text-cyan border border-cyan/40 py-2 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
+      <button data-field="btn-editar" class="flex-1 text-[11px] text-violet2 border border-violet/40 py-2 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+      <button data-field="btn-eliminar" class="flex-1 text-[11px] text-bad border border-bad/40 py-2 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+    </div>
+  </div>
+</template>
+
 <!-- ============ TEMPLATE: FILA PRODUCTO ============ -->
 <template id="tpl-fila-producto">
   <tr class="hover:bg-panel2/60 transition-colors align-middle">
     <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
     <td class="px-4 py-3 text-mute text-xs" data-field="categoria"></td>
     <td class="px-4 py-3 text-cyan font-display font-bold" data-field="precio"></td>
-    <td class="px-4 py-3">
-      <input data-field="input-orden" type="number" step="1"
-        class="w-16 bg-panel2 border border-line px-2 py-1.5 text-xs text-ink focus:outline-none focus:border-cyan" />
-    </td>
     <td class="px-4 py-3">
       <button data-field="btn-visible" class="toggle-btn"></button>
     </td>
@@ -458,46 +366,64 @@
   </tr>
 </template>
 
-<!-- ============ TEMPLATE: FILA VENCIMIENTO ============ -->
-<template id="tpl-fila-vencimiento">
+<!-- ============ TEMPLATE: TARJETA PRODUCTO (mobile) ============ -->
+<template id="tpl-tarjeta-producto">
+  <div class="border border-line bg-panel clip-corner p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-display font-semibold text-sm text-ink truncate" data-field="nombre"></p>
+        <p class="text-xs text-mute mt-0.5 capitalize" data-field="categoria"></p>
+      </div>
+      <span class="shrink-0 text-cyan font-display font-bold text-sm" data-field="precio"></span>
+    </div>
+
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <button data-field="badge-visible" class="toggle-btn"></button>
+      <button data-field="badge-stock" class="toggle-btn"></button>
+    </div>
+
+    <div class="mt-3 flex items-center gap-2">
+      <button data-field="btn-ver-mas" class="flex-1 text-[11px] text-violet2 border border-violet/40 py-2 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+      <button data-field="btn-eliminar" class="flex-1 text-[11px] text-bad border border-bad/40 py-2 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+    </div>
+  </div>
+</template>
+
+<!-- ============ TEMPLATE: FILA CUPÓN ============ -->
+<template id="tpl-fila-cupon">
   <tr class="hover:bg-panel2/60 transition-colors align-middle">
-    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
-    <td class="px-4 py-3 text-mute" data-field="telefono"></td>
-    <td class="px-4 py-3" data-field="cuenta"></td>
-    <td class="px-4 py-3 text-mute text-xs" data-field="correo"></td>
-    <td class="px-4 py-3 font-mono text-xs" data-field="password"></td>
-    <td class="px-4 py-3 text-mute text-xs whitespace-nowrap" data-field="vencimiento"></td>
+    <td class="px-4 py-3 font-display font-bold text-ink" data-field="codigo"></td>
+    <td class="px-4 py-3" data-field="descuento"></td>
+    <td class="px-4 py-3 text-mute text-xs" data-field="vence"></td>
+    <td class="px-4 py-3 text-mute" data-field="usados"></td>
     <td class="px-4 py-3">
-      <span data-field="badge-estado" class="text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap"></span>
+      <button data-field="btn-activo" class="toggle-btn"></button>
     </td>
     <td class="px-4 py-3">
       <div class="flex items-center gap-2 whitespace-nowrap">
-        <button data-field="btn-chat" class="text-[11px] text-cyan border border-cyan/40 px-2.5 py-1.5 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
-        <button data-field="btn-editar-vencimiento" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Editar</button>
-        <button data-field="btn-eliminar-vencimiento" class="text-[11px] text-bad border border-bad/40 px-2.5 py-1.5 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+        <button data-field="btn-editar-cupon" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+        <button data-field="btn-eliminar-cupon" class="text-[11px] text-bad border border-bad/40 px-2.5 py-1.5 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
       </div>
     </td>
   </tr>
 </template>
 
-<!-- ============ TEMPLATE: FILA PEDIDO PENDIENTE DE COMPLETAR (Vencimientos) ============ -->
-<template id="tpl-fila-pendiente">
-  <tr class="hover:bg-panel2/60 transition-colors align-middle opacity-90">
-    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
-    <td class="px-4 py-3 text-mute" data-field="telefono"></td>
-    <td class="px-4 py-3" data-field="cuenta"></td>
-    <td class="px-4 py-3 text-mute text-xs" colspan="2">Todavía sin correo/contraseña</td>
-    <td class="px-4 py-3 text-mute text-xs whitespace-nowrap">Sin definir</td>
-    <td class="px-4 py-3">
-      <span class="text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap bg-panel2 border-line text-mute">Pedido nuevo</span>
-    </td>
-    <td class="px-4 py-3">
-      <div class="flex items-center gap-2 whitespace-nowrap">
-        <button data-field="btn-chat" class="text-[11px] text-cyan border border-cyan/40 px-2.5 py-1.5 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
-        <button data-field="btn-completar" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Completar datos</button>
+<!-- ============ TEMPLATE: TARJETA CUPÓN (mobile) ============ -->
+<template id="tpl-tarjeta-cupon">
+  <div class="border border-line bg-panel clip-corner p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-display font-bold text-sm text-ink truncate" data-field="codigo"></p>
+        <p class="text-xs text-mute mt-0.5" data-field="descuento"></p>
+        <p class="text-[11px] text-mute mt-0.5" data-field="vence-usados"></p>
       </div>
-    </td>
-  </tr>
+      <button data-field="btn-activo" class="toggle-btn shrink-0"></button>
+    </div>
+    <div class="mt-3 flex items-center gap-2">
+      <button data-field="btn-editar-cupon" class="flex-1 text-[11px] text-violet2 border border-violet/40 py-2 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+      <button data-field="btn-eliminar-cupon" class="flex-1 text-[11px] text-bad border border-bad/40 py-2 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+    </div>
+  </div>
 </template>
 
 <!-- ============ MODAL: AGREGAR / EDITAR CLIENTE ============ -->
@@ -516,7 +442,7 @@
       </div>
       <div>
         <label class="text-xs text-mute block mb-1.5">Número de WhatsApp</label>
-        <input required id="cliente-telefono" type="tel" placeholder="+549 261 xxxxxxx"
+        <input id="cliente-telefono" type="tel" placeholder="+549 261 xxxxxxx"
           class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
       </div>
       <div>
@@ -531,6 +457,16 @@
           <option value="activo">Activo</option>
           <option value="cancelado">Cancelado</option>
         </select>
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Vencimiento (opcional)</label>
+        <input id="cliente-vencimiento" type="date"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink focus:outline-none focus:border-cyan" />
+      </div>
+      <div id="campo-cliente-enlace" class="hidden-modal">
+        <label class="text-xs text-mute block mb-1.5">Enlace de perfil (Instagram)</label>
+        <input id="cliente-enlace-perfil" type="url" placeholder="https://instagram.com/usuario"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
       </div>
 
       <p id="cliente-status" class="text-xs text-mute min-h-[1rem]"></p>
@@ -569,12 +505,6 @@
       <div>
         <label class="text-xs text-mute block mb-1.5">Precio (ARS)</label>
         <input required id="producto-precio" type="number" min="0" step="1" placeholder="3500"
-          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-      </div>
-
-      <div>
-        <label class="text-xs text-mute block mb-1.5">Orden (menor número aparece primero)</label>
-        <input id="producto-orden" type="number" step="1" placeholder="0"
           class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
       </div>
 
@@ -618,49 +548,54 @@
   </div>
 </div>
 
-<!-- ============ MODAL: AGREGAR / EDITAR VENCIMIENTO ============ -->
-<div id="modal-vencimiento" class="hidden-modal fixed inset-0 z-50 items-center justify-center px-4 bg-bg/80 backdrop-blur-sm overflow-y-auto py-8">
-  <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6 relative my-auto">
-    <button data-close-modal-vencimiento class="absolute top-4 right-4 text-mute hover:text-cyan text-sm">✕</button>
+<!-- ============ MODAL: AGREGAR / EDITAR CUPÓN ============ -->
+<div id="modal-cupon" class="hidden-modal fixed inset-0 z-50 items-center justify-center px-4 bg-bg/80 backdrop-blur-sm">
+  <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6 relative max-h-[90vh] overflow-y-auto">
+    <button data-close-modal-cupon class="absolute top-4 right-4 text-mute hover:text-cyan text-sm">✕</button>
+    <p id="modal-cupon-eyebrow" class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">CUPÓN</p>
+    <h3 id="modal-cupon-titulo" class="font-display font-bold text-xl mb-5">Agregar cupón</h3>
 
-    <p id="modal-vencimiento-titulo-eyebrow" class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">CLIENTE</p>
-    <h3 id="modal-vencimiento-titulo" class="font-display font-bold text-xl mb-5">Agregar cliente</h3>
+    <form id="form-cupon" class="flex flex-col gap-4">
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Código</label>
+        <input required id="cupon-codigo" type="text" placeholder="BIENVENIDO10"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        <p id="cupon-codigo-nota" class="text-[10px] text-mute/70 mt-1"></p>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Tipo</label>
+          <select id="cupon-tipo" class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+            <option value="percentage">Porcentaje</option>
+            <option value="fixed">Monto fijo</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Valor</label>
+          <input required id="cupon-valor" type="number" min="0" step="0.01" placeholder="10"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan" />
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Vence</label>
+          <input required id="cupon-vence" type="date"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink focus:outline-none focus:border-cyan" />
+        </div>
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Límite de usos</label>
+          <input required id="cupon-limite" type="number" min="1" step="1" placeholder="50"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan" />
+        </div>
+      </div>
+      <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+        <input id="cupon-activo" type="checkbox" checked class="w-4 h-4 accent-violet" />
+        Activo
+      </label>
 
-    <form id="form-vencimiento" class="flex flex-col gap-4">
-      <div>
-        <label class="text-xs text-mute block mb-1.5">Nombre completo</label>
-        <input required id="vencimiento-nombre" type="text" placeholder="Nombre del cliente"
-          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-      </div>
-      <div>
-        <label class="text-xs text-mute block mb-1.5">Número de WhatsApp</label>
-        <input required id="vencimiento-telefono" type="tel" placeholder="+549 261 xxxxxxx"
-          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-      </div>
-      <div>
-        <label class="text-xs text-mute block mb-1.5">Cuenta / Servicio</label>
-        <input required id="vencimiento-cuenta" type="text" placeholder="Ej: Netflix Premium"
-          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-      </div>
-      <div>
-        <label class="text-xs text-mute block mb-1.5">Correo de la cuenta</label>
-        <input id="vencimiento-correo" type="text" placeholder="correo@ejemplo.com"
-          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-      </div>
-      <div>
-        <label class="text-xs text-mute block mb-1.5">Contraseña de la cuenta</label>
-        <input id="vencimiento-password" type="text" placeholder="••••••••"
-          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-      </div>
-      <div>
-        <label class="text-xs text-mute block mb-1.5">Fecha límite</label>
-        <input required id="vencimiento-fecha" type="date"
-          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink focus:outline-none focus:border-cyan" />
-      </div>
+      <p id="cupon-modal-status" class="text-xs text-mute min-h-[1rem]"></p>
 
-      <p id="vencimiento-status" class="text-xs text-mute min-h-[1rem]"></p>
-
-      <button type="submit" id="btn-guardar-vencimiento"
+      <button type="submit" id="btn-guardar-cupon"
         class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
         Guardar
       </button>
@@ -699,15 +634,15 @@
     onSnapshot,
     doc,
     addDoc,
-    updateDoc,
     setDoc,
+    updateDoc,
     deleteDoc,
     serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const pedidosRef = collection(db, "pedidos_nexo");
   const productosRef = collection(db, "productos");
-  const configuracionRef = doc(db, "configuracion", "descuento");
+  const cuponesRef = collection(db, "cupones");
 
   // -----------------------------
   // Sesión: no se guarda entre visitas.
@@ -891,8 +826,7 @@
       listenersIniciados = true;
       iniciarEscuchaPedidos();
       iniciarEscuchaProductos();
-      iniciarEscuchaVencimientos();
-      iniciarEscuchaDescuento();
+      iniciarEscuchaCupones();
     }
   });
 
@@ -905,24 +839,21 @@
   // -----------------------------
   const tabPedidos = document.getElementById("tab-pedidos");
   const tabProductos = document.getElementById("tab-productos");
-  const tabVencimientos = document.getElementById("tab-vencimientos");
-  const tabFinanzas = document.getElementById("tab-finanzas");
+  const tabCupones = document.getElementById("tab-cupones");
   const seccionPedidos = document.getElementById("seccion-pedidos");
   const seccionProductos = document.getElementById("seccion-productos");
-  const seccionVencimientos = document.getElementById("seccion-vencimientos");
-  const seccionFinanzas = document.getElementById("seccion-finanzas");
+  const seccionCupones = document.getElementById("seccion-cupones");
 
-  function activarTab(activa) {
-    [tabPedidos, tabProductos, tabVencimientos, tabFinanzas].forEach((t) => t.classList.remove("tab-activo"));
-    [seccionPedidos, seccionProductos, seccionVencimientos, seccionFinanzas].forEach((s) => s.classList.add("hidden-modal"));
-    activa.tab.classList.add("tab-activo");
-    activa.seccion.classList.remove("hidden-modal");
+  function activarTab(tabActivo, seccionActiva) {
+    [tabPedidos, tabProductos, tabCupones].forEach((t) => t.classList.remove("tab-activo"));
+    [seccionPedidos, seccionProductos, seccionCupones].forEach((s) => s.classList.add("hidden-modal"));
+    tabActivo.classList.add("tab-activo");
+    seccionActiva.classList.remove("hidden-modal");
   }
 
-  tabPedidos.addEventListener("click", () => activarTab({ tab: tabPedidos, seccion: seccionPedidos }));
-  tabProductos.addEventListener("click", () => activarTab({ tab: tabProductos, seccion: seccionProductos }));
-  tabVencimientos.addEventListener("click", () => activarTab({ tab: tabVencimientos, seccion: seccionVencimientos }));
-  tabFinanzas.addEventListener("click", () => activarTab({ tab: tabFinanzas, seccion: seccionFinanzas }));
+  tabPedidos.addEventListener("click", () => activarTab(tabPedidos, seccionPedidos));
+  tabProductos.addEventListener("click", () => activarTab(tabProductos, seccionProductos));
+  tabCupones.addEventListener("click", () => activarTab(tabCupones, seccionCupones));
 
   // -----------------------------
   // Estado en memoria + render — PEDIDOS
@@ -931,9 +862,11 @@
 
   const tabla = document.getElementById("tabla-pedidos");
   const tablaVacio = document.getElementById("tabla-vacio");
+  const tarjetasPedidos = document.getElementById("tarjetas-pedidos");
   const inputBuscar = document.getElementById("input-buscar");
   const selectFiltroEstado = document.getElementById("select-filtro-estado");
   const tpl = document.getElementById("tpl-fila");
+  const tplTarjeta = document.getElementById("tpl-tarjeta-pedido");
 
   function iniciarEscuchaPedidos() {
     const q = query(pedidosRef, orderBy("fecha", "desc"));
@@ -941,7 +874,6 @@
       pedidosCache = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
       actualizarContadores();
       renderTabla();
-      renderTablaVencimientos();
     });
   }
 
@@ -981,9 +913,31 @@
       : "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border transition-colors bg-warn/10 border-warn/50 text-warn";
   }
 
+  // Devuelve { texto, clase } según cuánto falta para el vencimiento cargado.
+  // Sin fecha cargada -> neutro. Vencido -> rojo. 3 días o menos -> naranja (por vencer). Resto -> verde.
+  function estadoVencimiento(vencimientoStr) {
+    const base = "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap";
+    if (!vencimientoStr) {
+      return { texto: "Sin fecha", clase: base + " bg-mute/10 border-mute/30 text-mute" };
+    }
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const fechaVence = new Date(vencimientoStr + "T00:00:00");
+    const diffDias = Math.round((fechaVence - hoy) / (1000 * 60 * 60 * 24));
+
+    if (diffDias < 0) {
+      return { texto: "Vencido", clase: base + " bg-bad/10 border-bad/50 text-bad" };
+    }
+    if (diffDias <= 3) {
+      return { texto: diffDias === 0 ? "Vence hoy" : `Vence en ${diffDias}d`, clase: base + " bg-warn/10 border-warn/50 text-warn" };
+    }
+    return { texto: fechaVence.toLocaleDateString("es-AR"), clase: base + " bg-ok/10 border-ok/40 text-ok" };
+  }
+
   function renderTabla() {
     const lista = pedidosFiltrados();
     tabla.innerHTML = "";
+    tarjetasPedidos.innerHTML = "";
 
     if (lista.length === 0) {
       tablaVacio.classList.remove("hidden-modal");
@@ -1000,6 +954,11 @@
       nodo.querySelector('[data-field="telefono"]').textContent = pedido.telefono || "—";
       nodo.querySelector('[data-field="servicio"]').textContent = pedido.servicio || "—";
 
+      const vencInfo = estadoVencimiento(pedido.vencimiento);
+      const vencBadge = nodo.querySelector('[data-field="vencimiento-badge"]');
+      vencBadge.textContent = vencInfo.texto;
+      vencBadge.className = vencInfo.clase;
+
       const estadoSelect = nodo.querySelector('[data-field="estado-select"]');
       estadoSelect.value = pedido.estado || "espera";
       estadoSelect.addEventListener("change", async () => {
@@ -1012,11 +971,18 @@
         await updateDoc(doc(db, "pedidos_nexo", pedido.id), { pagado: !pedido.pagado });
       });
 
-      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", () => {
-        const mensaje = `Hola ${pedido.nombre || ""}! Te escribimos por tu pedido de ${pedido.servicio || "tu servicio"} en NEXO.`;
-        const telefonoLimpio = (pedido.telefono || "").replace(/[^0-9]/g, "");
-        window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
-      });
+      const btnChat = nodo.querySelector('[data-field="btn-chat"]');
+      if (!pedido.telefono) {
+        btnChat.disabled = true;
+        btnChat.title = "Cargá el teléfono en Editar para poder escribirle";
+        btnChat.className = "text-[11px] text-mute border border-line px-2.5 py-1.5 opacity-50 cursor-not-allowed";
+      } else {
+        btnChat.addEventListener("click", () => {
+          const mensaje = `Hola ${pedido.nombre || ""}! Te escribimos por tu pedido de ${pedido.servicio || "tu servicio"} en NEXO.`;
+          const telefonoLimpio = pedido.telefono.replace(/[^0-9]/g, "");
+          window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
+        });
+      }
 
       nodo.querySelector('[data-field="btn-editar"]').addEventListener("click", () => {
         abrirModalCliente(pedido);
@@ -1030,6 +996,50 @@
       });
 
       tabla.appendChild(nodo);
+
+      // Tarjeta mobile: mismos datos y acciones que la fila de escritorio, sin recortar nada
+      const tarjeta = tplTarjeta.content.cloneNode(true);
+      tarjeta.querySelector('[data-field="nombre"]').textContent = pedido.nombre || "—";
+      tarjeta.querySelector('[data-field="servicio-telefono"]').textContent =
+        `${pedido.servicio || "—"} · ${pedido.telefono || "sin teléfono"}`;
+      tarjeta.querySelector('[data-field="fecha"]').textContent = "Llegada: " + formatearFecha(pedido.fecha);
+
+      const vencBadgeTarjeta = tarjeta.querySelector('[data-field="vencimiento-badge"]');
+      vencBadgeTarjeta.textContent = vencInfo.texto;
+      vencBadgeTarjeta.className = "shrink-0 whitespace-nowrap " + vencInfo.clase;
+
+      const estadoSelectTarjeta = tarjeta.querySelector('[data-field="estado-select"]');
+      estadoSelectTarjeta.value = pedido.estado || "espera";
+      estadoSelectTarjeta.addEventListener("change", async () => {
+        await updateDoc(doc(db, "pedidos_nexo", pedido.id), { estado: estadoSelectTarjeta.value });
+      });
+
+      const pagoBtnTarjeta = tarjeta.querySelector('[data-field="pago-badge"]');
+      pintarBadgePago(pagoBtnTarjeta, !!pedido.pagado);
+      pagoBtnTarjeta.addEventListener("click", async () => {
+        await updateDoc(doc(db, "pedidos_nexo", pedido.id), { pagado: !pedido.pagado });
+      });
+
+      const btnChatTarjeta = tarjeta.querySelector('[data-field="btn-chat"]');
+      if (!pedido.telefono) {
+        btnChatTarjeta.disabled = true;
+        btnChatTarjeta.className = "flex-1 text-[11px] text-mute border border-line py-2 opacity-50 cursor-not-allowed";
+      } else {
+        btnChatTarjeta.addEventListener("click", () => {
+          const mensaje = `Hola ${pedido.nombre || ""}! Te escribimos por tu pedido de ${pedido.servicio || "tu servicio"} en NEXO.`;
+          const telefonoLimpio = pedido.telefono.replace(/[^0-9]/g, "");
+          window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
+        });
+      }
+
+      tarjeta.querySelector('[data-field="btn-editar"]').addEventListener("click", () => abrirModalCliente(pedido));
+      tarjeta.querySelector('[data-field="btn-eliminar"]').addEventListener("click", async () => {
+        if (window.confirm(`¿Eliminar el pedido de ${pedido.nombre || "este cliente"}? Esta acción no se puede deshacer.`)) {
+          await deleteDoc(doc(db, "pedidos_nexo", pedido.id));
+        }
+      });
+
+      tarjetasPedidos.appendChild(tarjeta);
     });
   }
 
@@ -1045,6 +1055,9 @@
   const clienteTelefono = document.getElementById("cliente-telefono");
   const clienteServicio = document.getElementById("cliente-servicio");
   const clienteEstado = document.getElementById("cliente-estado");
+  const clienteVencimiento = document.getElementById("cliente-vencimiento");
+  const campoClienteEnlace = document.getElementById("campo-cliente-enlace");
+  const clienteEnlacePerfil = document.getElementById("cliente-enlace-perfil");
   const clienteStatus = document.getElementById("cliente-status");
   const modalClienteTitulo = document.getElementById("modal-cliente-titulo");
   const modalClienteEyebrow = document.getElementById("modal-cliente-titulo-eyebrow");
@@ -1056,6 +1069,10 @@
     formCliente.reset();
     clienteStatus.textContent = "";
 
+    // El enlace de perfil solo aplica a pedidos de seguidores; se ve si el pedido ya lo trae cargado
+    campoClienteEnlace.classList.toggle("hidden-modal", !(pedido && pedido.enlacePerfil));
+    clienteEnlacePerfil.value = (pedido && pedido.enlacePerfil) || "";
+
     if (pedido) {
       pedidoEnEdicionId = pedido.id;
       modalClienteEyebrow.textContent = "EDITAR CLIENTE";
@@ -1064,11 +1081,13 @@
       clienteTelefono.value = pedido.telefono || "";
       clienteServicio.value = pedido.servicio || "";
       clienteEstado.value = pedido.estado || "espera";
+      clienteVencimiento.value = pedido.vencimiento || "";
     } else {
       pedidoEnEdicionId = null;
       modalClienteEyebrow.textContent = "NUEVO CLIENTE";
       modalClienteTitulo.textContent = "Agregar cliente";
       clienteEstado.value = "espera";
+      clienteVencimiento.value = "";
     }
 
     modalCliente.classList.remove("hidden-modal");
@@ -1093,8 +1112,12 @@
       nombre: clienteNombre.value.trim(),
       telefono: clienteTelefono.value.trim(),
       servicio: clienteServicio.value.trim(),
-      estado: clienteEstado.value
+      estado: clienteEstado.value,
+      vencimiento: clienteVencimiento.value || null
     };
+    if (!campoClienteEnlace.classList.contains("hidden-modal")) {
+      datos.enlacePerfil = clienteEnlacePerfil.value.trim();
+    }
 
     btnGuardarCliente.disabled = true;
     btnGuardarCliente.textContent = "Guardando...";
@@ -1126,33 +1149,20 @@
 
   const tablaProductos = document.getElementById("tabla-productos");
   const tablaProductosVacio = document.getElementById("tabla-productos-vacio");
+  const tarjetasProductos = document.getElementById("tarjetas-productos");
   const tplProducto = document.getElementById("tpl-fila-producto");
-  const inputBuscarProductos = document.getElementById("input-buscar-productos");
+  const tplTarjetaProducto = document.getElementById("tpl-tarjeta-producto");
 
   const CATEGORIA_LABEL = {
     streaming: "Streaming",
     seguidores: "Seguidores"
   };
 
-  function productosFiltrados() {
-    const texto = inputBuscarProductos.value.trim().toLowerCase();
-    if (!texto) return productosCache;
-    return productosCache.filter((p) => {
-      const nombre = (p.nombre || "").toLowerCase();
-      const categoria = (CATEGORIA_LABEL[p.categoria] || p.categoria || "").toLowerCase();
-      return nombre.includes(texto) || categoria.includes(texto);
-    });
-  }
-
-  inputBuscarProductos.addEventListener("input", renderTablaProductos);
-
   function iniciarEscuchaProductos() {
     const q = query(productosRef, orderBy("nombre", "asc"));
     onSnapshot(q, (snapshot) => {
       productosCache = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
       renderTablaProductos();
-      actualizarOpcionesProductoDescuento();
-      renderTablaRentabilidad();
     });
   }
 
@@ -1168,32 +1178,23 @@
 
   function renderTablaProductos() {
     tablaProductos.innerHTML = "";
+    tarjetasProductos.innerHTML = "";
 
-    const lista = productosFiltrados();
-
-    if (lista.length === 0) {
-      tablaProductosVacio.textContent =
-        productosCache.length === 0 ? "Todavía no cargaste productos." : "No hay productos que coincidan con la búsqueda.";
+    if (productosCache.length === 0) {
       tablaProductosVacio.classList.remove("hidden-modal");
     } else {
       tablaProductosVacio.classList.add("hidden-modal");
     }
 
-    lista.forEach((producto) => {
+    productosCache.forEach((producto) => {
+      const visible = producto.visible !== false; // por defecto visible si no está definido
+      const hayStock = producto.hayStock !== false; // por defecto con stock si no está definido
+
       const nodo = tplProducto.content.cloneNode(true);
 
       nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre || "—";
       nodo.querySelector('[data-field="categoria"]').textContent = CATEGORIA_LABEL[producto.categoria] || producto.categoria || "—";
       nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
-
-      const inputOrden = nodo.querySelector('[data-field="input-orden"]');
-      inputOrden.value = producto.orden ?? 0;
-      inputOrden.addEventListener("change", async () => {
-        await updateDoc(doc(db, "productos", producto.id), { orden: Number(inputOrden.value) || 0 });
-      });
-
-      const visible = producto.visible !== false; // por defecto visible si no está definido
-      const hayStock = producto.hayStock !== false; // por defecto con stock si no está definido
 
       const btnVisible = nodo.querySelector('[data-field="btn-visible"]');
       pintarToggle(btnVisible, visible, "Visible", "Oculto");
@@ -1219,6 +1220,32 @@
       });
 
       tablaProductos.appendChild(nodo);
+
+      // Tarjeta mobile: mismos datos y acciones que la fila de escritorio, sin recortar nada
+      const tarjeta = tplTarjetaProducto.content.cloneNode(true);
+      tarjeta.querySelector('[data-field="nombre"]').textContent = producto.nombre || "—";
+      tarjeta.querySelector('[data-field="categoria"]').textContent = CATEGORIA_LABEL[producto.categoria] || producto.categoria || "—";
+      tarjeta.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
+
+      const badgeVisibleTarjeta = tarjeta.querySelector('[data-field="badge-visible"]');
+      pintarToggle(badgeVisibleTarjeta, visible, "Visible", "Oculto");
+      badgeVisibleTarjeta.addEventListener("click", async () => {
+        await updateDoc(doc(db, "productos", producto.id), { visible: !visible });
+      });
+
+      const badgeStockTarjeta = tarjeta.querySelector('[data-field="badge-stock"]');
+      pintarToggle(badgeStockTarjeta, hayStock, "Con stock", "Sin stock");
+      badgeStockTarjeta.addEventListener("click", async () => {
+        await updateDoc(doc(db, "productos", producto.id), { hayStock: !hayStock });
+      });
+
+      tarjeta.querySelector('[data-field="btn-ver-mas"]').addEventListener("click", () => abrirModalProducto(producto));
+      tarjeta.querySelector('[data-field="btn-eliminar"]').addEventListener("click", async () => {
+        if (window.confirm(`¿Eliminar "${producto.nombre || "este producto"}"? Esta acción no se puede deshacer.`)) {
+          await deleteDoc(doc(db, "productos", producto.id));
+        }
+      });
+      tarjetasProductos.appendChild(tarjeta);
     });
   }
 
@@ -1235,7 +1262,6 @@
   const productoDescripcion = document.getElementById("producto-descripcion");
   const productoCaracteristicas = document.getElementById("producto-caracteristicas");
   const productoImagen = document.getElementById("producto-imagen");
-  const productoOrden = document.getElementById("producto-orden");
   const productoVisible = document.getElementById("producto-visible");
   const productoStock = document.getElementById("producto-stock");
   const productoStatus = document.getElementById("producto-status");
@@ -1259,7 +1285,6 @@
       productoDescripcion.value = producto.descripcion || "";
       productoCaracteristicas.value = Array.isArray(producto.caracteristicas) ? producto.caracteristicas.join("\n") : "";
       productoImagen.value = producto.imagen || "";
-      productoOrden.value = producto.orden ?? 0;
       productoVisible.checked = producto.visible !== false;
       productoStock.checked = producto.hayStock !== false;
     } else {
@@ -1267,7 +1292,6 @@
       modalProductoEyebrow.textContent = "NUEVO PRODUCTO";
       modalProductoTitulo.textContent = "Agregar producto";
       productoCategoria.value = "streaming";
-      productoOrden.value = 0;
       productoVisible.checked = true;
       productoStock.checked = true;
     }
@@ -1301,7 +1325,6 @@
       descripcion: productoDescripcion.value.trim(),
       caracteristicas,
       imagen: productoImagen.value.trim(),
-      orden: Number(productoOrden.value) || 0,
       visible: productoVisible.checked,
       hayStock: productoStock.checked
     };
@@ -1325,426 +1348,174 @@
     }
   });
 
-  // -----------------------------
-  // Estado en memoria + render — VENCIMIENTOS (clientes)
-  // -----------------------------
-  const clientesRef = collection(db, "clientes");
-  let clientesCache = [];
+  // =========================================================
+  // CUPONES
+  // =========================================================
+  let cuponesCache = [];
+  const tablaCupones = document.getElementById("tabla-cupones");
+  const tablaCuponesVacio = document.getElementById("tabla-cupones-vacio");
+  const tarjetasCupones = document.getElementById("tarjetas-cupones");
+  const tplFilaCupon = document.getElementById("tpl-fila-cupon");
+  const tplTarjetaCupon = document.getElementById("tpl-tarjeta-cupon");
 
-  const tablaVencimientos = document.getElementById("tabla-vencimientos");
-  const tablaVencimientosVacio = document.getElementById("tabla-vencimientos-vacio");
-  const tplVencimiento = document.getElementById("tpl-fila-vencimiento");
-
-  function iniciarEscuchaVencimientos() {
-    const q = query(clientesRef, orderBy("fechaVencimiento", "asc"));
-    onSnapshot(q, (snapshot) => {
-      clientesCache = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
-      renderTablaVencimientos();
+  function iniciarEscuchaCupones() {
+    onSnapshot(cuponesRef, (snapshot) => {
+      cuponesCache = snapshot.docs
+        .map((docSnap) => ({ codigo: docSnap.id, ...docSnap.data() }))
+        .sort((a, b) => a.codigo.localeCompare(b.codigo));
+      renderCupones();
     });
   }
 
-  function diasRestantes(fechaStr) {
-    if (!fechaStr) return null;
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-    const venc = new Date(fechaStr + "T00:00:00");
-    return Math.round((venc - hoy) / (1000 * 60 * 60 * 24));
+  function formatearDescuentoCupon(c) {
+    return c.discountType === "percentage" ? `${c.value}%` : formatearPrecio(c.value);
   }
 
-  function formatearFechaSimple(fechaStr) {
+  function formatearFechaCorta(fechaStr) {
     if (!fechaStr) return "—";
-    const [y, m, d] = fechaStr.split("-");
-    return `${d}/${m}/${y}`;
+    const d = new Date(fechaStr + "T00:00:00");
+    return d.toLocaleDateString("es-AR");
   }
 
-  function pintarBadgeEstadoVencimiento(el, dias) {
-    if (dias === null) {
-      el.textContent = "—";
-      el.className = "text-[11px] text-mute";
-      return;
-    }
-    if (dias <= 0) {
-      el.textContent = "Vencido";
-      el.className = "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap bg-bad/10 border-bad/50 text-bad";
-    } else if (dias <= 5) {
-      el.textContent = `Por vencer (${dias}d)`;
-      el.className = "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap bg-warn/10 border-warn/50 text-warn";
-    } else {
-      el.textContent = `Activo (${dias}d)`;
-      el.className = "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap bg-ok/10 border-ok/50 text-ok";
-    }
-  }
+  function renderCupones() {
+    tablaCupones.innerHTML = "";
+    tarjetasCupones.innerHTML = "";
+    tablaCuponesVacio.classList.toggle("hidden-modal", cuponesCache.length > 0);
 
-  function renderTablaVencimientos() {
-    tablaVencimientos.innerHTML = "";
+    cuponesCache.forEach((cupon) => {
+      const activo = cupon.active !== false;
+      const usadosTexto = `${cupon.usedCount || 0} / ${cupon.usageLimit ?? "∞"}`;
 
-    const idsConvertidos = new Set(clientesCache.filter((c) => c.pedidoId).map((c) => c.pedidoId));
-    const pendientes = pedidosCache.filter(
-      (p) => p.estado !== "cancelado" && !idsConvertidos.has(p.id)
-    );
+      const fila = tplFilaCupon.content.cloneNode(true);
+      fila.querySelector('[data-field="codigo"]').textContent = cupon.codigo;
+      fila.querySelector('[data-field="descuento"]').textContent = formatearDescuentoCupon(cupon);
+      fila.querySelector('[data-field="vence"]').textContent = formatearFechaCorta(cupon.validUntil);
+      fila.querySelector('[data-field="usados"]').textContent = usadosTexto;
 
-    if (clientesCache.length === 0 && pendientes.length === 0) {
-      tablaVencimientosVacio.classList.remove("hidden-modal");
-    } else {
-      tablaVencimientosVacio.classList.add("hidden-modal");
-    }
-
-    clientesCache.forEach((cliente) => {
-      const nodo = tplVencimiento.content.cloneNode(true);
-
-      nodo.querySelector('[data-field="nombre"]').textContent = cliente.nombre || "—";
-      nodo.querySelector('[data-field="telefono"]').textContent = cliente.telefono || "—";
-      nodo.querySelector('[data-field="cuenta"]').textContent = cliente.cuenta || "—";
-      nodo.querySelector('[data-field="correo"]').textContent = cliente.correo || "—";
-      nodo.querySelector('[data-field="password"]').textContent = cliente.password || "—";
-      nodo.querySelector('[data-field="vencimiento"]').textContent = formatearFechaSimple(cliente.fechaVencimiento);
-
-      const dias = diasRestantes(cliente.fechaVencimiento);
-      pintarBadgeEstadoVencimiento(nodo.querySelector('[data-field="badge-estado"]'), dias);
-
-      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", () => {
-        const mensaje =
-          `Hola ${cliente.nombre || ""}! Te avisamos que tu servicio de ${cliente.cuenta || "tu cuenta"} ` +
-          `va a vencer el día ${formatearFechaSimple(cliente.fechaVencimiento)}. ` +
-          `¿Deseas renovar para no perder tu historial ni tu cuenta?`;
-        const telefonoLimpio = (cliente.telefono || "").replace(/[^0-9]/g, "");
-        if (!telefonoLimpio) {
-          alert("Este cliente no tiene un WhatsApp cargado todavía. Editalo para agregarlo.");
-          return;
-        }
-        window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
+      const btnActivoFila = fila.querySelector('[data-field="btn-activo"]');
+      pintarToggle(btnActivoFila, activo, "Activo", "Inactivo");
+      btnActivoFila.addEventListener("click", async () => {
+        await updateDoc(doc(db, "cupones", cupon.codigo), { active: !activo });
       });
 
-      nodo.querySelector('[data-field="btn-editar-vencimiento"]').addEventListener("click", () => {
-        abrirModalVencimiento(cliente);
-      });
-
-      nodo.querySelector('[data-field="btn-eliminar-vencimiento"]').addEventListener("click", async () => {
-        const confirmar = window.confirm(`¿Eliminar a "${cliente.nombre || "este cliente"}"? Esta acción no se puede deshacer.`);
-        if (confirmar) {
-          await deleteDoc(doc(db, "clientes", cliente.id));
+      fila.querySelector('[data-field="btn-editar-cupon"]').addEventListener("click", () => abrirModalCupon(cupon));
+      fila.querySelector('[data-field="btn-eliminar-cupon"]').addEventListener("click", async () => {
+        if (window.confirm(`¿Eliminar el cupón "${cupon.codigo}"? Esta acción no se puede deshacer.`)) {
+          await deleteDoc(doc(db, "cupones", cupon.codigo));
         }
       });
+      tablaCupones.appendChild(fila);
 
-      tablaVencimientos.appendChild(nodo);
-    });
+      const tarjeta = tplTarjetaCupon.content.cloneNode(true);
+      tarjeta.querySelector('[data-field="codigo"]').textContent = cupon.codigo;
+      tarjeta.querySelector('[data-field="descuento"]').textContent = formatearDescuentoCupon(cupon);
+      tarjeta.querySelector('[data-field="vence-usados"]').textContent =
+        `Vence: ${formatearFechaCorta(cupon.validUntil)} · Usados: ${usadosTexto}`;
 
-    // Pedidos que todavía no tienen ficha de cliente/vencimiento cargada:
-    // aparecen solos acá para que se les complete correo, contraseña y fecha límite.
-    const tplPendiente = document.getElementById("tpl-fila-pendiente");
-    pendientes.forEach((pedido) => {
-      const nodo = tplPendiente.content.cloneNode(true);
+      const btnActivoTarjeta = tarjeta.querySelector('[data-field="btn-activo"]');
+      pintarToggle(btnActivoTarjeta, activo, "Activo", "Inactivo");
+      btnActivoTarjeta.addEventListener("click", async () => {
+        await updateDoc(doc(db, "cupones", cupon.codigo), { active: !activo });
+      });
 
-      nodo.querySelector('[data-field="nombre"]').textContent = pedido.nombre || "—";
-      nodo.querySelector('[data-field="telefono"]').textContent = pedido.telefono || "—";
-      nodo.querySelector('[data-field="cuenta"]').textContent = pedido.servicio || "—";
-
-      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", () => {
-        const telefonoLimpio = (pedido.telefono || "").replace(/[^0-9]/g, "");
-        if (!telefonoLimpio) {
-          alert("Este pedido todavía no tiene WhatsApp cargado. Usá 'Completar datos' para agregarlo.");
-          return;
+      tarjeta.querySelector('[data-field="btn-editar-cupon"]').addEventListener("click", () => abrirModalCupon(cupon));
+      tarjeta.querySelector('[data-field="btn-eliminar-cupon"]').addEventListener("click", async () => {
+        if (window.confirm(`¿Eliminar el cupón "${cupon.codigo}"? Esta acción no se puede deshacer.`)) {
+          await deleteDoc(doc(db, "cupones", cupon.codigo));
         }
-        const mensaje = `Hola ${pedido.nombre || ""}! Te escribimos por tu pedido de ${pedido.servicio || "tu servicio"} en NEXO.`;
-        window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
       });
-
-      nodo.querySelector('[data-field="btn-completar"]').addEventListener("click", () => {
-        abrirModalVencimiento(
-          {
-            nombre: pedido.nombre || "",
-            telefono: pedido.telefono || "",
-            cuenta: pedido.servicio || "",
-            correo: "",
-            password: "",
-            fechaVencimiento: ""
-          },
-          pedido.id
-        );
-      });
-
-      tablaVencimientos.appendChild(nodo);
+      tarjetasCupones.appendChild(tarjeta);
     });
   }
 
-  document.getElementById("btn-agregar-vencimiento").addEventListener("click", () => abrirModalVencimiento(null));
+  // Modal agregar/editar cupón — el código es el ID del documento, así que no se puede editar
+  const modalCupon = document.getElementById("modal-cupon");
+  const formCupon = document.getElementById("form-cupon");
+  const cuponCodigo = document.getElementById("cupon-codigo");
+  const cuponCodigoNota = document.getElementById("cupon-codigo-nota");
+  const cuponTipo = document.getElementById("cupon-tipo");
+  const cuponValor = document.getElementById("cupon-valor");
+  const cuponVence = document.getElementById("cupon-vence");
+  const cuponLimite = document.getElementById("cupon-limite");
+  const cuponActivo = document.getElementById("cupon-activo");
+  const cuponModalStatus = document.getElementById("cupon-modal-status");
+  const modalCuponTitulo = document.getElementById("modal-cupon-titulo");
+  const modalCuponEyebrow = document.getElementById("modal-cupon-eyebrow");
+  const btnGuardarCupon = document.getElementById("btn-guardar-cupon");
+  let cuponEnEdicionCodigo = null;
 
-  // -----------------------------
-  // Modal agregar / editar vencimiento
-  // -----------------------------
-  const modalVencimiento = document.getElementById("modal-vencimiento");
-  const formVencimiento = document.getElementById("form-vencimiento");
-  const vencimientoNombre = document.getElementById("vencimiento-nombre");
-  const vencimientoTelefono = document.getElementById("vencimiento-telefono");
-  const vencimientoCuenta = document.getElementById("vencimiento-cuenta");
-  const vencimientoCorreo = document.getElementById("vencimiento-correo");
-  const vencimientoPassword = document.getElementById("vencimiento-password");
-  const vencimientoFecha = document.getElementById("vencimiento-fecha");
-  const vencimientoStatus = document.getElementById("vencimiento-status");
-  const modalVencimientoTitulo = document.getElementById("modal-vencimiento-titulo");
-  const modalVencimientoEyebrow = document.getElementById("modal-vencimiento-titulo-eyebrow");
-  const btnGuardarVencimiento = document.getElementById("btn-guardar-vencimiento");
+  function abrirModalCupon(cupon) {
+    formCupon.reset();
+    cuponModalStatus.textContent = "";
 
-  let vencimientoEnEdicionId = null;
-  let pedidoIdParaVincular = null;
-
-  function abrirModalVencimiento(cliente, pedidoId) {
-    formVencimiento.reset();
-    vencimientoStatus.textContent = "";
-    pedidoIdParaVincular = pedidoId || null;
-
-    if (cliente && cliente.id) {
-      vencimientoEnEdicionId = cliente.id;
-      modalVencimientoEyebrow.textContent = "EDITAR CLIENTE";
-      modalVencimientoTitulo.textContent = "Editar cliente";
-      vencimientoNombre.value = cliente.nombre || "";
-      vencimientoTelefono.value = cliente.telefono || "";
-      vencimientoCuenta.value = cliente.cuenta || "";
-      vencimientoCorreo.value = cliente.correo || "";
-      vencimientoPassword.value = cliente.password || "";
-      vencimientoFecha.value = cliente.fechaVencimiento || "";
-    } else if (cliente) {
-      // Viene de un pedido sin ficha todavía: se precargan sus datos.
-      vencimientoEnEdicionId = null;
-      modalVencimientoEyebrow.textContent = "COMPLETAR DATOS";
-      modalVencimientoTitulo.textContent = "Completar datos del pedido";
-      vencimientoNombre.value = cliente.nombre || "";
-      vencimientoTelefono.value = cliente.telefono || "";
-      vencimientoCuenta.value = cliente.cuenta || "";
-      vencimientoCorreo.value = "";
-      vencimientoPassword.value = "";
-      vencimientoFecha.value = "";
+    if (cupon) {
+      cuponEnEdicionCodigo = cupon.codigo;
+      modalCuponEyebrow.textContent = "EDITAR CUPÓN";
+      modalCuponTitulo.textContent = "Editar cupón";
+      cuponCodigo.value = cupon.codigo;
+      cuponCodigo.disabled = true;
+      cuponCodigoNota.textContent = "El código no se puede cambiar — creá uno nuevo si necesitás otro.";
+      cuponTipo.value = cupon.discountType || "percentage";
+      cuponValor.value = cupon.value ?? "";
+      cuponVence.value = cupon.validUntil || "";
+      cuponLimite.value = cupon.usageLimit ?? "";
+      cuponActivo.checked = cupon.active !== false;
     } else {
-      vencimientoEnEdicionId = null;
-      modalVencimientoEyebrow.textContent = "NUEVO CLIENTE";
-      modalVencimientoTitulo.textContent = "Agregar cliente";
+      cuponEnEdicionCodigo = null;
+      modalCuponEyebrow.textContent = "NUEVO CUPÓN";
+      modalCuponTitulo.textContent = "Agregar cupón";
+      cuponCodigo.disabled = false;
+      cuponCodigoNota.textContent = "";
+      cuponTipo.value = "percentage";
+      cuponActivo.checked = true;
     }
 
-    modalVencimiento.classList.remove("hidden-modal");
-    modalVencimiento.classList.add("flex");
+    modalCupon.classList.remove("hidden-modal");
+    modalCupon.classList.add("flex");
   }
-
-  function cerrarModalVencimiento() {
-    modalVencimiento.classList.add("hidden-modal");
-    modalVencimiento.classList.remove("flex");
+  function cerrarModalCupon() {
+    modalCupon.classList.add("hidden-modal");
+    modalCupon.classList.remove("flex");
   }
-
-  document.querySelectorAll("[data-close-modal-vencimiento]").forEach((btn) => btn.addEventListener("click", cerrarModalVencimiento));
-  modalVencimiento.addEventListener("click", (e) => {
-    if (e.target === modalVencimiento) cerrarModalVencimiento();
+  document.getElementById("btn-agregar-cupon").addEventListener("click", () => abrirModalCupon(null));
+  modalCupon.querySelectorAll("[data-close-modal-cupon]").forEach((btn) => btn.addEventListener("click", cerrarModalCupon));
+  modalCupon.addEventListener("click", (e) => {
+    if (e.target === modalCupon) cerrarModalCupon();
   });
 
-  formVencimiento.addEventListener("submit", async (e) => {
+  formCupon.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const datos = {
-      nombre: vencimientoNombre.value.trim(),
-      telefono: vencimientoTelefono.value.trim(),
-      cuenta: vencimientoCuenta.value.trim(),
-      correo: vencimientoCorreo.value.trim(),
-      password: vencimientoPassword.value.trim(),
-      fechaVencimiento: vencimientoFecha.value
+      discountType: cuponTipo.value,
+      value: Number(cuponValor.value) || 0,
+      validUntil: cuponVence.value,
+      usageLimit: Number(cuponLimite.value) || 1,
+      active: cuponActivo.checked
     };
 
-    if (!vencimientoEnEdicionId && pedidoIdParaVincular) {
-      datos.pedidoId = pedidoIdParaVincular;
-    }
-
-    btnGuardarVencimiento.disabled = true;
-    btnGuardarVencimiento.textContent = "Guardando...";
+    btnGuardarCupon.disabled = true;
+    btnGuardarCupon.textContent = "Guardando...";
+    cuponModalStatus.textContent = "";
 
     try {
-      if (vencimientoEnEdicionId) {
-        await updateDoc(doc(db, "clientes", vencimientoEnEdicionId), datos);
+      if (cuponEnEdicionCodigo) {
+        await updateDoc(doc(db, "cupones", cuponEnEdicionCodigo), datos);
       } else {
-        await addDoc(clientesRef, datos);
+        const codigo = cuponCodigo.value.trim().toUpperCase();
+        if (!codigo) throw new Error("Código vacío");
+        datos.usedCount = 0;
+        await setDoc(doc(db, "cupones", codigo), datos);
       }
-      pedidoIdParaVincular = null;
-      cerrarModalVencimiento();
+      cerrarModalCupon();
     } catch (err) {
       console.error(err);
-      vencimientoStatus.textContent = "No se pudo guardar. Intentá de nuevo.";
+      cuponModalStatus.textContent = "No se pudo guardar. Revisá el código e intentá de nuevo.";
     } finally {
-      btnGuardarVencimiento.disabled = false;
-      btnGuardarVencimiento.textContent = "Guardar";
+      btnGuardarCupon.disabled = false;
+      btnGuardarCupon.textContent = "Guardar";
     }
   });
-
-  // -----------------------------
-  // FINANZAS: código de descuento global de la tienda.
-  // Se guarda en configuracion/descuento -> { codigo, porcentaje, activo }.
-  // -----------------------------
-  const formDescuento = document.getElementById("form-descuento");
-  const descuentoCodigo = document.getElementById("descuento-codigo");
-  const descuentoProducto = document.getElementById("descuento-producto");
-  const descuentoPorcentaje = document.getElementById("descuento-porcentaje");
-  const descuentoActivoCheckbox = document.getElementById("descuento-activo");
-  const descuentoConfigStatus = document.getElementById("descuento-config-status");
-  const btnGuardarDescuento = document.getElementById("btn-guardar-descuento");
-
-  let descuentoProductoActual = "todos";
-
-  function aplicarSeleccionProductoDescuento() {
-    const existe = Array.from(descuentoProducto.options).some((o) => o.value === descuentoProductoActual);
-    descuentoProducto.value = existe ? descuentoProductoActual : "todos";
-  }
-
-  function actualizarOpcionesProductoDescuento() {
-    descuentoProducto.innerHTML = '<option value="todos">Todos los productos</option>';
-    productosCache.forEach((p) => {
-      const opt = document.createElement("option");
-      opt.value = p.id;
-      opt.textContent = p.nombre || "(sin nombre)";
-      descuentoProducto.appendChild(opt);
-    });
-    aplicarSeleccionProductoDescuento();
-  }
-
-  function iniciarEscuchaDescuento() {
-    onSnapshot(configuracionRef, (snap) => {
-      const data = snap.exists() ? snap.data() : {};
-      descuentoCodigo.value = data.codigo || "";
-      descuentoPorcentaje.value = data.porcentaje ?? "";
-      descuentoActivoCheckbox.checked = data.activo === true;
-      descuentoProductoActual = data.productoId || "todos";
-      aplicarSeleccionProductoDescuento();
-    });
-  }
-
-  formDescuento.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const productoIdSeleccionado = descuentoProducto.value;
-    const productoNombreSeleccionado =
-      productoIdSeleccionado === "todos"
-        ? ""
-        : descuentoProducto.options[descuentoProducto.selectedIndex].textContent;
-
-    const datos = {
-      codigo: descuentoCodigo.value.trim().toUpperCase(),
-      productoId: productoIdSeleccionado,
-      productoNombre: productoNombreSeleccionado,
-      porcentaje: Number(descuentoPorcentaje.value) || 0,
-      activo: descuentoActivoCheckbox.checked
-    };
-
-    btnGuardarDescuento.disabled = true;
-    btnGuardarDescuento.textContent = "Guardando...";
-    descuentoConfigStatus.textContent = "";
-
-    try {
-      await setDoc(configuracionRef, datos, { merge: true });
-      descuentoConfigStatus.textContent = "Descuento guardado.";
-    } catch (err) {
-      console.error(err);
-      descuentoConfigStatus.textContent = "No se pudo guardar. Intentá de nuevo.";
-    } finally {
-      btnGuardarDescuento.disabled = false;
-      btnGuardarDescuento.textContent = "Guardar";
-    }
-  });
-
-  // -----------------------------
-  // FINANZAS: rentabilidad — costo en USD por producto vs precio en ARS.
-  // El costo en USD se guarda por producto (productos/{id}.costoUsd).
-  // La cotización se trae de dolarapi.com (sin API key) solo al tocar
-  // "Aplicar"; nunca se refresca sola ni al cargar la página.
-  // -----------------------------
-  const tablaRentabilidad = document.getElementById("tabla-rentabilidad");
-  const tablaRentabilidadVacio = document.getElementById("tabla-rentabilidad-vacio");
-  const tplRentabilidad = document.getElementById("tpl-fila-rentabilidad");
-  const selectTipoDolar = document.getElementById("rentabilidad-tipo-dolar");
-  const btnAplicarCotizacion = document.getElementById("btn-aplicar-cotizacion");
-  const rentabilidadCotizacionStatus = document.getElementById("rentabilidad-cotizacion-status");
-
-  let cotizacionActual = null; // { tipo, valor } — queda null hasta tocar "Aplicar"
-
-  btnAplicarCotizacion.addEventListener("click", async () => {
-    const tipo = selectTipoDolar.value;
-    btnAplicarCotizacion.disabled = true;
-    const textoOriginal = btnAplicarCotizacion.textContent;
-    btnAplicarCotizacion.textContent = "Consultando...";
-    rentabilidadCotizacionStatus.textContent = "";
-    rentabilidadCotizacionStatus.classList.remove("text-bad");
-
-    try {
-      const resp = await fetch(`https://dolarapi.com/v1/dolares/${tipo}`);
-      if (!resp.ok) throw new Error("Respuesta no válida de la API de cotización");
-      const data = await resp.json();
-      const valor = Number(data.venta);
-      if (!valor) throw new Error("La API no devolvió un valor de venta");
-
-      cotizacionActual = { tipo, valor };
-      rentabilidadCotizacionStatus.textContent =
-        `Dólar ${data.nombre || tipo}: ${formatearPrecio(valor)} · aplicado a los costos.`;
-    } catch (err) {
-      console.error(err);
-      cotizacionActual = null;
-      rentabilidadCotizacionStatus.textContent = "No se pudo traer la cotización. Probá de nuevo.";
-      rentabilidadCotizacionStatus.classList.add("text-bad");
-    } finally {
-      btnAplicarCotizacion.disabled = false;
-      btnAplicarCotizacion.textContent = textoOriginal;
-      renderTablaRentabilidad();
-    }
-  });
-
-  async function guardarCostoUsd(productoId, valor) {
-    try {
-      await updateDoc(doc(db, "productos", productoId), { costoUsd: valor });
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  function renderTablaRentabilidad() {
-    if (!tablaRentabilidad) return;
-    tablaRentabilidad.innerHTML = "";
-
-    if (productosCache.length === 0) {
-      tablaRentabilidadVacio.classList.remove("hidden-modal");
-      return;
-    }
-    tablaRentabilidadVacio.classList.add("hidden-modal");
-
-    productosCache.forEach((producto) => {
-      const nodo = tplRentabilidad.content.cloneNode(true);
-      nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre || "(sin nombre)";
-      nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
-
-      const inputCosto = nodo.querySelector('[data-field="input-costo-usd"]');
-      inputCosto.value = producto.costoUsd ?? "";
-      inputCosto.addEventListener("change", () => {
-        guardarCostoUsd(producto.id, Number(inputCosto.value) || 0);
-      });
-
-      const celdaCostoArs = nodo.querySelector('[data-field="costo-ars"]');
-      const celdaGanancia = nodo.querySelector('[data-field="ganancia"]');
-      const celdaMargen = nodo.querySelector('[data-field="margen"]');
-
-      const precio = Number(producto.precio) || 0;
-      const costoUsd = Number(producto.costoUsd) || 0;
-
-      if (!cotizacionActual || !costoUsd) {
-        celdaCostoArs.textContent = "—";
-        celdaGanancia.textContent = "—";
-        celdaMargen.textContent = "—";
-      } else {
-        const costoArs = costoUsd * cotizacionActual.valor;
-        const ganancia = precio - costoArs;
-        const margen = precio > 0 ? (ganancia / precio) * 100 : 0;
-        const colorGanancia = ganancia >= 0 ? "text-ok" : "text-bad";
-
-        celdaCostoArs.textContent = formatearPrecio(Math.round(costoArs));
-        celdaGanancia.textContent = formatearPrecio(Math.round(ganancia));
-        celdaGanancia.className = "px-4 py-3 font-semibold whitespace-nowrap " + colorGanancia;
-        celdaMargen.textContent = margen.toFixed(1) + "%";
-        celdaMargen.className = "px-4 py-3 font-semibold whitespace-nowrap " + colorGanancia;
-      }
-
-      tablaRentabilidad.appendChild(nodo);
-    });
-  }
 </script>
 </body>
 </html>
