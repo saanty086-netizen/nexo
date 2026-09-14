@@ -16,9 +16,11 @@ import {
   doc,
   addDoc,
   updateDoc,
+  getDoc,
   getDocs,
   query,
-  orderBy
+  orderBy,
+  increment
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // -----------------------------
@@ -141,6 +143,59 @@ export async function guardarProducto(producto) {
 export async function actualizarProducto(id, campos) {
   const productoDoc = doc(db, "productos", id);
   await updateDoc(productoDoc, campos);
+}
+
+// -----------------------------
+// Helpers: Descuento / cupón (input unificado "codigoDescuento")
+// -----------------------------
+
+/**
+ * Valida un único código (código de descuento del admin o cupón de la
+ * colección "cupones") contra Firestore.
+ * @param {string} codigoInput
+ * @param {{id: string, precio: number}} producto
+ * @returns {Promise<{valid:boolean, codigo?:string, precioFinal?:number, montoDescontado?:number, reason?:string}>}
+ */
+export async function validarCodigoDescuento(codigoInput, producto) {
+  const codigo = (codigoInput || "").trim().toUpperCase();
+  if (!codigo) return { valid: false, reason: "EMPTY" };
+
+  // 1) Código único de descuento (configuracion/descuento)
+  const configSnap = await getDoc(doc(db, "configuracion", "descuento"));
+  const cfg = configSnap.exists() ? configSnap.data() : {};
+  const codigoGuardado = (cfg.codigo || "").trim().toUpperCase();
+  const porcentaje = Number(cfg.porcentaje) || 0;
+  const aplicaAlProducto = (cfg.productoId || "todos") === "todos" || cfg.productoId === producto.id;
+
+  if (cfg.activo === true && codigoGuardado === codigo && porcentaje > 0 && aplicaAlProducto) {
+    const precioFinal = Math.max(0, Math.round(producto.precio * (1 - porcentaje / 100)));
+    return { valid: true, codigo: codigoGuardado, precioFinal };
+  }
+
+  // 2) Cupón (colección "cupones", doc ID = código en mayúsculas)
+  const cuponSnap = await getDoc(doc(db, "cupones", codigo));
+  if (!cuponSnap.exists()) return { valid: false, reason: "NOT_FOUND" };
+
+  const c = cuponSnap.data();
+  if (c.active === false) return { valid: false, reason: "INACTIVE" };
+  if (c.validUntil && new Date(c.validUntil + "T23:59:59") < new Date()) {
+    return { valid: false, reason: "EXPIRED" };
+  }
+  if ((c.usedCount || 0) >= c.usageLimit) return { valid: false, reason: "LIMIT" };
+
+  let montoDescontado = c.discountType === "percentage" ? producto.precio * (c.value / 100) : c.value;
+  montoDescontado = Math.min(montoDescontado, producto.precio);
+  const precioFinal = Math.round((producto.precio - montoDescontado) * 100) / 100;
+
+  return { valid: true, codigo, precioFinal, montoDescontado: Math.round(montoDescontado * 100) / 100 };
+}
+
+/**
+ * Incrementa el contador de usos de un cupón aplicado.
+ * @param {string} codigo
+ */
+export async function incrementarUsoCupon(codigo) {
+  await updateDoc(doc(db, "cupones", codigo), { usedCount: increment(1) });
 }
 
 // -----------------------------

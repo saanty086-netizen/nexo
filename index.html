@@ -300,9 +300,9 @@
         </div>
 
         <div>
-          <label class="text-xs text-mute block mb-2 sm:mb-1.5">Código de descuento (opcional)</label>
+          <label class="text-xs text-mute block mb-2 sm:mb-1.5">Código de descuento o cupón (opcional)</label>
           <div class="flex gap-2">
-            <input id="input-codigo-descuento" type="text" placeholder="Ej: NEXO10"
+            <input id="codigoDescuento" type="text" placeholder="Ingresa tu código o cupón"
               class="flex-1 min-w-0 bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
             <button type="button" id="btn-aplicar-descuento"
               class="shrink-0 border border-violet text-violet2 text-xs font-display font-semibold px-4 whitespace-nowrap hover:bg-violet hover:text-bg transition-colors">
@@ -310,19 +310,6 @@
             </button>
           </div>
           <p id="descuento-status" class="text-xs text-mute min-h-[1rem] mt-1.5"></p>
-        </div>
-
-        <div>
-          <label class="text-xs text-mute block mb-2 sm:mb-1.5">Cupón de descuento (opcional)</label>
-          <div class="flex gap-2">
-            <input id="input-cupon" type="text" placeholder="CODIGO"
-              class="flex-1 min-w-0 bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-            <button type="button" id="btn-aplicar-cupon"
-              class="shrink-0 border border-violet text-violet2 text-xs font-display font-semibold px-4 whitespace-nowrap hover:bg-violet hover:text-bg transition-colors">
-              Aplicar
-            </button>
-          </div>
-          <p id="cupon-status" class="text-xs text-mute min-h-[1rem] mt-1.5"></p>
         </div>
 
         <div id="campos-seguidor" class="hidden-modal flex-col gap-5 sm:gap-4">
@@ -698,47 +685,39 @@
   const inputLinkCuenta = document.getElementById("input-link-cuenta");
   const pedidoStatus = document.getElementById("pedido-status");
   const btnConfirmar = document.getElementById("btn-confirmar");
-  const inputCodigoDescuento = document.getElementById("input-codigo-descuento");
+  const inputCodigoDescuento = document.getElementById("codigoDescuento");
   const btnAplicarDescuento = document.getElementById("btn-aplicar-descuento");
   const descuentoStatus = document.getElementById("descuento-status");
-  const inputCupon = document.getElementById("input-cupon");
-  const btnAplicarCupon = document.getElementById("btn-aplicar-cupon");
-  const cuponStatus = document.getElementById("cupon-status");
   const resumenCupon = document.getElementById("resumen-cupon");
   const resumenCuponMonto = document.getElementById("resumen-cupon-monto");
   const resumenCuponTotal = document.getElementById("resumen-cupon-total");
 
   let productoSeleccionado = null;
-  let descuentoActivo = null; // { codigo, porcentaje }
   let precioFinalActual = 0;
-  let cuponAplicado = null; // resultado de validarCupon() cuando es válido
+  let descuentoAplicado = null; // { codigo, precioFinal, montoDescontado? } — código admin o cupón
 
-  function limpiarCupon() {
-    cuponAplicado = null;
-    inputCupon.value = "";
-    cuponStatus.textContent = "";
-    cuponStatus.classList.remove("text-bad", "text-ok");
+  function limpiarDescuento() {
+    descuentoAplicado = null;
+    inputCodigoDescuento.value = "";
+    descuentoStatus.textContent = "";
+    descuentoStatus.classList.remove("text-bad", "text-cyan", "text-ok");
     resumenCupon.classList.add("hidden-modal");
   }
 
   // -----------------------------
-  // Descuento: se define desde el admin (apartado Finanzas), en
-  // configuracion/descuento -> { codigo, porcentaje, activo }.
+  // Descuento unificado: primero intenta contra el código único del admin
+  // (configuracion/descuento) y, si no coincide, contra la colección "cupones".
   // -----------------------------
   function actualizarResumenPrecio() {
     if (!productoSeleccionado) return;
-    precioFinalActual = productoSeleccionado.precio;
+    precioFinalActual = descuentoAplicado ? descuentoAplicado.precioFinal : productoSeleccionado.precio;
 
-    if (descuentoActivo) {
-      precioFinalActual = Math.max(
-        0,
-        Math.round(productoSeleccionado.precio * (1 - descuentoActivo.porcentaje / 100))
-      );
+    if (descuentoAplicado) {
       resumenPrecio.textContent = formatearPrecio(productoSeleccionado.precio);
       resumenPrecio.classList.add("line-through", "text-mute", "text-sm", "font-normal");
       resumenPrecio.classList.remove("text-cyan", "text-lg", "font-bold");
       resumenPrecioDescuento.textContent =
-        `${formatearPrecio(precioFinalActual)} · código ${descuentoActivo.codigo} (-${descuentoActivo.porcentaje}%)`;
+        `${formatearPrecio(precioFinalActual)} · código ${descuentoAplicado.codigo}`;
       resumenPrecioDescuento.classList.remove("hidden-modal");
     } else {
       resumenPrecio.textContent = formatearPrecio(productoSeleccionado.precio);
@@ -750,12 +729,15 @@
 
   btnAplicarDescuento.addEventListener("click", async () => {
     const codigoIngresado = inputCodigoDescuento.value.trim().toUpperCase();
-    descuentoStatus.classList.remove("text-bad", "text-cyan");
+    descuentoStatus.classList.remove("text-bad", "text-cyan", "text-ok");
     descuentoStatus.textContent = "";
+    resumenCupon.classList.add("hidden-modal");
+    descuentoAplicado = null;
 
     if (!codigoIngresado) {
       descuentoStatus.textContent = "Ingresá un código.";
       descuentoStatus.classList.add("text-bad");
+      actualizarResumenPrecio();
       return;
     }
 
@@ -764,31 +746,42 @@
     btnAplicarDescuento.textContent = "Verificando...";
 
     try {
+      // 1) Código único de descuento (admin -> Finanzas)
       const snap = await getDoc(configuracionRef);
       const data = snap.exists() ? snap.data() : {};
       const codigoGuardado = (data.codigo || "").trim().toUpperCase();
       const porcentaje = Number(data.porcentaje) || 0;
       const activo = data.activo === true;
       const productoId = data.productoId || "todos";
-      const codigoCoincide = codigoGuardado && codigoGuardado === codigoIngresado;
       const aplicaAlProducto = productoId === "todos" || productoId === productoSeleccionado.id;
 
-      if (activo && codigoCoincide && porcentaje > 0 && aplicaAlProducto) {
-        descuentoActivo = { codigo: codigoGuardado, porcentaje };
+      if (activo && codigoGuardado && codigoGuardado === codigoIngresado && porcentaje > 0 && aplicaAlProducto) {
+        const precioFinal = Math.max(0, Math.round(productoSeleccionado.precio * (1 - porcentaje / 100)));
+        descuentoAplicado = { codigo: codigoGuardado, precioFinal };
         descuentoStatus.textContent = `Código aplicado: -${porcentaje}% de descuento.`;
         descuentoStatus.classList.add("text-cyan");
       } else {
-        descuentoActivo = null;
-        if (activo && codigoCoincide && porcentaje > 0 && !aplicaAlProducto) {
-          descuentoStatus.textContent = "Ese código no aplica para este producto.";
+        // 2) Cupón (colección "cupones")
+        const resultado = await validarCupon(codigoIngresado, productoSeleccionado.precio);
+        if (resultado.valid) {
+          descuentoAplicado = {
+            codigo: resultado.codigo,
+            precioFinal: resultado.finalTotal,
+            montoDescontado: resultado.discountAmount
+          };
+          resumenCuponMonto.textContent = "-" + formatearPrecio(resultado.discountAmount);
+          resumenCuponTotal.textContent = formatearPrecio(resultado.finalTotal);
+          resumenCupon.classList.remove("hidden-modal");
+          descuentoStatus.textContent = `Cupón ${resultado.codigo} aplicado.`;
+          descuentoStatus.classList.add("text-ok");
         } else {
-          descuentoStatus.textContent = "Código inválido o no disponible.";
+          descuentoStatus.textContent = "Código o cupón inválido.";
+          descuentoStatus.classList.add("text-bad");
         }
-        descuentoStatus.classList.add("text-bad");
       }
     } catch (err) {
       console.error(err);
-      descuentoActivo = null;
+      descuentoAplicado = null;
       descuentoStatus.textContent = "No se pudo verificar el código. Intentá de nuevo.";
       descuentoStatus.classList.add("text-bad");
     } finally {
@@ -798,45 +791,14 @@
     }
   });
 
-  btnAplicarCupon.addEventListener("click", async () => {
-    if (!productoSeleccionado) return;
-    btnAplicarCupon.disabled = true;
-    btnAplicarCupon.textContent = "...";
-    cuponStatus.classList.remove("text-bad", "text-ok");
-    cuponStatus.textContent = "Verificando...";
-
-    const subtotal = descuentoActivo ? precioFinalActual : productoSeleccionado.precio;
-    const resultado = await validarCupon(inputCupon.value, subtotal);
-
-    if (!resultado.valid) {
-      cuponAplicado = null;
-      resumenCupon.classList.add("hidden-modal");
-      cuponStatus.classList.add("text-bad");
-      cuponStatus.textContent = CUPON_ERRORES[resultado.reason] || "Cupón inválido.";
-    } else {
-      cuponAplicado = resultado;
-      resumenCuponMonto.textContent = "-" + formatearPrecio(resultado.discountAmount);
-      resumenCuponTotal.textContent = formatearPrecio(resultado.finalTotal);
-      resumenCupon.classList.remove("hidden-modal");
-      cuponStatus.classList.add("text-ok");
-      cuponStatus.textContent = `Cupón ${resultado.codigo} aplicado.`;
-    }
-
-    btnAplicarCupon.disabled = false;
-    btnAplicarCupon.textContent = "Aplicar";
-  });
-
   function abrirModalPedido(producto) {
     productoSeleccionado = producto;
     resumenNombre.textContent = producto.nombre;
     pedidoStatus.textContent = "";
     formPedido.reset();
 
-    descuentoActivo = null;
-    descuentoStatus.textContent = "";
-    descuentoStatus.classList.remove("text-bad", "text-cyan");
+    limpiarDescuento();
     actualizarResumenPrecio();
-    limpiarCupon();
 
     const esSeguidor = producto.categoria === "seguidores";
     if (esSeguidor) {
@@ -883,8 +845,7 @@
     pedidoStatus.textContent = "";
 
     const precioOriginal = productoSeleccionado.precio;
-    const precioTrasDescuento = descuentoActivo ? precioFinalActual : precioOriginal;
-    const precioAPagar = cuponAplicado ? cuponAplicado.finalTotal : precioTrasDescuento;
+    const precioAPagar = descuentoAplicado ? descuentoAplicado.precioFinal : precioOriginal;
 
     const datosPedido = {
       nombre,
@@ -896,14 +857,11 @@
       fecha: serverTimestamp()
     };
 
-    if (descuentoActivo) {
-      datosPedido.codigoDescuento = descuentoActivo.codigo;
-      datosPedido.descuentoPorcentaje = descuentoActivo.porcentaje;
-    }
-
-    if (cuponAplicado) {
-      datosPedido.cuponCodigo = cuponAplicado.codigo;
-      datosPedido.cuponDescuento = cuponAplicado.discountAmount;
+    if (descuentoAplicado) {
+      datosPedido.codigoDescuento = descuentoAplicado.codigo;
+      if (descuentoAplicado.montoDescontado != null) {
+        datosPedido.cuponDescuento = descuentoAplicado.montoDescontado;
+      }
     }
 
     if (esSeguidor) {
@@ -925,9 +883,9 @@
       console.error("No se pudo confirmar el guardado del pedido, se continúa por WhatsApp:", err);
     }
 
-    if (cuponAplicado) {
+    if (descuentoAplicado && descuentoAplicado.montoDescontado != null) {
       try {
-        await updateDoc(doc(db, "cupones", cuponAplicado.codigo), { usedCount: increment(1) });
+        await updateDoc(doc(db, "cupones", descuentoAplicado.codigo), { usedCount: increment(1) });
       } catch (err) {
         console.error("No se pudo incrementar el uso del cupón:", err);
       }
@@ -937,12 +895,8 @@
       `Hola NEXO! Quiero encargar ${productoSeleccionado.nombre} por ${formatearPrecio(precioAPagar)}. ` +
       `Mi nombre es ${nombre}.`;
 
-    if (descuentoActivo) {
-      mensaje += ` Usé el código ${descuentoActivo.codigo} (-${descuentoActivo.porcentaje}%, precio normal ${formatearPrecio(precioOriginal)}).`;
-    }
-
-    if (cuponAplicado) {
-      mensaje += ` Apliqué el cupón ${cuponAplicado.codigo} (-${formatearPrecio(cuponAplicado.discountAmount)}).`;
+    if (descuentoAplicado) {
+      mensaje += ` Usé el código ${descuentoAplicado.codigo} (precio normal ${formatearPrecio(precioOriginal)}).`;
     }
 
     if (esSeguidor) {
