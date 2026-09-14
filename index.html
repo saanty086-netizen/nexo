@@ -331,13 +331,8 @@
             <input id="input-link-cuenta" type="text" placeholder="https://instagram.com/tuusuario"
               class="w-full bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
           </div>
-          <div>
-            <label class="text-xs text-mute block mb-2 sm:mb-1.5">¿Tu cuenta está en público?</label>
-            <select id="input-cuenta-publica"
-              class="w-full bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink focus:outline-none focus:border-cyan">
-              <option value="si">Sí, está en público</option>
-              <option value="no">No, está en privado</option>
-            </select>
+          <div class="bg-yellow-500/10 border border-yellow-500/40 text-yellow-300 text-xs sm:text-sm rounded px-3.5 py-3 leading-relaxed">
+            ⚠️ Importante: Tu perfil debe ser PÚBLICO o no llegarán los seguidores
           </div>
         </div>
 
@@ -701,7 +696,6 @@
   const inputNombre = document.getElementById("input-nombre");
   const camposSeguidor = document.getElementById("campos-seguidor");
   const inputLinkCuenta = document.getElementById("input-link-cuenta");
-  const inputCuentaPublica = document.getElementById("input-cuenta-publica");
   const pedidoStatus = document.getElementById("pedido-status");
   const btnConfirmar = document.getElementById("btn-confirmar");
   const inputCodigoDescuento = document.getElementById("input-codigo-descuento");
@@ -878,7 +872,6 @@
     const nombre = inputNombre.value.trim();
     const esSeguidor = productoSeleccionado.categoria === "seguidores";
     const linkCuenta = esSeguidor ? inputLinkCuenta.value.trim() : "";
-    const cuentaPublica = esSeguidor ? inputCuentaPublica.value : "";
 
     if (esSeguidor && !linkCuenta) {
       pedidoStatus.textContent = "Falta el link o usuario de tu cuenta.";
@@ -915,7 +908,7 @@
 
     if (esSeguidor) {
       datosPedido.linkCuenta = linkCuenta;
-      datosPedido.cuentaPublica = cuentaPublica === "si";
+      datosPedido.tipoCuenta = "publica";
     }
 
     // Guardar en Firestore, pero sin dejar al cliente trabado si la base
@@ -953,7 +946,7 @@
     }
 
     if (esSeguidor) {
-      mensaje += ` Mi cuenta: ${linkCuenta} (${cuentaPublica === "si" ? "pública" : "privada"}).`;
+      mensaje += ` Mi cuenta: ${linkCuenta} (pública).`;
     }
 
     const url = `https://wa.me/${WHATSAPP_NEXO}?text=${encodeURIComponent(mensaje)}`;
