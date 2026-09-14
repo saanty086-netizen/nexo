@@ -110,36 +110,8 @@
         Continuar como invitado
       </button>
 
-      <!-- Flujo de teléfono / SMS -->
-      <div id="phone-step-numero" class="flex flex-col gap-2">
-        <label class="text-xs text-mute block">Número de teléfono</label>
-        <div class="flex gap-2">
-          <input id="auth-phone" type="tel" placeholder="+549261xxxxxxx"
-            class="flex-1 bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-          <button type="button" id="btn-enviar-sms"
-            class="border border-violet text-violet2 text-xs font-display font-semibold px-4 whitespace-nowrap hover:bg-violet hover:text-bg transition-colors">
-            Enviar código
-          </button>
-        </div>
-      </div>
-
-      <div id="phone-step-codigo" class="hidden-modal flex-col gap-2">
-        <label class="text-xs text-mute block">Código recibido por SMS</label>
-        <div class="flex gap-2">
-          <input id="auth-phone-code" type="text" inputmode="numeric" placeholder="123456"
-            class="flex-1 bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-          <button type="button" id="btn-confirmar-sms"
-            class="bg-gradient-to-r from-violet to-cyan text-bg text-xs font-display font-semibold px-4 whitespace-nowrap hover:opacity-90 transition-opacity">
-            Confirmar
-          </button>
-        </div>
-      </div>
-
       <p id="social-auth-status" class="text-xs text-center text-mute min-h-[1rem]"></p>
     </div>
-
-    <!-- Contenedor invisible requerido por Firebase para el reCAPTCHA del login por SMS -->
-    <div id="recaptcha-container"></div>
   </div>
 </div>
 
@@ -807,9 +779,7 @@
     auth,
     db,
     loginConGoogle,
-    loginAnonimo,
-    enviarCodigoSms,
-    confirmarCodigoSms
+    loginAnonimo
   } from "./firebase.js";
   import {
     setPersistence,
@@ -935,47 +905,6 @@
   });
 
   // -----------------------------
-  // Login por teléfono / SMS
-  // -----------------------------
-  const phoneStepNumero = document.getElementById("phone-step-numero");
-  const phoneStepCodigo = document.getElementById("phone-step-codigo");
-  let confirmationResultActual = null;
-
-  document.getElementById("btn-enviar-sms").addEventListener("click", async () => {
-    const numero = document.getElementById("auth-phone").value.trim();
-    if (!numero.startsWith("+")) {
-      socialAuthStatus.textContent = "Incluí el código de país, ej: +5492610000000";
-      return;
-    }
-    socialAuthStatus.textContent = "Enviando código por SMS...";
-    try {
-      await sesionLista;
-      confirmationResultActual = await enviarCodigoSms(numero, "recaptcha-container");
-      socialAuthStatus.textContent = "Código enviado. Revisá tus mensajes.";
-      phoneStepNumero.classList.add("hidden-modal");
-      phoneStepCodigo.classList.remove("hidden-modal");
-      phoneStepCodigo.classList.add("flex");
-    } catch (err) {
-      console.error(err);
-      socialAuthStatus.textContent = "No se pudo enviar el código. Verificá el número.";
-    }
-  });
-
-  document.getElementById("btn-confirmar-sms").addEventListener("click", async () => {
-    const codigo = document.getElementById("auth-phone-code").value.trim();
-    if (!confirmationResultActual || !codigo) return;
-
-    socialAuthStatus.textContent = "Verificando código...";
-    try {
-      await confirmarCodigoSms(confirmationResultActual, codigo);
-      // onAuthStateChanged se encarga del resto
-    } catch (err) {
-      console.error(err);
-      socialAuthStatus.textContent = "Código incorrecto. Intentá de nuevo.";
-    }
-  });
-
-  // -----------------------------
   // Emails autorizados como admin. Para sumar a alguien más,
   // agregá su email acá (todo en minúsculas) y también en
   // firestore.rules (misma lista, dentro de esAdmin()).
@@ -995,9 +924,6 @@
       pantallaLogin.classList.remove("hidden-modal");
       formLogin.reset();
       socialAuthStatus.textContent = "";
-      phoneStepCodigo.classList.add("hidden-modal");
-      phoneStepCodigo.classList.remove("flex");
-      phoneStepNumero.classList.remove("hidden-modal");
       return;
     }
 
