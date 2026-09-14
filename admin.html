@@ -300,6 +300,52 @@
 <!-- ============ SECCIÓN: FINANZAS ============ -->
 <main id="seccion-finanzas" class="hidden-modal max-w-7xl mx-auto px-5 md:px-8 py-8">
 
+  <div class="mb-10">
+    <p class="text-mute text-xs mb-6 leading-relaxed max-w-2xl">
+      Cargá el costo en dólares de cada producto. Elegí el tipo de dólar y tocá "Aplicar" para traer la
+      cotización actual y calcular el costo en pesos, la ganancia y el margen de cada uno. La cotización
+      no se actualiza sola: solo cambia cuando volvés a tocar Aplicar.
+    </p>
+
+    <div class="border border-line bg-panel clip-corner p-6 mb-6">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">COTIZACIÓN</p>
+      <h3 class="font-display font-bold text-xl mb-5">Dólar para calcular costos</h3>
+      <div class="flex flex-wrap items-end gap-3">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Tipo de dólar</label>
+          <select id="rentabilidad-tipo-dolar"
+            class="estado-select bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+            <option value="blue">Blue</option>
+            <option value="oficial">Oficial</option>
+            <option value="tarjeta">Tarjeta</option>
+          </select>
+        </div>
+        <button type="button" id="btn-aplicar-cotizacion"
+          class="border border-violet text-violet2 text-sm font-display font-semibold px-5 py-2.5 hover:bg-violet hover:text-bg transition-colors">
+          Aplicar
+        </button>
+      </div>
+      <p id="rentabilidad-cotizacion-status" class="text-xs text-mute min-h-[1rem] mt-3"></p>
+    </div>
+
+    <div class="border border-line bg-panel clip-corner overflow-x-auto">
+      <table class="w-full text-sm min-w-[720px]">
+        <thead>
+          <tr class="text-left text-[11px] text-mute border-b border-line">
+            <th class="px-4 py-3 font-medium">Producto</th>
+            <th class="px-4 py-3 font-medium">Precio (ARS)</th>
+            <th class="px-4 py-3 font-medium">Costo (USD)</th>
+            <th class="px-4 py-3 font-medium">Costo (ARS)</th>
+            <th class="px-4 py-3 font-medium">Ganancia</th>
+            <th class="px-4 py-3 font-medium">Margen</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-rentabilidad"></tbody>
+      </table>
+      <p id="tabla-rentabilidad-vacio" class="hidden-modal text-center text-mute text-xs py-10">Todavía no cargaste productos.</p>
+    </div>
+  </div>
+
   <div class="max-w-md">
     <p class="text-mute text-xs mb-6 leading-relaxed">
       Definí acá el código de descuento que los clientes pueden ingresar al hacer un pedido en la tienda,
@@ -343,6 +389,21 @@
     </div>
   </div>
 </main>
+
+<!-- ============ TEMPLATE: FILA RENTABILIDAD ============ -->
+<template id="tpl-fila-rentabilidad">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle">
+    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
+    <td class="px-4 py-3 text-cyan font-display font-bold whitespace-nowrap" data-field="precio"></td>
+    <td class="px-4 py-3">
+      <input data-field="input-costo-usd" type="number" min="0" step="0.01" placeholder="0.00"
+        class="w-24 bg-panel2 border border-line px-2 py-1.5 text-sm focus:outline-none focus:border-cyan" />
+    </td>
+    <td class="px-4 py-3 text-mute whitespace-nowrap" data-field="costo-ars">—</td>
+    <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="ganancia">—</td>
+    <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="margen">—</td>
+  </tr>
+</template>
 
 <!-- ============ TEMPLATE: FILA PEDIDO ============ -->
 <template id="tpl-fila">
@@ -1091,6 +1152,7 @@
       productosCache = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
       renderTablaProductos();
       actualizarOpcionesProductoDescuento();
+      renderTablaRentabilidad();
     });
   }
 
@@ -1581,6 +1643,108 @@
       btnGuardarDescuento.textContent = "Guardar";
     }
   });
+
+  // -----------------------------
+  // FINANZAS: rentabilidad — costo en USD por producto vs precio en ARS.
+  // El costo en USD se guarda por producto (productos/{id}.costoUsd).
+  // La cotización se trae de dolarapi.com (sin API key) solo al tocar
+  // "Aplicar"; nunca se refresca sola ni al cargar la página.
+  // -----------------------------
+  const tablaRentabilidad = document.getElementById("tabla-rentabilidad");
+  const tablaRentabilidadVacio = document.getElementById("tabla-rentabilidad-vacio");
+  const tplRentabilidad = document.getElementById("tpl-fila-rentabilidad");
+  const selectTipoDolar = document.getElementById("rentabilidad-tipo-dolar");
+  const btnAplicarCotizacion = document.getElementById("btn-aplicar-cotizacion");
+  const rentabilidadCotizacionStatus = document.getElementById("rentabilidad-cotizacion-status");
+
+  let cotizacionActual = null; // { tipo, valor } — queda null hasta tocar "Aplicar"
+
+  btnAplicarCotizacion.addEventListener("click", async () => {
+    const tipo = selectTipoDolar.value;
+    btnAplicarCotizacion.disabled = true;
+    const textoOriginal = btnAplicarCotizacion.textContent;
+    btnAplicarCotizacion.textContent = "Consultando...";
+    rentabilidadCotizacionStatus.textContent = "";
+    rentabilidadCotizacionStatus.classList.remove("text-bad");
+
+    try {
+      const resp = await fetch(`https://dolarapi.com/v1/dolares/${tipo}`);
+      if (!resp.ok) throw new Error("Respuesta no válida de la API de cotización");
+      const data = await resp.json();
+      const valor = Number(data.venta);
+      if (!valor) throw new Error("La API no devolvió un valor de venta");
+
+      cotizacionActual = { tipo, valor };
+      rentabilidadCotizacionStatus.textContent =
+        `Dólar ${data.nombre || tipo}: ${formatearPrecio(valor)} · aplicado a los costos.`;
+    } catch (err) {
+      console.error(err);
+      cotizacionActual = null;
+      rentabilidadCotizacionStatus.textContent = "No se pudo traer la cotización. Probá de nuevo.";
+      rentabilidadCotizacionStatus.classList.add("text-bad");
+    } finally {
+      btnAplicarCotizacion.disabled = false;
+      btnAplicarCotizacion.textContent = textoOriginal;
+      renderTablaRentabilidad();
+    }
+  });
+
+  async function guardarCostoUsd(productoId, valor) {
+    try {
+      await updateDoc(doc(db, "productos", productoId), { costoUsd: valor });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function renderTablaRentabilidad() {
+    if (!tablaRentabilidad) return;
+    tablaRentabilidad.innerHTML = "";
+
+    if (productosCache.length === 0) {
+      tablaRentabilidadVacio.classList.remove("hidden-modal");
+      return;
+    }
+    tablaRentabilidadVacio.classList.add("hidden-modal");
+
+    productosCache.forEach((producto) => {
+      const nodo = tplRentabilidad.content.cloneNode(true);
+      nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre || "(sin nombre)";
+      nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
+
+      const inputCosto = nodo.querySelector('[data-field="input-costo-usd"]');
+      inputCosto.value = producto.costoUsd ?? "";
+      inputCosto.addEventListener("change", () => {
+        guardarCostoUsd(producto.id, Number(inputCosto.value) || 0);
+      });
+
+      const celdaCostoArs = nodo.querySelector('[data-field="costo-ars"]');
+      const celdaGanancia = nodo.querySelector('[data-field="ganancia"]');
+      const celdaMargen = nodo.querySelector('[data-field="margen"]');
+
+      const precio = Number(producto.precio) || 0;
+      const costoUsd = Number(producto.costoUsd) || 0;
+
+      if (!cotizacionActual || !costoUsd) {
+        celdaCostoArs.textContent = "—";
+        celdaGanancia.textContent = "—";
+        celdaMargen.textContent = "—";
+      } else {
+        const costoArs = costoUsd * cotizacionActual.valor;
+        const ganancia = precio - costoArs;
+        const margen = precio > 0 ? (ganancia / precio) * 100 : 0;
+        const colorGanancia = ganancia >= 0 ? "text-ok" : "text-bad";
+
+        celdaCostoArs.textContent = formatearPrecio(Math.round(costoArs));
+        celdaGanancia.textContent = formatearPrecio(Math.round(ganancia));
+        celdaGanancia.className = "px-4 py-3 font-semibold whitespace-nowrap " + colorGanancia;
+        celdaMargen.textContent = margen.toFixed(1) + "%";
+        celdaMargen.className = "px-4 py-3 font-semibold whitespace-nowrap " + colorGanancia;
+      }
+
+      tablaRentabilidad.appendChild(nodo);
+    });
+  }
 </script>
 </body>
 </html>

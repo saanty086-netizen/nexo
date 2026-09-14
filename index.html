@@ -784,52 +784,57 @@
     btnConfirmar.textContent = "Guardando...";
     pedidoStatus.textContent = "";
 
-    try {
-      const precioOriginal = productoSeleccionado.precio;
-      const precioAPagar = descuentoActivo ? precioFinalActual : precioOriginal;
+    const precioOriginal = productoSeleccionado.precio;
+    const precioAPagar = descuentoActivo ? precioFinalActual : precioOriginal;
 
-      const datosPedido = {
-        nombre,
-        servicio: productoSeleccionado.nombre,
-        precio: precioAPagar,
-        precioOriginal,
-        estado: "espera",
-        pagado: false,
-        fecha: serverTimestamp()
-      };
+    const datosPedido = {
+      nombre,
+      servicio: productoSeleccionado.nombre,
+      precio: precioAPagar,
+      precioOriginal,
+      estado: "espera",
+      pagado: false,
+      fecha: serverTimestamp()
+    };
 
-      if (descuentoActivo) {
-        datosPedido.codigoDescuento = descuentoActivo.codigo;
-        datosPedido.descuentoPorcentaje = descuentoActivo.porcentaje;
-      }
-
-      if (esSeguidor) {
-        datosPedido.linkCuenta = linkCuenta;
-        datosPedido.cuentaPublica = cuentaPublica === "si";
-      }
-
-      await addDoc(pedidosRef, datosPedido);
-
-      let mensaje =
-        `Hola NEXO! Quiero encargar ${productoSeleccionado.nombre} por ${formatearPrecio(precioAPagar)}. ` +
-        `Mi nombre es ${nombre}.`;
-
-      if (descuentoActivo) {
-        mensaje += ` Usé el código ${descuentoActivo.codigo} (-${descuentoActivo.porcentaje}%, precio normal ${formatearPrecio(precioOriginal)}).`;
-      }
-
-      if (esSeguidor) {
-        mensaje += ` Mi cuenta: ${linkCuenta} (${cuentaPublica === "si" ? "pública" : "privada"}).`;
-      }
-
-      const url = `https://wa.me/${WHATSAPP_NEXO}?text=${encodeURIComponent(mensaje)}`;
-      window.location.href = url;
-    } catch (err) {
-      console.error(err);
-      pedidoStatus.textContent = "No se pudo guardar el pedido. Intentá de nuevo.";
-      btnConfirmar.disabled = false;
-      btnConfirmar.textContent = "Confirmar y abrir WhatsApp";
+    if (descuentoActivo) {
+      datosPedido.codigoDescuento = descuentoActivo.codigo;
+      datosPedido.descuentoPorcentaje = descuentoActivo.porcentaje;
     }
+
+    if (esSeguidor) {
+      datosPedido.linkCuenta = linkCuenta;
+      datosPedido.cuentaPublica = cuentaPublica === "si";
+    }
+
+    // Guardar en Firestore, pero sin dejar al cliente trabado si la base
+    // de datos tarda o falla (red lenta, bloqueadores, permisos, etc.):
+    // después de 6s seguimos igual hacia WhatsApp, que es lo que
+    // realmente concreta el pedido. El guardado sigue en curso en
+    // segundo plano aunque ya se haya navegado.
+    try {
+      await Promise.race([
+        addDoc(pedidosRef, datosPedido),
+        new Promise((resolve) => setTimeout(resolve, 6000))
+      ]);
+    } catch (err) {
+      console.error("No se pudo confirmar el guardado del pedido, se continúa por WhatsApp:", err);
+    }
+
+    let mensaje =
+      `Hola NEXO! Quiero encargar ${productoSeleccionado.nombre} por ${formatearPrecio(precioAPagar)}. ` +
+      `Mi nombre es ${nombre}.`;
+
+    if (descuentoActivo) {
+      mensaje += ` Usé el código ${descuentoActivo.codigo} (-${descuentoActivo.porcentaje}%, precio normal ${formatearPrecio(precioOriginal)}).`;
+    }
+
+    if (esSeguidor) {
+      mensaje += ` Mi cuenta: ${linkCuenta} (${cuentaPublica === "si" ? "pública" : "privada"}).`;
+    }
+
+    const url = `https://wa.me/${WHATSAPP_NEXO}?text=${encodeURIComponent(mensaje)}`;
+    window.location.href = url;
   });
 </script>
 </body>
