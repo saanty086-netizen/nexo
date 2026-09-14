@@ -22,9 +22,7 @@
           cyan: '#4ff2ff',
           ink: '#ece6fa',
           mute: '#8b80ab',
-          bad: '#ff5f7e',
-          warn: '#ffb84f',
-          ok: '#4fffa0'
+          bad: '#ff5f7e'
         },
         fontFamily: {
           display: ['"Chakra Petch"', 'sans-serif'],
@@ -34,7 +32,138 @@
     }
   };
 </script>
-<link rel="stylesheet" href="style.css?v=5" />
+<style>
+  html { overflow-x: hidden; }
+  body { background-color: #08050f; overflow-x: hidden; max-width: 100vw; }
+  h1, h2, h3, p, span, a, button, label { overflow-wrap: break-word; word-break: break-word; }
+  img, svg { max-width: 100%; }
+  * { min-width: 0; }
+  .glow-border { box-shadow: 0 0 0 1px rgba(145,70,255,0.25), 0 0 24px -8px rgba(79,242,255,0.15); }
+  .glow-border:hover { box-shadow: 0 0 0 1px rgba(79,242,255,0.5), 0 0 30px -6px rgba(145,70,255,0.4); }
+  .glass { background: rgba(15,10,28,0.55); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+
+  /* ============ gem-card: corte de diamante, como settingstore/1 ============ */
+  .gem-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+    border-radius: 4px;
+    transition: box-shadow .3s ease, border-color .3s ease, transform .2s ease;
+  }
+  .gem-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+    background: linear-gradient(135deg, rgba(79,242,255,.55), rgba(145,70,255,0) 40%, rgba(145,70,255,0) 60%, rgba(145,70,255,.5));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .pack-card__media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: radial-gradient(80% 80% at 50% 30%, rgba(145,70,255,0.14), transparent 70%), #150e28;
+  }
+  .pack-card__media img { width: 100%; height: 100%; object-fit: cover; }
+  .pack-card__body { padding: 14px 14px 16px; display: flex; flex-direction: column; flex: 1; }
+  .pack-card__title {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    line-height: 1.2;
+    font-size: 1.02rem;
+    color: #ece6fa;
+    margin: 0 0 6px;
+  }
+  .pack-card__detail { font-size: 0.78rem; color: #8b80ab; margin: 0 0 10px; }
+  .pack-card__price-row { margin-bottom: 12px; margin-top: auto; }
+  .pack-card__price { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1.15rem; color: #4ff2ff; }
+  .pack-card__buy {
+    width: 100%;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 10px 14px;
+    min-height: 42px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #9146ff;
+    color: #c9a3ff;
+    background: transparent;
+    transition: background-color .15s ease, color .15s ease;
+  }
+  .pedir-fija {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 96px;
+    min-height: 36px;
+    box-sizing: border-box;
+    text-align: center;
+  }
+  .pack-card__buy:hover:not(:disabled) { background: #9146ff; color: #08050f; }
+  .pack-card__buy:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #241a3d;
+    color: #8b80ab;
+  }
+  .stock-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 2;
+    background: rgba(15,10,28,0.92);
+    color: #ff5f7e;
+    border: 1px solid rgba(255,95,126,0.5);
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 999px;
+  }
+  .pack-card--oos .pack-card__media { filter: grayscale(0.5) brightness(0.65); }
+
+  @media (max-width: 639px) {
+    .pack-card__body { padding: 10px 10px 12px; }
+    .pack-card__title { font-size: 0.92rem; margin-bottom: 4px; }
+    .pack-card__detail { font-size: 0.7rem; margin-bottom: 8px; }
+    .pack-card__price { font-size: 1rem; }
+    .pack-card__buy { padding: 9px 10px; font-size: 0.74rem; min-height: 38px; }
+    .pedir-fija { width: 84px; min-height: 34px; }
+    .stock-badge { font-size: 8px; padding: 3px 7px; }
+  }
+  .grid-veins {
+    background-image:
+      linear-gradient(rgba(145,70,255,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(145,70,255,0.06) 1px, transparent 1px);
+    background-size: 42px 42px;
+  }
+  .clip-corner {
+    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  }
+  .hidden-modal { display: none !important; }
+  ::selection { background: #9146ff; color: #08050f; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: #08050f; }
+  ::-webkit-scrollbar-thumb { background: #241a3d; border-radius: 4px; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  .chip { scroll-snap-align: start; }
+  .chip.chip-activo { background: linear-gradient(to right, #9146ff, #4ff2ff); color: #08050f; border-color: transparent; }
+</style>
 </head>
 <body class="font-mono text-ink min-h-screen">
 
@@ -65,16 +194,16 @@
   </aside>
 
   <!-- ============ TOPBAR fijo (mobile) ============ -->
-  <header class="md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-between px-4 py-3 bg-[#08050f]/90 backdrop-blur border-b border-line">
+  <header class="md:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center justify-between px-4 bg-[#08050f]/95 backdrop-blur border-b border-line">
     <div class="flex items-center gap-2">
-      <div class="w-9 h-9 rounded-full border-2 border-violet flex items-center justify-center shrink-0">
-        <span class="font-display font-bold text-cyan text-sm">N</span>
+      <div class="w-8 h-8 rounded-full border-2 border-violet flex items-center justify-center shrink-0">
+        <span class="font-display font-bold text-cyan text-xs">N</span>
       </div>
-      <span class="font-display font-bold text-base tracking-wide">NEXO STORE</span>
+      <span class="font-display font-bold text-sm tracking-wide">NEXO STORE</span>
     </div>
     <a href="admin.html" aria-label="Acceso interno"
-      class="w-10 h-10 flex items-center justify-center rounded-full border border-line text-mute hover:text-cyan hover:border-cyan transition-colors">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-5 h-5">
+      class="w-9 h-9 flex items-center justify-center rounded-full border border-line text-mute hover:text-cyan hover:border-cyan transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-4 h-4">
         <circle cx="12" cy="8" r="3.2" />
         <path d="M4.5 20c1.2-3.4 4-5.2 7.5-5.2s6.3 1.8 7.5 5.2" stroke-linecap="round" />
       </svg>
@@ -82,60 +211,62 @@
   </header>
 
   <!-- ============ MAIN ============ -->
-  <main class="flex-1 grid-veins">
+  <main class="flex-1 grid-veins pt-14 md:pt-0">
 
     <!-- Tira de plataformas — scroll táctil, tipo app -->
-    <div class="md:hidden pt-14 sticky top-14 z-30 bg-[#08050f]/90 backdrop-blur border-b border-line">
-      <div id="chips-plataforma" class="flex overflow-x-auto gap-3 py-3.5 px-4 scrollbar-none snap-x">
-        <!-- Se completa por JS -->
-      </div>
+    <div class="md:hidden sticky top-14 z-30 bg-[#08050f]/95 backdrop-blur border-b border-line">
+      <div id="chips-plataforma" class="flex overflow-x-auto gap-2.5 py-3 px-4 scrollbar-none snap-x"></div>
     </div>
 
-    <div class="max-w-5xl mx-auto px-3 md:px-10 pt-5 md:pt-16 pb-24">
+    <div class="max-w-5xl mx-auto px-4 md:px-10 pt-7 md:pt-16 pb-24">
 
       <!-- Hero -->
-      <section id="inicio" class="mb-10 md:mb-16 px-2 md:px-0">
+      <section id="inicio" class="mb-9 md:mb-16">
         <p class="text-cyan text-xs tracking-[0.25em] font-semibold mb-3">CATÁLOGO NEXO</p>
-        <h1 class="font-display font-bold text-4xl md:text-6xl leading-[1.05] tracking-tight">
+        <h1 class="font-display font-bold text-3xl leading-tight md:text-6xl md:leading-[1.05] tracking-tight">
           Streaming y seguidores,<br class="hidden md:block" />
           <span class="text-violet2">sin esperar hasta mañana.</span>
         </h1>
-        <p class="text-mute mt-5 max-w-md text-sm md:text-sm leading-relaxed">
+        <p class="text-mute mt-4 max-w-md text-sm leading-relaxed">
           Elegís el servicio, mandás el pedido por WhatsApp y coordinamos el pago. Activación apenas se confirma.
         </p>
       </section>
 
+      <!-- Buscador -->
+      <div class="mb-9 md:mb-12">
+        <input id="input-buscar-catalogo" type="text" placeholder="Buscar producto... (ej: Netflix, 500 seguidores)"
+          class="w-full bg-panel2 border border-line px-4 py-3.5 text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
       <!-- Streaming -->
-      <section id="streaming" class="mb-10 md:mb-16">
-        <div class="flex items-baseline justify-between mb-4 px-2 md:px-0">
-          <h2 class="font-display font-semibold text-xl text-violet2">Streaming</h2>
-          <span class="text-xs text-mute">Cuentas y perfiles, 30 días</span>
+      <section id="streaming" class="mb-9 md:mb-16">
+        <div class="flex items-baseline justify-between flex-wrap gap-x-2 gap-y-1 mb-4">
+          <h2 class="font-display font-semibold text-lg md:text-xl text-violet2">Streaming</h2>
+          <span class="text-[11px] text-mute">Cuentas y perfiles, 30 días</span>
         </div>
-        <div id="grid-streaming" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 md:gap-4 px-2 md:px-0"></div>
+        <div id="grid-streaming" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6"></div>
       </section>
 
       <!-- Seguidores -->
-      <section id="seguidores" class="mb-10 px-2 md:px-0">
-        <div class="flex items-baseline justify-between mb-4">
-          <h2 class="font-display font-semibold text-xl text-violet2">Seguidores Instagram</h2>
-          <span class="text-xs text-mute">Entrega gradual, cuentas activas</span>
+      <section id="seguidores" class="mb-6">
+        <div class="flex items-baseline justify-between flex-wrap gap-x-2 gap-y-1 mb-4">
+          <h2 class="font-display font-semibold text-lg md:text-xl text-violet2">Seguidores Instagram</h2>
+          <span class="text-[11px] text-mute">Entrega gradual, cuentas activas</span>
         </div>
-
-        <article class="border border-line bg-panel clip-corner glow-border p-5 md:p-7 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-          <div>
-            <p class="font-display font-bold text-lg md:text-xl text-ink">Elegí cuántos seguidores querés</p>
-            <p class="text-sm text-mute mt-1.5 max-w-md leading-relaxed">
-              Varios planes disponibles, desde paquetes chicos hasta grandes. Elegís el que te sirve y coordinamos por WhatsApp.
-            </p>
-            <p class="text-xs text-warn mt-3 max-w-md leading-relaxed">
-              ⚠ La cuenta tiene que estar <strong>pública</strong> y vas a tener que mandarnos el <strong>enlace de tu perfil</strong> de Instagram.
-            </p>
-          </div>
-          <button id="btn-ver-planes-seguidores"
-            class="shrink-0 bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm px-6 py-3 hover:opacity-90 transition-opacity whitespace-nowrap">
-            Ver planes
-          </button>
-        </article>
+        <div class="border border-line bg-panel clip-corner overflow-x-auto">
+          <table class="w-full text-sm min-w-[480px]">
+            <thead>
+              <tr class="text-left text-[11px] text-mute border-b border-line">
+                <th class="px-4 py-3 font-medium">Paquete</th>
+                <th class="px-4 py-3 font-medium hidden sm:table-cell">Detalle</th>
+                <th class="px-4 py-3 font-medium">Precio</th>
+                <th class="px-4 py-3 font-medium text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-seguidores"></tbody>
+          </table>
+          <p id="tabla-seguidores-vacio" class="hidden-modal text-center text-mute text-xs py-10">Sin paquetes disponibles por el momento.</p>
+        </div>
       </section>
 
     </div>
@@ -143,96 +274,81 @@
 </div>
 
 <!-- ============ MODAL: PEDIDO RÁPIDO ============ -->
-<div id="modal-pedido" class="hidden-modal fixed inset-0 z-50 items-center justify-center px-4 bg-bg/80 backdrop-blur-sm">
-  <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6 relative">
-    <button data-close-modal class="absolute top-4 right-4 text-mute hover:text-cyan text-sm">✕</button>
+<div id="modal-pedido" class="hidden-modal fixed inset-0 z-50 items-center justify-center p-0 sm:p-4 bg-bg/85 backdrop-blur-sm">
+  <div class="w-full h-full sm:h-auto sm:max-w-sm bg-panel border-0 sm:border sm:border-line sm:clip-corner sm:glow-border p-6 pt-8 relative overflow-y-auto flex flex-col justify-center">
+    <button data-close-modal class="absolute top-5 right-5 text-mute hover:text-cyan text-lg leading-none">✕</button>
 
-    <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">PEDIDO RÁPIDO</p>
-    <h3 class="font-display font-bold text-xl mb-5">Confirmá tus datos</h3>
+    <div class="w-full max-w-sm mx-auto">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">PEDIDO RÁPIDO</p>
+      <h3 class="font-display font-bold text-2xl sm:text-xl mb-6 sm:mb-5">Confirmá tus datos</h3>
 
-    <div id="resumen-producto" class="mb-5 px-4 py-3 bg-panel2 border border-line text-sm">
-      <p id="resumen-nombre" class="text-ink font-semibold"></p>
-      <p id="resumen-precio" class="text-cyan font-display font-bold text-lg mt-1"></p>
-      <div id="resumen-descuento" class="hidden-modal mt-2 pt-2 border-t border-line text-xs">
-        <p class="flex justify-between text-mute"><span>Descuento</span><span id="resumen-descuento-monto" class="text-ok"></span></p>
-        <p class="flex justify-between font-display font-bold text-sm text-ink mt-1"><span>Total</span><span id="resumen-total-final" class="text-cyan"></span></p>
-      </div>
-    </div>
-
-    <form id="form-pedido" class="flex flex-col gap-4">
-      <div>
-        <label class="text-xs text-mute block mb-1.5">Nombre completo</label>
-        <input required id="input-nombre" type="text" placeholder="Como te llamás"
-          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      <div id="resumen-producto" class="mb-6 sm:mb-5 px-4 py-3.5 bg-panel2 border border-line text-sm">
+        <p id="resumen-nombre" class="text-ink font-semibold"></p>
+        <p id="resumen-precio" class="text-cyan font-display font-bold text-lg mt-1"></p>
+        <p id="resumen-precio-descuento" class="hidden-modal text-cyan font-display font-bold text-sm mt-1"></p>
       </div>
 
-      <div>
-        <label class="text-xs text-mute block mb-1.5">Cupón de descuento (opcional)</label>
-        <div class="flex gap-2">
-          <input id="input-cupon" type="text" placeholder="CODIGO"
-            class="flex-1 bg-panel2 border border-line px-3 py-2.5 text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan uppercase" />
-          <button type="button" id="btn-aplicar-cupon"
-            class="shrink-0 text-xs font-semibold px-4 border border-violet text-violet2 hover:bg-violet hover:text-bg transition-colors">
-            Aplicar
-          </button>
+      <form id="form-pedido" class="flex flex-col gap-5 sm:gap-4">
+        <div>
+          <label class="text-xs text-mute block mb-2 sm:mb-1.5">Nombre completo</label>
+          <input required id="input-nombre" type="text" placeholder="Como te llamás"
+            class="w-full bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
         </div>
-        <p id="cupon-status" class="text-[11px] mt-1.5 min-h-[1rem]"></p>
-      </div>
 
-      <div id="campo-enlace-perfil" class="hidden-modal">
-        <label class="text-xs text-mute block mb-1.5">Enlace de tu perfil de Instagram</label>
-        <input id="input-enlace-perfil" type="url" placeholder="https://instagram.com/tu_usuario"
-          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-        <p class="text-[11px] text-warn mt-1.5">⚠ La cuenta tiene que estar pública para poder cargar los seguidores.</p>
-      </div>
+        <div>
+          <label class="text-xs text-mute block mb-2 sm:mb-1.5">Código de descuento (opcional)</label>
+          <div class="flex gap-2">
+            <input id="input-codigo-descuento" type="text" placeholder="Ej: NEXO10"
+              class="flex-1 min-w-0 bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+            <button type="button" id="btn-aplicar-descuento"
+              class="shrink-0 border border-violet text-violet2 text-xs font-display font-semibold px-4 whitespace-nowrap hover:bg-violet hover:text-bg transition-colors">
+              Aplicar
+            </button>
+          </div>
+          <p id="descuento-status" class="text-xs text-mute min-h-[1rem] mt-1.5"></p>
+        </div>
 
-      <p id="pedido-status" class="text-xs text-mute min-h-[1rem]"></p>
+        <div id="campos-seguidor" class="hidden-modal flex-col gap-5 sm:gap-4">
+          <div>
+            <label class="text-xs text-mute block mb-2 sm:mb-1.5">Link o usuario de tu cuenta</label>
+            <input id="input-link-cuenta" type="text" placeholder="https://instagram.com/tuusuario"
+              class="w-full bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+          </div>
+          <div>
+            <label class="text-xs text-mute block mb-2 sm:mb-1.5">¿Tu cuenta está en público?</label>
+            <select id="input-cuenta-publica"
+              class="w-full bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink focus:outline-none focus:border-cyan">
+              <option value="si">Sí, está en público</option>
+              <option value="no">No, está en privado</option>
+            </select>
+          </div>
+        </div>
 
-      <button type="submit" id="btn-confirmar"
-        class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
-        Confirmar y abrir WhatsApp
-      </button>
-    </form>
-  </div>
-</div>
+        <p id="pedido-status" class="text-xs text-mute min-h-[1rem]"></p>
 
-<!-- ============ MODAL: ELEGÍ UN PLAN (seguidores) ============ -->
-<div id="modal-planes-seguidores" class="hidden-modal fixed inset-0 z-50 items-center justify-center px-4 bg-bg/80 backdrop-blur-sm">
-  <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6 relative max-h-[85vh] overflow-y-auto">
-    <button data-close-modal-planes class="absolute top-4 right-4 text-mute hover:text-cyan text-sm">✕</button>
-    <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">SEGUIDORES INSTAGRAM</p>
-    <h3 class="font-display font-bold text-xl mb-2">Elegí un plan</h3>
-    <p class="text-xs text-warn mb-5 leading-relaxed">
-      ⚠ La cuenta debe estar <strong>pública</strong>. Al confirmar te vamos a pedir el <strong>enlace de tu perfil</strong>.
-    </p>
-    <div id="lista-planes-seguidores" class="flex flex-col gap-2.5"></div>
-    <p id="planes-seguidores-vacio" class="hidden-modal text-mute text-sm">Sin planes disponibles por el momento.</p>
-  </div>
-</div>
-
-<!-- ============ TEMPLATE: FILA DE PLAN (seguidores) ============ -->
-<template id="tpl-plan-seguidores">
-  <button data-field="fila" class="w-full flex items-center justify-between gap-3 border border-line bg-panel2 clip-corner px-4 py-3.5 text-left hover:border-cyan transition-colors disabled:opacity-40 disabled:hover:border-line disabled:cursor-not-allowed">
-    <div class="min-w-0">
-      <p class="font-display font-semibold text-sm text-ink" data-field="nombre"></p>
-      <p class="text-[11px] text-mute mt-0.5" data-field="descripcion"></p>
+        <button type="submit" id="btn-confirmar"
+          class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-4 sm:py-3 mt-1 hover:opacity-90 transition-opacity">
+          Confirmar y abrir WhatsApp
+        </button>
+      </form>
     </div>
-    <span class="font-display font-bold text-cyan text-base whitespace-nowrap" data-field="precio"></span>
-  </button>
-</template>
+  </div>
+</div>
 
-<!-- ============ TEMPLATE: TARJETA DE PRODUCTO (compacta, tipo app) ============ -->
+<!-- ============ TEMPLATE: TARJETA DE PRODUCTO (gem-card, base settingstore/1) ============ -->
 <template id="tpl-producto">
-  <article class="pack-card">
+  <article class="gem-card pack-card glass glow-border relative" data-field="card">
+    <div data-field="badge-stock" class="hidden-modal stock-badge">SIN EXISTENCIAS</div>
     <div class="pack-card__media" data-field="imagen-wrap">
-      <img data-field="imagen" class="hidden-modal" />
-      <div data-field="imagen-fallback" class="pack-card__fallback">
-        <span>N</span>
+      <img data-field="imagen" class="hidden-modal absolute inset-0 w-full h-full object-cover" />
+      <div data-field="imagen-fallback" class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-violet/25 via-panel2 to-cyan/10">
+        <div class="w-10 h-10 rounded-full border-2 border-violet/70 flex items-center justify-center">
+          <span class="font-display font-bold text-cyan text-sm">N</span>
+        </div>
       </div>
-      <div data-field="badge-stock" class="hidden-modal pack-card__stock-badge">SIN EXISTENCIAS</div>
     </div>
     <div class="pack-card__body">
-      <p class="pack-card__title" data-field="nombre"></p>
+      <h3 class="pack-card__title" data-field="nombre"></h3>
       <p class="pack-card__detail" data-field="descripcion"></p>
       <div class="pack-card__price-row">
         <span class="pack-card__price" data-field="precio"></span>
@@ -240,6 +356,21 @@
       <button data-field="btn" class="pack-card__buy">Pedir</button>
     </div>
   </article>
+</template>
+
+<!-- ============ TEMPLATE: FILA TABLA SEGUIDORES ============ -->
+<template id="tpl-seguidor-fila">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle border-b border-line last:border-b-0">
+    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
+    <td class="px-4 py-3 text-mute text-xs hidden sm:table-cell" data-field="descripcion"></td>
+    <td class="px-4 py-3 text-cyan font-display font-bold whitespace-nowrap" data-field="precio"></td>
+    <td class="px-4 py-3 text-right">
+      <button data-field="btn"
+        class="pedir-fija text-[11px] font-semibold border border-violet text-violet2 px-3 py-2 hover:bg-violet hover:text-bg transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:border-line disabled:text-mute disabled:hover:bg-transparent">
+        Pedir
+      </button>
+    </td>
+  </tr>
 </template>
 
 <script type="module">
@@ -250,13 +381,11 @@
   import {
     getFirestore,
     collection,
-    addDoc,
-    onSnapshot,
-    serverTimestamp,
     doc,
     getDoc,
-    updateDoc,
-    increment
+    addDoc,
+    onSnapshot,
+    serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -273,7 +402,7 @@
   const db = getFirestore(app);
   const pedidosRef = collection(db, "pedidos_nexo");
   const productosRef = collection(db, "productos");
-  const cuponesRef = collection(db, "cupones");
+  const configuracionRef = doc(db, "configuracion", "descuento");
 
   const WHATSAPP_NEXO = "5492634273255";
 
@@ -283,45 +412,6 @@
   }
 
   // -----------------------------
-  // Cupones de descuento — doc ID = código en mayúsculas (cupones/{CODIGO})
-  // -----------------------------
-  async function validarCupon(codigoInput, subtotal) {
-    const codigo = (codigoInput || "").trim().toUpperCase();
-    if (!codigo) return { valid: false, reason: "EMPTY" };
-
-    const snap = await getDoc(doc(db, "cupones", codigo));
-    if (!snap.exists()) return { valid: false, reason: "NOT_FOUND" };
-
-    const c = snap.data();
-    if (c.active === false) return { valid: false, reason: "INACTIVE" };
-    if (c.validUntil && new Date(c.validUntil + "T23:59:59") < new Date()) {
-      return { valid: false, reason: "EXPIRED" };
-    }
-    if ((c.usedCount || 0) >= c.usageLimit) return { valid: false, reason: "LIMIT" };
-
-    let discountAmount = c.discountType === "percentage" ? subtotal * (c.value / 100) : c.value;
-    discountAmount = Math.min(discountAmount, subtotal);
-    const finalTotal = Math.round((subtotal - discountAmount) * 100) / 100;
-
-    return {
-      valid: true,
-      codigo,
-      discountType: c.discountType,
-      value: c.value,
-      discountAmount: Math.round(discountAmount * 100) / 100,
-      finalTotal
-    };
-  }
-
-  const CUPON_ERRORES = {
-    EMPTY: "Ingresá un código.",
-    NOT_FOUND: "Ese cupón no existe.",
-    INACTIVE: "Ese cupón ya no está activo.",
-    EXPIRED: "Ese cupón venció.",
-    LIMIT: "Ese cupón llegó a su límite de usos."
-  };
-
-
   // Tira de plataformas (filtro rápido, estilo app).
   // Cada chip filtra el catálogo por palabra clave en el nombre del producto.
   // Los ícono se leen de /assets — si falta el archivo, el chip igual
@@ -339,6 +429,7 @@
   ];
 
   let filtroActivo = "todos";
+  let textoBusqueda = "";
   let productosCache = [];
 
   const chipsContenedor = document.getElementById("chips-plataforma");
@@ -348,14 +439,14 @@
     chip.type = "button";
     chip.dataset.filtro = plataforma.id;
     chip.className =
-      "chip shrink-0 flex items-center gap-2 border border-line bg-panel2 text-xs md:text-[11px] font-semibold text-mute px-3.5 py-2.5 rounded-full whitespace-nowrap transition-colors" +
+      "chip shrink-0 flex items-center gap-1.5 border border-line bg-panel2 text-[11px] font-semibold text-mute px-3 py-2 rounded-full whitespace-nowrap transition-colors" +
       (plataforma.id === "todos" ? " chip-activo" : "");
 
     if (plataforma.icono) {
       const icono = document.createElement("img");
       icono.src = plataforma.icono;
       icono.alt = "";
-      icono.className = "w-7 h-7 rounded-full object-cover shrink-0";
+      icono.className = "w-4 h-4 rounded-full object-cover";
       icono.onerror = () => icono.remove();
       chip.appendChild(icono);
     }
@@ -365,10 +456,6 @@
     chip.appendChild(texto);
 
     chip.addEventListener("click", () => {
-      if (plataforma.id === "seguidores") {
-        abrirModalPlanes();
-        return;
-      }
       filtroActivo = plataforma.id;
       document.querySelectorAll(".chip").forEach((c) => c.classList.remove("chip-activo"));
       chip.classList.add("chip-activo");
@@ -386,6 +473,20 @@
     const categoria = (producto.categoria || "").toLowerCase();
     return nombre.includes(plataforma.palabra) || categoria.includes(plataforma.palabra);
   }
+
+  function productoCoincideConBusqueda(producto) {
+    if (!textoBusqueda) return true;
+    const texto = textoBusqueda.toLowerCase();
+    const nombre = (producto.nombre || "").toLowerCase();
+    const descripcion = (producto.descripcion || "").toLowerCase();
+    return nombre.includes(texto) || descripcion.includes(texto);
+  }
+
+  const inputBuscarCatalogo = document.getElementById("input-buscar-catalogo");
+  inputBuscarCatalogo.addEventListener("input", () => {
+    textoBusqueda = inputBuscarCatalogo.value.trim();
+    aplicarFiltroYRenderizar();
+  });
 
   // -----------------------------
   // Imagen del producto: soporta URL externa (http/https) o ruta local
@@ -417,20 +518,67 @@
     };
   }
 
+  // -----------------------------
+  // Orden manual: se define desde el admin (campo "orden", número).
+  // Menor número aparece primero. Sin orden asignado = 0.
+  // -----------------------------
+  function ordenarPorOrden(a, b) {
+    const oa = Number(a.orden) || 0;
+    const ob = Number(b.orden) || 0;
+    if (oa !== ob) return oa - ob;
+    return (a.nombre || "").localeCompare(b.nombre || "");
+  }
+
+  function renderTablaSeguidores(lista) {
+    const tbody = document.getElementById("tabla-seguidores");
+    const vacio = document.getElementById("tabla-seguidores-vacio");
+    const tpl = document.getElementById("tpl-seguidor-fila");
+    tbody.innerHTML = "";
+
+    const listaFiltrada = lista.filter((p) => productoCoincideConFiltro(p) && productoCoincideConBusqueda(p));
+
+    if (listaFiltrada.length === 0) {
+      vacio.textContent =
+        lista.length === 0 ? "Sin paquetes disponibles por el momento." : "No hay resultados para tu búsqueda.";
+      vacio.classList.remove("hidden-modal");
+      return;
+    }
+    vacio.classList.add("hidden-modal");
+
+    listaFiltrada.forEach((producto) => {
+      const nodo = tpl.content.cloneNode(true);
+      nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre;
+      nodo.querySelector('[data-field="descripcion"]').textContent = producto.descripcion || "";
+      nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
+
+      const btn = nodo.querySelector('[data-field="btn"]');
+      const hayStock = producto.hayStock !== false;
+
+      if (hayStock) {
+        btn.addEventListener("click", () => abrirModalPedido(producto));
+      } else {
+        btn.textContent = "Sin stock";
+        btn.disabled = true;
+      }
+
+      tbody.appendChild(nodo);
+    });
+  }
+
   function renderCatalogo(lista, contenedorId) {
     const contenedor = document.getElementById(contenedorId);
     const tpl = document.getElementById("tpl-producto");
     contenedor.innerHTML = "";
 
-    const listaFiltrada = lista.filter(productoCoincideConFiltro);
+    const listaFiltrada = lista.filter((p) => productoCoincideConFiltro(p) && productoCoincideConBusqueda(p));
 
     if (listaFiltrada.length === 0) {
       const vacio = document.createElement("p");
-      vacio.className = "grid-empty-msg";
+      vacio.className = "text-mute text-xs col-span-full";
       vacio.textContent =
         lista.length === 0
           ? "Sin productos disponibles por el momento."
-          : "No hay resultados para este filtro.";
+          : "No hay resultados para tu búsqueda o filtro.";
       contenedor.appendChild(vacio);
       return;
     }
@@ -446,16 +594,16 @@
 
       const btn = nodo.querySelector('[data-field="btn"]');
       const badgeStock = nodo.querySelector('[data-field="badge-stock"]');
-      const article = nodo.querySelector(".pack-card");
+      const cardEl = nodo.querySelector('[data-field="card"]');
       const hayStock = producto.hayStock !== false;
 
       if (hayStock) {
         btn.addEventListener("click", () => abrirModalPedido(producto));
       } else {
         badgeStock.classList.remove("hidden-modal");
+        cardEl.classList.add("pack-card--oos");
         btn.textContent = "Sin stock";
         btn.disabled = true;
-        article.classList.add("pack-card--oos");
       }
 
       contenedor.appendChild(nodo);
@@ -463,9 +611,10 @@
   }
 
   function aplicarFiltroYRenderizar() {
-    const streaming = productosCache.filter((p) => p.categoria === "streaming");
+    const streaming = productosCache.filter((p) => p.categoria === "streaming").sort(ordenarPorOrden);
+    const seguidores = productosCache.filter((p) => p.categoria === "seguidores").sort(ordenarPorOrden);
     renderCatalogo(streaming, "grid-streaming");
-    renderPlanesSeguidores();
+    renderTablaSeguidores(seguidores);
   }
 
   function iniciarEscuchaCatalogo() {
@@ -486,72 +635,124 @@
   const modal = document.getElementById("modal-pedido");
   const resumenNombre = document.getElementById("resumen-nombre");
   const resumenPrecio = document.getElementById("resumen-precio");
-  const resumenDescuento = document.getElementById("resumen-descuento");
-  const resumenDescuentoMonto = document.getElementById("resumen-descuento-monto");
-  const resumenTotalFinal = document.getElementById("resumen-total-final");
+  const resumenPrecioDescuento = document.getElementById("resumen-precio-descuento");
   const formPedido = document.getElementById("form-pedido");
   const inputNombre = document.getElementById("input-nombre");
-  const inputCupon = document.getElementById("input-cupon");
-  const btnAplicarCupon = document.getElementById("btn-aplicar-cupon");
-  const cuponStatus = document.getElementById("cupon-status");
-  const campoEnlacePerfil = document.getElementById("campo-enlace-perfil");
-  const inputEnlacePerfil = document.getElementById("input-enlace-perfil");
+  const camposSeguidor = document.getElementById("campos-seguidor");
+  const inputLinkCuenta = document.getElementById("input-link-cuenta");
+  const inputCuentaPublica = document.getElementById("input-cuenta-publica");
   const pedidoStatus = document.getElementById("pedido-status");
   const btnConfirmar = document.getElementById("btn-confirmar");
+  const inputCodigoDescuento = document.getElementById("input-codigo-descuento");
+  const btnAplicarDescuento = document.getElementById("btn-aplicar-descuento");
+  const descuentoStatus = document.getElementById("descuento-status");
 
   let productoSeleccionado = null;
-  let cuponAplicado = null; // resultado de validarCupon() cuando es válido
+  let descuentoActivo = null; // { codigo, porcentaje }
+  let precioFinalActual = 0;
 
-  function limpiarCupon() {
-    cuponAplicado = null;
-    inputCupon.value = "";
-    cuponStatus.textContent = "";
-    cuponStatus.className = "text-[11px] mt-1.5 min-h-[1rem]";
-    resumenDescuento.classList.add("hidden-modal");
+  // -----------------------------
+  // Descuento: se define desde el admin (apartado Finanzas), en
+  // configuracion/descuento -> { codigo, porcentaje, activo }.
+  // -----------------------------
+  function actualizarResumenPrecio() {
+    if (!productoSeleccionado) return;
+    precioFinalActual = productoSeleccionado.precio;
+
+    if (descuentoActivo) {
+      precioFinalActual = Math.max(
+        0,
+        Math.round(productoSeleccionado.precio * (1 - descuentoActivo.porcentaje / 100))
+      );
+      resumenPrecio.textContent = formatearPrecio(productoSeleccionado.precio);
+      resumenPrecio.classList.add("line-through", "text-mute", "text-sm", "font-normal");
+      resumenPrecio.classList.remove("text-cyan", "text-lg", "font-bold");
+      resumenPrecioDescuento.textContent =
+        `${formatearPrecio(precioFinalActual)} · código ${descuentoActivo.codigo} (-${descuentoActivo.porcentaje}%)`;
+      resumenPrecioDescuento.classList.remove("hidden-modal");
+    } else {
+      resumenPrecio.textContent = formatearPrecio(productoSeleccionado.precio);
+      resumenPrecio.classList.remove("line-through", "text-mute", "text-sm", "font-normal");
+      resumenPrecio.classList.add("text-cyan", "text-lg", "font-bold");
+      resumenPrecioDescuento.classList.add("hidden-modal");
+    }
   }
+
+  btnAplicarDescuento.addEventListener("click", async () => {
+    const codigoIngresado = inputCodigoDescuento.value.trim().toUpperCase();
+    descuentoStatus.classList.remove("text-bad", "text-cyan");
+    descuentoStatus.textContent = "";
+
+    if (!codigoIngresado) {
+      descuentoStatus.textContent = "Ingresá un código.";
+      descuentoStatus.classList.add("text-bad");
+      return;
+    }
+
+    btnAplicarDescuento.disabled = true;
+    const textoOriginal = btnAplicarDescuento.textContent;
+    btnAplicarDescuento.textContent = "Verificando...";
+
+    try {
+      const snap = await getDoc(configuracionRef);
+      const data = snap.exists() ? snap.data() : {};
+      const codigoGuardado = (data.codigo || "").trim().toUpperCase();
+      const porcentaje = Number(data.porcentaje) || 0;
+      const activo = data.activo === true;
+      const productoId = data.productoId || "todos";
+      const codigoCoincide = codigoGuardado && codigoGuardado === codigoIngresado;
+      const aplicaAlProducto = productoId === "todos" || productoId === productoSeleccionado.id;
+
+      if (activo && codigoCoincide && porcentaje > 0 && aplicaAlProducto) {
+        descuentoActivo = { codigo: codigoGuardado, porcentaje };
+        descuentoStatus.textContent = `Código aplicado: -${porcentaje}% de descuento.`;
+        descuentoStatus.classList.add("text-cyan");
+      } else {
+        descuentoActivo = null;
+        if (activo && codigoCoincide && porcentaje > 0 && !aplicaAlProducto) {
+          descuentoStatus.textContent = "Ese código no aplica para este producto.";
+        } else {
+          descuentoStatus.textContent = "Código inválido o no disponible.";
+        }
+        descuentoStatus.classList.add("text-bad");
+      }
+    } catch (err) {
+      console.error(err);
+      descuentoActivo = null;
+      descuentoStatus.textContent = "No se pudo verificar el código. Intentá de nuevo.";
+      descuentoStatus.classList.add("text-bad");
+    } finally {
+      actualizarResumenPrecio();
+      btnAplicarDescuento.disabled = false;
+      btnAplicarDescuento.textContent = textoOriginal;
+    }
+  });
 
   function abrirModalPedido(producto) {
     productoSeleccionado = producto;
     resumenNombre.textContent = producto.nombre;
-    resumenPrecio.textContent = formatearPrecio(producto.precio);
     pedidoStatus.textContent = "";
     formPedido.reset();
-    limpiarCupon();
 
-    const esSeguidores = producto.categoria === "seguidores";
-    campoEnlacePerfil.classList.toggle("hidden-modal", !esSeguidores);
-    inputEnlacePerfil.required = esSeguidores;
+    descuentoActivo = null;
+    descuentoStatus.textContent = "";
+    descuentoStatus.classList.remove("text-bad", "text-cyan");
+    actualizarResumenPrecio();
+
+    const esSeguidor = producto.categoria === "seguidores";
+    if (esSeguidor) {
+      camposSeguidor.classList.remove("hidden-modal");
+      camposSeguidor.classList.add("flex");
+      inputLinkCuenta.setAttribute("required", "required");
+    } else {
+      camposSeguidor.classList.add("hidden-modal");
+      camposSeguidor.classList.remove("flex");
+      inputLinkCuenta.removeAttribute("required");
+    }
 
     modal.classList.remove("hidden-modal");
     modal.classList.add("flex");
   }
-
-  btnAplicarCupon.addEventListener("click", async () => {
-    if (!productoSeleccionado) return;
-    btnAplicarCupon.disabled = true;
-    btnAplicarCupon.textContent = "...";
-    cuponStatus.className = "text-[11px] mt-1.5 min-h-[1rem] text-mute";
-    cuponStatus.textContent = "Verificando...";
-
-    const resultado = await validarCupon(inputCupon.value, productoSeleccionado.precio);
-
-    if (!resultado.valid) {
-      cuponAplicado = null;
-      resumenDescuento.classList.add("hidden-modal");
-      cuponStatus.className = "text-[11px] mt-1.5 min-h-[1rem] text-bad";
-      cuponStatus.textContent = CUPON_ERRORES[resultado.reason] || "Cupón inválido.";
-    } else {
-      cuponAplicado = resultado;
-      resumenDescuentoMonto.textContent = "-" + formatearPrecio(resultado.discountAmount);
-      resumenTotalFinal.textContent = formatearPrecio(resultado.finalTotal);
-      resumenDescuento.classList.remove("hidden-modal");
-      cuponStatus.className = "text-[11px] mt-1.5 min-h-[1rem] text-ok";
-      cuponStatus.textContent = `Cupón ${resultado.codigo} aplicado.`;
-    }
-
-    btnAplicarCupon.disabled = false;
-    btnAplicarCupon.textContent = "Aplicar";
-  });
 
   function cerrarModalPedido() {
     modal.classList.add("hidden-modal");
@@ -565,111 +766,75 @@
     if (e.target === modal) cerrarModalPedido();
   });
 
-  // -----------------------------
-  // Modal "Elegí un plan" — seguidores Instagram
-  // -----------------------------
-  const modalPlanes = document.getElementById("modal-planes-seguidores");
-  const listaPlanes = document.getElementById("lista-planes-seguidores");
-  const planesVacio = document.getElementById("planes-seguidores-vacio");
-  const tplPlan = document.getElementById("tpl-plan-seguidores");
-
-  function renderPlanesSeguidores() {
-    const planes = productosCache.filter((p) => p.categoria === "seguidores");
-    listaPlanes.innerHTML = "";
-    planesVacio.classList.toggle("hidden-modal", planes.length > 0);
-
-    planes.forEach((plan) => {
-      const nodo = tplPlan.content.cloneNode(true);
-      const fila = nodo.querySelector('[data-field="fila"]');
-      nodo.querySelector('[data-field="nombre"]').textContent = plan.nombre;
-      nodo.querySelector('[data-field="descripcion"]').textContent =
-        (plan.caracteristicas && plan.caracteristicas.length) ? plan.caracteristicas.join(" · ") : (plan.descripcion || "");
-      nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(plan.precio);
-
-      if (plan.hayStock === false) {
-        fila.disabled = true;
-        nodo.querySelector('[data-field="precio"]').textContent = "Sin stock";
-      } else {
-        fila.addEventListener("click", () => {
-          cerrarModalPlanes();
-          abrirModalPedido(plan);
-        });
-      }
-
-      listaPlanes.appendChild(nodo);
-    });
-  }
-
-  function abrirModalPlanes() {
-    renderPlanesSeguidores();
-    modalPlanes.classList.remove("hidden-modal");
-    modalPlanes.classList.add("flex");
-  }
-  function cerrarModalPlanes() {
-    modalPlanes.classList.add("hidden-modal");
-    modalPlanes.classList.remove("flex");
-  }
-
-  document.getElementById("btn-ver-planes-seguidores").addEventListener("click", abrirModalPlanes);
-  modalPlanes.querySelectorAll("[data-close-modal-planes]").forEach((btn) => btn.addEventListener("click", cerrarModalPlanes));
-  modalPlanes.addEventListener("click", (e) => {
-    if (e.target === modalPlanes) cerrarModalPlanes();
-  });
-
   formPedido.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!productoSeleccionado) return;
 
     const nombre = inputNombre.value.trim();
-    const esSeguidores = productoSeleccionado.categoria === "seguidores";
-    const enlacePerfil = esSeguidores ? inputEnlacePerfil.value.trim() : "";
-    const totalFinal = cuponAplicado ? cuponAplicado.finalTotal : productoSeleccionado.precio;
+    const esSeguidor = productoSeleccionado.categoria === "seguidores";
+    const linkCuenta = esSeguidor ? inputLinkCuenta.value.trim() : "";
+    const cuentaPublica = esSeguidor ? inputCuentaPublica.value : "";
+
+    if (esSeguidor && !linkCuenta) {
+      pedidoStatus.textContent = "Falta el link o usuario de tu cuenta.";
+      return;
+    }
 
     btnConfirmar.disabled = true;
     btnConfirmar.textContent = "Guardando...";
     pedidoStatus.textContent = "";
 
-    try {
-      const datosPedido = {
-        nombre,
-        telefono: "",
-        servicio: productoSeleccionado.nombre,
-        precio: productoSeleccionado.precio,
-        totalFinal,
-        estado: "espera",
-        pagado: false,
-        fecha: serverTimestamp()
-      };
-      if (esSeguidores) datosPedido.enlacePerfil = enlacePerfil;
-      if (cuponAplicado) {
-        datosPedido.cuponCodigo = cuponAplicado.codigo;
-        datosPedido.cuponDescuento = cuponAplicado.discountAmount;
-      }
+    const precioOriginal = productoSeleccionado.precio;
+    const precioAPagar = descuentoActivo ? precioFinalActual : precioOriginal;
 
-      await addDoc(pedidosRef, datosPedido);
+    const datosPedido = {
+      nombre,
+      servicio: productoSeleccionado.nombre,
+      precio: precioAPagar,
+      precioOriginal,
+      estado: "espera",
+      pagado: false,
+      fecha: serverTimestamp()
+    };
 
-      if (cuponAplicado) {
-        await updateDoc(doc(db, "cupones", cuponAplicado.codigo), { usedCount: increment(1) });
-      }
-
-      let mensaje =
-        `Hola NEXO! Quiero encargar ${productoSeleccionado.nombre} por ${formatearPrecio(totalFinal)}. ` +
-        `Mi nombre es ${nombre}.`;
-      if (cuponAplicado) {
-        mensaje += ` Apliqué el cupón ${cuponAplicado.codigo} (precio original ${formatearPrecio(productoSeleccionado.precio)}).`;
-      }
-      if (esSeguidores) {
-        mensaje += ` Mi perfil de Instagram (público) es: ${enlacePerfil}`;
-      }
-
-      const url = `https://wa.me/${WHATSAPP_NEXO}?text=${encodeURIComponent(mensaje)}`;
-      window.location.href = url;
-    } catch (err) {
-      console.error(err);
-      pedidoStatus.textContent = "No se pudo guardar el pedido. Intentá de nuevo.";
-      btnConfirmar.disabled = false;
-      btnConfirmar.textContent = "Confirmar y abrir WhatsApp";
+    if (descuentoActivo) {
+      datosPedido.codigoDescuento = descuentoActivo.codigo;
+      datosPedido.descuentoPorcentaje = descuentoActivo.porcentaje;
     }
+
+    if (esSeguidor) {
+      datosPedido.linkCuenta = linkCuenta;
+      datosPedido.cuentaPublica = cuentaPublica === "si";
+    }
+
+    // Guardar en Firestore, pero sin dejar al cliente trabado si la base
+    // de datos tarda o falla (red lenta, bloqueadores, permisos, etc.):
+    // después de 6s seguimos igual hacia WhatsApp, que es lo que
+    // realmente concreta el pedido. El guardado sigue en curso en
+    // segundo plano aunque ya se haya navegado.
+    try {
+      await Promise.race([
+        addDoc(pedidosRef, datosPedido),
+        new Promise((resolve) => setTimeout(resolve, 6000))
+      ]);
+    } catch (err) {
+      console.error("No se pudo confirmar el guardado del pedido, se continúa por WhatsApp:", err);
+    }
+
+    let mensaje =
+      `Hola NEXO! Quiero encargar ${productoSeleccionado.nombre} por ${formatearPrecio(precioAPagar)}. ` +
+      `Mi nombre es ${nombre}.`;
+
+    if (descuentoActivo) {
+      mensaje += ` Usé el código ${descuentoActivo.codigo} (-${descuentoActivo.porcentaje}%, precio normal ${formatearPrecio(precioOriginal)}).`;
+    }
+
+    if (esSeguidor) {
+      mensaje += ` Mi cuenta: ${linkCuenta} (${cuentaPublica === "si" ? "pública" : "privada"}).`;
+    }
+
+    const url = `https://wa.me/${WHATSAPP_NEXO}?text=${encodeURIComponent(mensaje)}`;
+    window.location.href = url;
   });
 </script>
 </body>
