@@ -144,6 +144,10 @@
         <span class="text-[11px]">✅ Activos</span>
         <span id="count-activo" class="font-display font-bold text-ok ml-2">0</span>
       </div>
+      <a href="https://palaciodigital.net/" target="_blank" rel="noopener noreferrer"
+        class="px-3.5 py-2 border border-violet text-violet2 text-[11px] font-display font-semibold clip-corner hover:bg-violet hover:text-bg transition-colors">
+        🏬 Palacio Digital
+      </a>
       <button id="btn-logout" class="text-[11px] text-mute hover:text-bad transition-colors ml-1">Cerrar sesión</button>
     </div>
   </div>
@@ -316,6 +320,111 @@
         <tbody id="tabla-rentabilidad"></tbody>
       </table>
       <p id="tabla-rentabilidad-vacio" class="hidden-modal text-center text-mute text-xs py-10">Todavía no cargaste productos.</p>
+    </div>
+  </div>
+
+  <div class="mb-10">
+    <p class="text-mute text-xs mb-6 leading-relaxed max-w-2xl">
+      Se calcula sobre los pedidos marcados como "Activo". A cada uno se le busca el producto por nombre y se le
+      resta su costo en pesos (según la cotización aplicada arriba) al precio pagado. Necesita que hayas tocado
+      "Aplicar" en la cotización y que el producto tenga costo en USD cargado; si falta alguno de los dos, esa
+      fila queda sin calcular.
+    </p>
+
+    <div class="grid sm:grid-cols-3 gap-4 mb-6">
+      <div class="border border-line bg-panel clip-corner p-5">
+        <p class="text-mute text-[11px] tracking-[0.15em] mb-1">TOTAL FACTURADO</p>
+        <p id="ventas-total-facturado" class="font-display font-bold text-2xl">$0</p>
+        <p id="ventas-cantidad" class="text-mute text-xs mt-1">0 pedidos activos</p>
+      </div>
+      <div class="border border-line bg-panel clip-corner p-5">
+        <p class="text-mute text-[11px] tracking-[0.15em] mb-1">GANANCIA CALCULADA</p>
+        <p id="ventas-ganancia-calculada" class="font-display font-bold text-2xl">—</p>
+        <p id="ventas-sin-costo" class="text-mute text-xs mt-1"></p>
+      </div>
+      <div class="border border-line bg-panel clip-corner p-5">
+        <p class="text-mute text-[11px] tracking-[0.15em] mb-1">GANANCIA TOTAL (CON AJUSTES)</p>
+        <p id="ventas-ganancia-total" class="font-display font-bold text-2xl">—</p>
+        <p id="ventas-ajustes-resumen" class="text-mute text-xs mt-1">Ajustes: $0</p>
+      </div>
+    </div>
+
+    <div class="border border-line bg-panel clip-corner overflow-x-auto">
+      <table class="w-full text-sm min-w-[640px]">
+        <thead>
+          <tr class="text-left text-[11px] text-mute border-b border-line">
+            <th class="px-4 py-3 font-medium">Cliente</th>
+            <th class="px-4 py-3 font-medium">Producto</th>
+            <th class="px-4 py-3 font-medium">Precio pagado</th>
+            <th class="px-4 py-3 font-medium">Costo (ARS)</th>
+            <th class="px-4 py-3 font-medium">Ganancia</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-ventas"></tbody>
+      </table>
+      <p id="tabla-ventas-vacio" class="hidden-modal text-center text-mute text-xs py-10">Todavía no hay pedidos activos.</p>
+    </div>
+  </div>
+
+  <div class="mb-10 grid md:grid-cols-2 gap-6">
+    <div class="border border-line bg-panel clip-corner p-6">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">AJUSTES</p>
+      <h3 class="font-display font-bold text-xl mb-2">Corregir ganancia manualmente</h3>
+      <p class="text-mute text-xs mb-5 leading-relaxed">
+        Si el cálculo automático quedó mal (costo cargado tarde, error de tipeo, etc.), sumá o restá un ajuste
+        acá. Queda asentado con motivo y fecha, sin tocar los pedidos ni los productos.
+      </p>
+      <form id="form-ajuste" class="flex flex-col gap-4">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Motivo</label>
+          <input required id="ajuste-motivo" type="text" placeholder="Ej: corrección costo Netflix octubre"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        </div>
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Monto (ARS, usá negativo para restar)</label>
+          <input required id="ajuste-monto" type="number" step="0.01" placeholder="-5000"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan" />
+        </div>
+        <p id="ajuste-status" class="text-xs text-mute min-h-[1rem]"></p>
+        <button type="submit" id="btn-guardar-ajuste"
+          class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+          Registrar ajuste
+        </button>
+      </form>
+    </div>
+
+    <div class="border border-line bg-panel clip-corner p-6">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">AJUSTES</p>
+      <h3 class="font-display font-bold text-xl mb-5">Historial</h3>
+      <div id="lista-ajustes" class="flex flex-col gap-2.5 max-h-80 overflow-y-auto"></div>
+      <p id="lista-ajustes-vacio" class="text-mute text-xs py-6 text-center">Todavía no cargaste ajustes.</p>
+    </div>
+  </div>
+
+  <div class="mb-10">
+    <p class="text-mute text-xs mb-6 leading-relaxed max-w-2xl">
+      Suma el costo en pesos (según la cotización aplicada arriba) de todos los productos marcados como
+      "Sin stock" en la pestaña Productos. Es una estimación de cuánta plata hace falta para reponerlos.
+    </p>
+
+    <div class="border border-line bg-panel clip-corner p-5 mb-6 max-w-xs">
+      <p class="text-mute text-[11px] tracking-[0.15em] mb-1">GASTO ESTIMADO PARA REPONER STOCK</p>
+      <p id="stock-gasto-total" class="font-display font-bold text-2xl">—</p>
+      <p id="stock-gasto-cantidad" class="text-mute text-xs mt-1">0 productos sin stock</p>
+    </div>
+
+    <div class="border border-line bg-panel clip-corner overflow-x-auto">
+      <table class="w-full text-sm min-w-[480px]">
+        <thead>
+          <tr class="text-left text-[11px] text-mute border-b border-line">
+            <th class="px-4 py-3 font-medium">Producto</th>
+            <th class="px-4 py-3 font-medium">Costo (USD)</th>
+            <th class="px-4 py-3 font-medium">Costo (ARS)</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-gastos-stock"></tbody>
+      </table>
+      <p id="tabla-gastos-stock-vacio" class="hidden-modal text-center text-mute text-xs py-10">No hay productos sin stock.</p>
     </div>
   </div>
 
@@ -537,6 +646,41 @@
     <td class="px-4 py-3 text-mute whitespace-nowrap" data-field="costo-ars">—</td>
     <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="ganancia">—</td>
     <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="margen">—</td>
+  </tr>
+</template>
+
+<!-- ============ TEMPLATE: FILA VENTA (pedido activo) ============ -->
+<template id="tpl-fila-venta">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle">
+    <td class="px-4 py-3" data-field="cliente"></td>
+    <td class="px-4 py-3 font-semibold" data-field="producto"></td>
+    <td class="px-4 py-3 text-cyan font-display font-bold whitespace-nowrap" data-field="precio"></td>
+    <td class="px-4 py-3 text-mute whitespace-nowrap" data-field="costo">—</td>
+    <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="ganancia">—</td>
+  </tr>
+</template>
+
+<!-- ============ TEMPLATE: AJUSTE DE GANANCIA ============ -->
+<template id="tpl-ajuste">
+  <div class="flex items-center justify-between gap-3 bg-panel2 border border-line px-3.5 py-2.5">
+    <div class="min-w-0">
+      <p data-field="motivo" class="text-sm truncate"></p>
+      <p data-field="fecha" class="text-[11px] text-mute"></p>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <span data-field="monto" class="font-display font-semibold text-sm"></span>
+      <button data-field="btn-eliminar"
+        class="text-[11px] text-bad border border-bad/40 px-2 py-1 hover:bg-bad hover:text-bg transition-colors">✕</button>
+    </div>
+  </div>
+</template>
+
+<!-- ============ TEMPLATE: FILA GASTO STOCK ============ -->
+<template id="tpl-fila-gasto-stock">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle">
+    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
+    <td class="px-4 py-3 text-mute whitespace-nowrap" data-field="costo-usd">—</td>
+    <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="costo-ars">—</td>
   </tr>
 </template>
 
@@ -843,6 +987,7 @@
   const productosRef = collection(db, "productos");
   const configuracionRef = doc(db, "configuracion", "descuento");
   const cuponesRef = collection(db, "cupones");
+  const ajustesRef = collection(db, "ajustesGanancia");
 
   // -----------------------------
   // Sesión: no se guarda entre visitas.
@@ -985,6 +1130,7 @@
       iniciarEscuchaVencimientos();
       iniciarEscuchaDescuento();
       iniciarEscuchaCupones();
+      iniciarEscuchaAjustes();
     }
   });
 
@@ -1037,6 +1183,7 @@
       actualizarContadores();
       renderTabla();
       renderTablaVencimientos();
+      renderVentas();
     });
   }
 
@@ -1248,6 +1395,8 @@
       renderTablaProductos();
       actualizarOpcionesProductoDescuento();
       renderTablaRentabilidad();
+      renderVentas();
+      renderGastosStock();
     });
   }
 
@@ -1818,6 +1967,8 @@
       btnAplicarCotizacion.disabled = false;
       btnAplicarCotizacion.textContent = textoOriginal;
       renderTablaRentabilidad();
+      renderVentas();
+      renderGastosStock();
     }
   });
 
@@ -1876,6 +2027,249 @@
 
       tablaRentabilidad.appendChild(nodo);
     });
+  }
+
+  // -----------------------------
+  // FINANZAS: ventas y ganancias — se calcula sobre los pedidos
+  // marcados como "Activo" (pedidos_nexo). El costo de cada uno se
+  // busca por nombre de producto (pedido.servicio === producto.nombre)
+  // y usa la misma cotización aplicada arriba. Se suman los ajustes
+  // manuales para llegar a la ganancia total.
+  // -----------------------------
+  const tablaVentas = document.getElementById("tabla-ventas");
+  const tablaVentasVacio = document.getElementById("tabla-ventas-vacio");
+  const tplVenta = document.getElementById("tpl-fila-venta");
+  const ventasTotalFacturado = document.getElementById("ventas-total-facturado");
+  const ventasCantidad = document.getElementById("ventas-cantidad");
+  const ventasGananciaCalculada = document.getElementById("ventas-ganancia-calculada");
+  const ventasSinCosto = document.getElementById("ventas-sin-costo");
+  const ventasGananciaTotal = document.getElementById("ventas-ganancia-total");
+  const ventasAjustesResumen = document.getElementById("ventas-ajustes-resumen");
+
+  function buscarProductoPorNombre(nombreServicio) {
+    const buscado = (nombreServicio || "").trim().toLowerCase();
+    return productosCache.find((p) => (p.nombre || "").trim().toLowerCase() === buscado);
+  }
+
+  function totalAjustes() {
+    return ajustesCache.reduce((acc, a) => acc + (Number(a.monto) || 0), 0);
+  }
+
+  function renderVentas() {
+    if (!tablaVentas) return;
+    tablaVentas.innerHTML = "";
+
+    const pedidosActivos = pedidosCache.filter((p) => p.estado === "activo");
+
+    let totalFacturado = 0;
+    let gananciaCalculada = 0;
+    let sinCosto = 0;
+
+    ventasCantidad.textContent = `${pedidosActivos.length} pedido${pedidosActivos.length === 1 ? "" : "s"} activo${pedidosActivos.length === 1 ? "" : "s"}`;
+
+    if (pedidosActivos.length === 0) {
+      tablaVentasVacio.classList.remove("hidden-modal");
+    } else {
+      tablaVentasVacio.classList.add("hidden-modal");
+    }
+
+    pedidosActivos.forEach((pedido) => {
+      const precio = Number(pedido.precio) || 0;
+      totalFacturado += precio;
+
+      const nodo = tplVenta.content.cloneNode(true);
+      nodo.querySelector('[data-field="cliente"]').textContent = pedido.nombre || "—";
+      nodo.querySelector('[data-field="producto"]').textContent = pedido.servicio || "—";
+      nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(precio);
+
+      const celdaCosto = nodo.querySelector('[data-field="costo"]');
+      const celdaGanancia = nodo.querySelector('[data-field="ganancia"]');
+
+      const producto = buscarProductoPorNombre(pedido.servicio);
+      const costoUsd = producto ? Number(producto.costoUsd) || 0 : 0;
+
+      if (!cotizacionActual || !costoUsd) {
+        celdaCosto.textContent = "—";
+        celdaGanancia.textContent = "—";
+        sinCosto++;
+      } else {
+        const costoArs = costoUsd * cotizacionActual.valor;
+        const ganancia = precio - costoArs;
+        gananciaCalculada += ganancia;
+
+        celdaCosto.textContent = formatearPrecio(Math.round(costoArs));
+        celdaGanancia.textContent = formatearPrecio(Math.round(ganancia));
+        celdaGanancia.className = "px-4 py-3 font-semibold whitespace-nowrap " + (ganancia >= 0 ? "text-ok" : "text-bad");
+      }
+
+      tablaVentas.appendChild(nodo);
+    });
+
+    ventasTotalFacturado.textContent = formatearPrecio(totalFacturado);
+
+    ventasGananciaCalculada.textContent = cotizacionActual ? formatearPrecio(Math.round(gananciaCalculada)) : "—";
+    ventasSinCosto.textContent = !cotizacionActual
+      ? "Aplicá una cotización arriba para calcular."
+      : sinCosto > 0
+        ? `${sinCosto} pedido${sinCosto === 1 ? "" : "s"} sin costo cargado.`
+        : "Todos los pedidos activos tienen costo cargado.";
+
+    const ajustes = totalAjustes();
+    ventasAjustesResumen.textContent = `Ajustes: ${(ajustes >= 0 ? "+" : "") + formatearPrecio(ajustes)}`;
+
+    if (cotizacionActual) {
+      const gananciaTotal = gananciaCalculada + ajustes;
+      ventasGananciaTotal.textContent = formatearPrecio(Math.round(gananciaTotal));
+      ventasGananciaTotal.className = "font-display font-bold text-2xl " + (gananciaTotal >= 0 ? "text-ok" : "text-bad");
+    } else {
+      ventasGananciaTotal.textContent = "—";
+      ventasGananciaTotal.className = "font-display font-bold text-2xl";
+    }
+  }
+
+  // -----------------------------
+  // FINANZAS: ajustes manuales de ganancia (colección "ajustesGanancia")
+  // Sirven para corregir el total calculado (costo cargado tarde, error
+  // de tipeo, etc.) dejando un registro con motivo y fecha, sin tocar
+  // los pedidos ni los productos.
+  // -----------------------------
+  let ajustesCache = [];
+  const listaAjustes = document.getElementById("lista-ajustes");
+  const listaAjustesVacio = document.getElementById("lista-ajustes-vacio");
+  const tplAjuste = document.getElementById("tpl-ajuste");
+  const formAjuste = document.getElementById("form-ajuste");
+  const ajusteMotivo = document.getElementById("ajuste-motivo");
+  const ajusteMonto = document.getElementById("ajuste-monto");
+  const ajusteStatus = document.getElementById("ajuste-status");
+  const btnGuardarAjuste = document.getElementById("btn-guardar-ajuste");
+
+  function iniciarEscuchaAjustes() {
+    const q = query(ajustesRef, orderBy("fecha", "desc"));
+    onSnapshot(q, (snapshot) => {
+      ajustesCache = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+      renderListaAjustes();
+      renderVentas();
+    });
+  }
+
+  function renderListaAjustes() {
+    if (!listaAjustes) return;
+    listaAjustes.innerHTML = "";
+
+    if (ajustesCache.length === 0) {
+      listaAjustesVacio.classList.remove("hidden-modal");
+      return;
+    }
+    listaAjustesVacio.classList.add("hidden-modal");
+
+    ajustesCache.forEach((ajuste) => {
+      const nodo = tplAjuste.content.cloneNode(true);
+      nodo.querySelector('[data-field="motivo"]').textContent = ajuste.motivo || "(sin motivo)";
+      nodo.querySelector('[data-field="fecha"]').textContent = formatearFecha(ajuste.fecha);
+
+      const monto = Number(ajuste.monto) || 0;
+      const montoEl = nodo.querySelector('[data-field="monto"]');
+      montoEl.textContent = (monto >= 0 ? "+" : "") + formatearPrecio(monto);
+      montoEl.className = "font-display font-semibold text-sm " + (monto >= 0 ? "text-ok" : "text-bad");
+
+      nodo.querySelector('[data-field="btn-eliminar"]').addEventListener("click", async () => {
+        const confirmar = window.confirm("¿Eliminar este ajuste? Esta acción no se puede deshacer.");
+        if (!confirmar) return;
+        try {
+          await deleteDoc(doc(db, "ajustesGanancia", ajuste.id));
+        } catch (err) {
+          console.error(err);
+        }
+      });
+
+      listaAjustes.appendChild(nodo);
+    });
+  }
+
+  formAjuste.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const motivo = ajusteMotivo.value.trim();
+    const monto = Number(ajusteMonto.value);
+
+    if (!motivo) {
+      ajusteStatus.textContent = "Escribí un motivo para el ajuste.";
+      ajusteStatus.className = "text-xs text-bad min-h-[1rem]";
+      return;
+    }
+    if (!Number.isFinite(monto) || monto === 0) {
+      ajusteStatus.textContent = "El monto tiene que ser un número distinto de 0.";
+      ajusteStatus.className = "text-xs text-bad min-h-[1rem]";
+      return;
+    }
+
+    btnGuardarAjuste.disabled = true;
+    btnGuardarAjuste.textContent = "Guardando...";
+    ajusteStatus.textContent = "";
+    ajusteStatus.className = "text-xs text-mute min-h-[1rem]";
+
+    try {
+      await addDoc(ajustesRef, { motivo, monto, fecha: serverTimestamp() });
+      ajusteStatus.textContent = "Ajuste registrado.";
+      ajusteStatus.className = "text-xs text-cyan min-h-[1rem]";
+      formAjuste.reset();
+    } catch (err) {
+      console.error(err);
+      ajusteStatus.textContent = "No se pudo guardar el ajuste. Intentá de nuevo.";
+      ajusteStatus.className = "text-xs text-bad min-h-[1rem]";
+    } finally {
+      btnGuardarAjuste.disabled = false;
+      btnGuardarAjuste.textContent = "Registrar ajuste";
+    }
+  });
+
+  // -----------------------------
+  // FINANZAS: gastos para reponer stock — suma el costo en pesos de
+  // todos los productos marcados "Sin stock" (productos/{id}.hayStock
+  // === false), usando la misma cotización aplicada arriba.
+  // -----------------------------
+  const tablaGastosStock = document.getElementById("tabla-gastos-stock");
+  const tablaGastosStockVacio = document.getElementById("tabla-gastos-stock-vacio");
+  const tplGastoStock = document.getElementById("tpl-fila-gasto-stock");
+  const stockGastoTotal = document.getElementById("stock-gasto-total");
+  const stockGastoCantidad = document.getElementById("stock-gasto-cantidad");
+
+  function renderGastosStock() {
+    if (!tablaGastosStock) return;
+    tablaGastosStock.innerHTML = "";
+
+    const sinStock = productosCache.filter((p) => p.hayStock === false);
+
+    stockGastoCantidad.textContent = `${sinStock.length} producto${sinStock.length === 1 ? "" : "s"} sin stock`;
+
+    if (sinStock.length === 0) {
+      tablaGastosStockVacio.classList.remove("hidden-modal");
+    } else {
+      tablaGastosStockVacio.classList.add("hidden-modal");
+    }
+
+    let total = 0;
+
+    sinStock.forEach((producto) => {
+      const nodo = tplGastoStock.content.cloneNode(true);
+      nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre || "(sin nombre)";
+
+      const costoUsd = Number(producto.costoUsd) || 0;
+      nodo.querySelector('[data-field="costo-usd"]').textContent = costoUsd ? "US$ " + costoUsd.toLocaleString("es-AR") : "—";
+
+      const celdaArs = nodo.querySelector('[data-field="costo-ars"]');
+      if (!cotizacionActual || !costoUsd) {
+        celdaArs.textContent = "—";
+      } else {
+        const costoArs = costoUsd * cotizacionActual.valor;
+        total += costoArs;
+        celdaArs.textContent = formatearPrecio(Math.round(costoArs));
+      }
+
+      tablaGastosStock.appendChild(nodo);
+    });
+
+    stockGastoTotal.textContent = cotizacionActual ? formatearPrecio(Math.round(total)) : "—";
   }
 
   // =========================================================
