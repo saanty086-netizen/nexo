@@ -286,6 +286,10 @@
         <p id="resumen-nombre" class="text-ink font-semibold"></p>
         <p id="resumen-precio" class="text-cyan font-display font-bold text-lg mt-1"></p>
         <p id="resumen-precio-descuento" class="hidden-modal text-cyan font-display font-bold text-sm mt-1"></p>
+        <div id="resumen-cupon" class="hidden-modal mt-2 pt-2 border-t border-line text-xs">
+          <p class="flex justify-between text-mute"><span>Cupón</span><span id="resumen-cupon-monto" class="text-ok"></span></p>
+          <p class="flex justify-between font-display font-bold text-sm text-ink mt-1"><span>Total con cupón</span><span id="resumen-cupon-total" class="text-cyan"></span></p>
+        </div>
       </div>
 
       <form id="form-pedido" class="flex flex-col gap-5 sm:gap-4">
@@ -306,6 +310,19 @@
             </button>
           </div>
           <p id="descuento-status" class="text-xs text-mute min-h-[1rem] mt-1.5"></p>
+        </div>
+
+        <div>
+          <label class="text-xs text-mute block mb-2 sm:mb-1.5">Cupón de descuento (opcional)</label>
+          <div class="flex gap-2">
+            <input id="input-cupon" type="text" placeholder="CODIGO"
+              class="flex-1 min-w-0 bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+            <button type="button" id="btn-aplicar-cupon"
+              class="shrink-0 border border-violet text-violet2 text-xs font-display font-semibold px-4 whitespace-nowrap hover:bg-violet hover:text-bg transition-colors">
+              Aplicar
+            </button>
+          </div>
+          <p id="cupon-status" class="text-xs text-mute min-h-[1rem] mt-1.5"></p>
         </div>
 
         <div id="campos-seguidor" class="hidden-modal flex-col gap-5 sm:gap-4">
@@ -384,6 +401,8 @@
     doc,
     getDoc,
     addDoc,
+    updateDoc,
+    increment,
     onSnapshot,
     serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -403,6 +422,48 @@
   const pedidosRef = collection(db, "pedidos_nexo");
   const productosRef = collection(db, "productos");
   const configuracionRef = doc(db, "configuracion", "descuento");
+  const cuponesRef = collection(db, "cupones");
+
+  // -----------------------------
+  // Cupones de descuento (multi-uso) — doc ID = código en mayúsculas
+  // (cupones/{CODIGO}). Se gestionan desde admin.html, solapa "Cupones".
+  // Esto es independiente del código de descuento único de Finanzas.
+  // -----------------------------
+  async function validarCupon(codigoInput, subtotal) {
+    const codigo = (codigoInput || "").trim().toUpperCase();
+    if (!codigo) return { valid: false, reason: "EMPTY" };
+
+    const snap = await getDoc(doc(db, "cupones", codigo));
+    if (!snap.exists()) return { valid: false, reason: "NOT_FOUND" };
+
+    const c = snap.data();
+    if (c.active === false) return { valid: false, reason: "INACTIVE" };
+    if (c.validUntil && new Date(c.validUntil + "T23:59:59") < new Date()) {
+      return { valid: false, reason: "EXPIRED" };
+    }
+    if ((c.usedCount || 0) >= c.usageLimit) return { valid: false, reason: "LIMIT" };
+
+    let discountAmount = c.discountType === "percentage" ? subtotal * (c.value / 100) : c.value;
+    discountAmount = Math.min(discountAmount, subtotal);
+    const finalTotal = Math.round((subtotal - discountAmount) * 100) / 100;
+
+    return {
+      valid: true,
+      codigo,
+      discountType: c.discountType,
+      value: c.value,
+      discountAmount: Math.round(discountAmount * 100) / 100,
+      finalTotal
+    };
+  }
+
+  const CUPON_ERRORES = {
+    EMPTY: "Ingresá un código.",
+    NOT_FOUND: "Ese cupón no existe.",
+    INACTIVE: "Ese cupón ya no está activo.",
+    EXPIRED: "Ese cupón venció.",
+    LIMIT: "Ese cupón llegó a su límite de usos."
+  };
 
   const WHATSAPP_NEXO = "5492634273255";
 
@@ -646,10 +707,25 @@
   const inputCodigoDescuento = document.getElementById("input-codigo-descuento");
   const btnAplicarDescuento = document.getElementById("btn-aplicar-descuento");
   const descuentoStatus = document.getElementById("descuento-status");
+  const inputCupon = document.getElementById("input-cupon");
+  const btnAplicarCupon = document.getElementById("btn-aplicar-cupon");
+  const cuponStatus = document.getElementById("cupon-status");
+  const resumenCupon = document.getElementById("resumen-cupon");
+  const resumenCuponMonto = document.getElementById("resumen-cupon-monto");
+  const resumenCuponTotal = document.getElementById("resumen-cupon-total");
 
   let productoSeleccionado = null;
   let descuentoActivo = null; // { codigo, porcentaje }
   let precioFinalActual = 0;
+  let cuponAplicado = null; // resultado de validarCupon() cuando es válido
+
+  function limpiarCupon() {
+    cuponAplicado = null;
+    inputCupon.value = "";
+    cuponStatus.textContent = "";
+    cuponStatus.classList.remove("text-bad", "text-ok");
+    resumenCupon.classList.add("hidden-modal");
+  }
 
   // -----------------------------
   // Descuento: se define desde el admin (apartado Finanzas), en
@@ -728,6 +804,34 @@
     }
   });
 
+  btnAplicarCupon.addEventListener("click", async () => {
+    if (!productoSeleccionado) return;
+    btnAplicarCupon.disabled = true;
+    btnAplicarCupon.textContent = "...";
+    cuponStatus.classList.remove("text-bad", "text-ok");
+    cuponStatus.textContent = "Verificando...";
+
+    const subtotal = descuentoActivo ? precioFinalActual : productoSeleccionado.precio;
+    const resultado = await validarCupon(inputCupon.value, subtotal);
+
+    if (!resultado.valid) {
+      cuponAplicado = null;
+      resumenCupon.classList.add("hidden-modal");
+      cuponStatus.classList.add("text-bad");
+      cuponStatus.textContent = CUPON_ERRORES[resultado.reason] || "Cupón inválido.";
+    } else {
+      cuponAplicado = resultado;
+      resumenCuponMonto.textContent = "-" + formatearPrecio(resultado.discountAmount);
+      resumenCuponTotal.textContent = formatearPrecio(resultado.finalTotal);
+      resumenCupon.classList.remove("hidden-modal");
+      cuponStatus.classList.add("text-ok");
+      cuponStatus.textContent = `Cupón ${resultado.codigo} aplicado.`;
+    }
+
+    btnAplicarCupon.disabled = false;
+    btnAplicarCupon.textContent = "Aplicar";
+  });
+
   function abrirModalPedido(producto) {
     productoSeleccionado = producto;
     resumenNombre.textContent = producto.nombre;
@@ -738,6 +842,7 @@
     descuentoStatus.textContent = "";
     descuentoStatus.classList.remove("text-bad", "text-cyan");
     actualizarResumenPrecio();
+    limpiarCupon();
 
     const esSeguidor = producto.categoria === "seguidores";
     if (esSeguidor) {
@@ -785,7 +890,8 @@
     pedidoStatus.textContent = "";
 
     const precioOriginal = productoSeleccionado.precio;
-    const precioAPagar = descuentoActivo ? precioFinalActual : precioOriginal;
+    const precioTrasDescuento = descuentoActivo ? precioFinalActual : precioOriginal;
+    const precioAPagar = cuponAplicado ? cuponAplicado.finalTotal : precioTrasDescuento;
 
     const datosPedido = {
       nombre,
@@ -800,6 +906,11 @@
     if (descuentoActivo) {
       datosPedido.codigoDescuento = descuentoActivo.codigo;
       datosPedido.descuentoPorcentaje = descuentoActivo.porcentaje;
+    }
+
+    if (cuponAplicado) {
+      datosPedido.cuponCodigo = cuponAplicado.codigo;
+      datosPedido.cuponDescuento = cuponAplicado.discountAmount;
     }
 
     if (esSeguidor) {
@@ -821,12 +932,24 @@
       console.error("No se pudo confirmar el guardado del pedido, se continúa por WhatsApp:", err);
     }
 
+    if (cuponAplicado) {
+      try {
+        await updateDoc(doc(db, "cupones", cuponAplicado.codigo), { usedCount: increment(1) });
+      } catch (err) {
+        console.error("No se pudo incrementar el uso del cupón:", err);
+      }
+    }
+
     let mensaje =
       `Hola NEXO! Quiero encargar ${productoSeleccionado.nombre} por ${formatearPrecio(precioAPagar)}. ` +
       `Mi nombre es ${nombre}.`;
 
     if (descuentoActivo) {
       mensaje += ` Usé el código ${descuentoActivo.codigo} (-${descuentoActivo.porcentaje}%, precio normal ${formatearPrecio(precioOriginal)}).`;
+    }
+
+    if (cuponAplicado) {
+      mensaje += ` Apliqué el cupón ${cuponAplicado.codigo} (-${formatearPrecio(cuponAplicado.discountAmount)}).`;
     }
 
     if (esSeguidor) {

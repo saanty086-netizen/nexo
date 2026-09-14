@@ -182,6 +182,7 @@
   <button id="tab-productos" class="tab-btn">Productos</button>
   <button id="tab-vencimientos" class="tab-btn">Vencimientos</button>
   <button id="tab-finanzas" class="tab-btn">Finanzas</button>
+  <button id="tab-cupones" class="tab-btn">Cupones</button>
 </div>
 
 <!-- ============ SECCIÓN: PEDIDOS ============ -->
@@ -390,7 +391,133 @@
   </div>
 </main>
 
-<!-- ============ TEMPLATE: FILA RENTABILIDAD ============ -->
+<!-- ============ SECCIÓN: CUPONES ============ -->
+<main id="seccion-cupones" class="hidden-modal max-w-7xl mx-auto px-5 md:px-8 py-8">
+
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <p class="text-mute text-xs max-w-md leading-relaxed">
+      Cupones de descuento (multi-uso) aplicables desde el pedido rápido de la tienda. "Usados" cuenta cuántas veces ya se usó.
+      Esto es independiente del código único de la pestaña Finanzas.
+    </p>
+    <button id="btn-agregar-cupon"
+      class="bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm px-5 py-2.5 hover:opacity-90 transition-opacity whitespace-nowrap">
+      + Agregar cupón
+    </button>
+  </div>
+
+  <div class="hidden md:block border border-line bg-panel clip-corner overflow-x-auto">
+    <table class="w-full text-sm min-w-[760px]">
+      <thead>
+        <tr class="text-left text-[11px] text-mute border-b border-line">
+          <th class="px-4 py-3 font-medium">Código</th>
+          <th class="px-4 py-3 font-medium">Descuento</th>
+          <th class="px-4 py-3 font-medium">Vence</th>
+          <th class="px-4 py-3 font-medium">Usados</th>
+          <th class="px-4 py-3 font-medium">Activo</th>
+          <th class="px-4 py-3 font-medium">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-cupones"></tbody>
+    </table>
+  </div>
+
+  <!-- ============ TARJETAS (mobile) ============ -->
+  <div id="tarjetas-cupones" class="md:hidden flex flex-col gap-2.5"></div>
+
+  <p id="tabla-cupones-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste cupones.</p>
+</main>
+
+<!-- ============ TEMPLATE: FILA CUPÓN ============ -->
+<template id="tpl-fila-cupon">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle">
+    <td class="px-4 py-3 font-display font-bold text-ink" data-field="codigo"></td>
+    <td class="px-4 py-3" data-field="descuento"></td>
+    <td class="px-4 py-3 text-mute text-xs" data-field="vence"></td>
+    <td class="px-4 py-3 text-mute" data-field="usados"></td>
+    <td class="px-4 py-3">
+      <button data-field="btn-activo" class="toggle-btn"></button>
+    </td>
+    <td class="px-4 py-3">
+      <div class="flex items-center gap-2 whitespace-nowrap">
+        <button data-field="btn-editar-cupon" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+        <button data-field="btn-eliminar-cupon" class="text-[11px] text-bad border border-bad/40 px-2.5 py-1.5 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+      </div>
+    </td>
+  </tr>
+</template>
+
+<!-- ============ TEMPLATE: TARJETA CUPÓN (mobile) ============ -->
+<template id="tpl-tarjeta-cupon">
+  <div class="border border-line bg-panel clip-corner p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-display font-bold text-sm text-ink truncate" data-field="codigo"></p>
+        <p class="text-xs text-mute mt-0.5" data-field="descuento"></p>
+        <p class="text-[11px] text-mute mt-0.5" data-field="vence-usados"></p>
+      </div>
+      <button data-field="btn-activo" class="toggle-btn shrink-0"></button>
+    </div>
+    <div class="mt-3 flex items-center gap-2">
+      <button data-field="btn-editar-cupon" class="flex-1 text-[11px] text-violet2 border border-violet/40 py-2 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+      <button data-field="btn-eliminar-cupon" class="flex-1 text-[11px] text-bad border border-bad/40 py-2 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+    </div>
+  </div>
+</template>
+
+<!-- ============ MODAL: AGREGAR / EDITAR CUPÓN ============ -->
+<div id="modal-cupon" class="hidden-modal fixed inset-0 z-50 items-center justify-center px-4 bg-bg/80 backdrop-blur-sm">
+  <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6 relative max-h-[90vh] overflow-y-auto">
+    <button data-close-modal-cupon class="absolute top-4 right-4 text-mute hover:text-cyan text-sm">✕</button>
+    <p id="modal-cupon-eyebrow" class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">CUPÓN</p>
+    <h3 id="modal-cupon-titulo" class="font-display font-bold text-xl mb-5">Agregar cupón</h3>
+
+    <form id="form-cupon" class="flex flex-col gap-4">
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Código</label>
+        <input required id="cupon-codigo" type="text" placeholder="BIENVENIDO10"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        <p id="cupon-codigo-nota" class="text-[10px] text-mute/70 mt-1"></p>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Tipo</label>
+          <select id="cupon-tipo" class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+            <option value="percentage">Porcentaje</option>
+            <option value="fixed">Monto fijo</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Valor</label>
+          <input required id="cupon-valor" type="number" min="0" step="0.01" placeholder="10"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan" />
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Vence</label>
+          <input required id="cupon-vence" type="date"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink focus:outline-none focus:border-cyan" />
+        </div>
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Límite de usos</label>
+          <input required id="cupon-limite" type="number" min="1" step="1" placeholder="50"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan" />
+        </div>
+      </div>
+      <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+        <input id="cupon-activo" type="checkbox" checked class="w-4 h-4 accent-violet" />
+        Activo
+      </label>
+
+      <p id="cupon-modal-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+      <button type="submit" id="btn-guardar-cupon"
+        class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+        Guardar
+      </button>
+    </form>
+  </div>
+</div>
 <template id="tpl-fila-rentabilidad">
   <tr class="hover:bg-panel2/60 transition-colors align-middle">
     <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
@@ -708,6 +835,7 @@
   const pedidosRef = collection(db, "pedidos_nexo");
   const productosRef = collection(db, "productos");
   const configuracionRef = doc(db, "configuracion", "descuento");
+  const cuponesRef = collection(db, "cupones");
 
   // -----------------------------
   // Sesión: no se guarda entre visitas.
@@ -893,6 +1021,7 @@
       iniciarEscuchaProductos();
       iniciarEscuchaVencimientos();
       iniciarEscuchaDescuento();
+      iniciarEscuchaCupones();
     }
   });
 
@@ -907,14 +1036,16 @@
   const tabProductos = document.getElementById("tab-productos");
   const tabVencimientos = document.getElementById("tab-vencimientos");
   const tabFinanzas = document.getElementById("tab-finanzas");
+  const tabCupones = document.getElementById("tab-cupones");
   const seccionPedidos = document.getElementById("seccion-pedidos");
   const seccionProductos = document.getElementById("seccion-productos");
   const seccionVencimientos = document.getElementById("seccion-vencimientos");
   const seccionFinanzas = document.getElementById("seccion-finanzas");
+  const seccionCupones = document.getElementById("seccion-cupones");
 
   function activarTab(activa) {
-    [tabPedidos, tabProductos, tabVencimientos, tabFinanzas].forEach((t) => t.classList.remove("tab-activo"));
-    [seccionPedidos, seccionProductos, seccionVencimientos, seccionFinanzas].forEach((s) => s.classList.add("hidden-modal"));
+    [tabPedidos, tabProductos, tabVencimientos, tabFinanzas, tabCupones].forEach((t) => t.classList.remove("tab-activo"));
+    [seccionPedidos, seccionProductos, seccionVencimientos, seccionFinanzas, seccionCupones].forEach((s) => s.classList.add("hidden-modal"));
     activa.tab.classList.add("tab-activo");
     activa.seccion.classList.remove("hidden-modal");
   }
@@ -923,6 +1054,7 @@
   tabProductos.addEventListener("click", () => activarTab({ tab: tabProductos, seccion: seccionProductos }));
   tabVencimientos.addEventListener("click", () => activarTab({ tab: tabVencimientos, seccion: seccionVencimientos }));
   tabFinanzas.addEventListener("click", () => activarTab({ tab: tabFinanzas, seccion: seccionFinanzas }));
+  tabCupones.addEventListener("click", () => activarTab({ tab: tabCupones, seccion: seccionCupones }));
 
   // -----------------------------
   // Estado en memoria + render — PEDIDOS
@@ -1745,6 +1877,175 @@
       tablaRentabilidad.appendChild(nodo);
     });
   }
+
+  // =========================================================
+  // CUPONES (multi-uso, independientes del código único de Finanzas)
+  // =========================================================
+  let cuponesCache = [];
+  const tablaCupones = document.getElementById("tabla-cupones");
+  const tablaCuponesVacio = document.getElementById("tabla-cupones-vacio");
+  const tarjetasCupones = document.getElementById("tarjetas-cupones");
+  const tplFilaCupon = document.getElementById("tpl-fila-cupon");
+  const tplTarjetaCupon = document.getElementById("tpl-tarjeta-cupon");
+
+  function iniciarEscuchaCupones() {
+    onSnapshot(cuponesRef, (snapshot) => {
+      cuponesCache = snapshot.docs
+        .map((docSnap) => ({ codigo: docSnap.id, ...docSnap.data() }))
+        .sort((a, b) => a.codigo.localeCompare(b.codigo));
+      renderCupones();
+    });
+  }
+
+  function formatearDescuentoCupon(c) {
+    return c.discountType === "percentage" ? `${c.value}%` : formatearPrecio(c.value);
+  }
+
+  function formatearFechaCortaCupon(fechaStr) {
+    if (!fechaStr) return "—";
+    const d = new Date(fechaStr + "T00:00:00");
+    return d.toLocaleDateString("es-AR");
+  }
+
+  function renderCupones() {
+    tablaCupones.innerHTML = "";
+    tarjetasCupones.innerHTML = "";
+    tablaCuponesVacio.classList.toggle("hidden-modal", cuponesCache.length > 0);
+
+    cuponesCache.forEach((cupon) => {
+      const activo = cupon.active !== false;
+      const usadosTexto = `${cupon.usedCount || 0} / ${cupon.usageLimit ?? "∞"}`;
+
+      const fila = tplFilaCupon.content.cloneNode(true);
+      fila.querySelector('[data-field="codigo"]').textContent = cupon.codigo;
+      fila.querySelector('[data-field="descuento"]').textContent = formatearDescuentoCupon(cupon);
+      fila.querySelector('[data-field="vence"]').textContent = formatearFechaCortaCupon(cupon.validUntil);
+      fila.querySelector('[data-field="usados"]').textContent = usadosTexto;
+
+      const btnActivoFila = fila.querySelector('[data-field="btn-activo"]');
+      pintarToggle(btnActivoFila, activo, "Activo", "Inactivo");
+      btnActivoFila.addEventListener("click", async () => {
+        await updateDoc(doc(db, "cupones", cupon.codigo), { active: !activo });
+      });
+
+      fila.querySelector('[data-field="btn-editar-cupon"]').addEventListener("click", () => abrirModalCupon(cupon));
+      fila.querySelector('[data-field="btn-eliminar-cupon"]').addEventListener("click", async () => {
+        if (window.confirm(`¿Eliminar el cupón "${cupon.codigo}"? Esta acción no se puede deshacer.`)) {
+          await deleteDoc(doc(db, "cupones", cupon.codigo));
+        }
+      });
+      tablaCupones.appendChild(fila);
+
+      const tarjeta = tplTarjetaCupon.content.cloneNode(true);
+      tarjeta.querySelector('[data-field="codigo"]').textContent = cupon.codigo;
+      tarjeta.querySelector('[data-field="descuento"]').textContent = formatearDescuentoCupon(cupon);
+      tarjeta.querySelector('[data-field="vence-usados"]').textContent =
+        `Vence: ${formatearFechaCortaCupon(cupon.validUntil)} · Usados: ${usadosTexto}`;
+
+      const btnActivoTarjeta = tarjeta.querySelector('[data-field="btn-activo"]');
+      pintarToggle(btnActivoTarjeta, activo, "Activo", "Inactivo");
+      btnActivoTarjeta.addEventListener("click", async () => {
+        await updateDoc(doc(db, "cupones", cupon.codigo), { active: !activo });
+      });
+
+      tarjeta.querySelector('[data-field="btn-editar-cupon"]').addEventListener("click", () => abrirModalCupon(cupon));
+      tarjeta.querySelector('[data-field="btn-eliminar-cupon"]').addEventListener("click", async () => {
+        if (window.confirm(`¿Eliminar el cupón "${cupon.codigo}"? Esta acción no se puede deshacer.`)) {
+          await deleteDoc(doc(db, "cupones", cupon.codigo));
+        }
+      });
+      tarjetasCupones.appendChild(tarjeta);
+    });
+  }
+
+  // Modal agregar/editar cupón — el código es el ID del documento, así que no se puede editar
+  const modalCupon = document.getElementById("modal-cupon");
+  const formCupon = document.getElementById("form-cupon");
+  const cuponCodigo = document.getElementById("cupon-codigo");
+  const cuponCodigoNota = document.getElementById("cupon-codigo-nota");
+  const cuponTipo = document.getElementById("cupon-tipo");
+  const cuponValor = document.getElementById("cupon-valor");
+  const cuponVence = document.getElementById("cupon-vence");
+  const cuponLimite = document.getElementById("cupon-limite");
+  const cuponActivo = document.getElementById("cupon-activo");
+  const cuponModalStatus = document.getElementById("cupon-modal-status");
+  const modalCuponTitulo = document.getElementById("modal-cupon-titulo");
+  const modalCuponEyebrow = document.getElementById("modal-cupon-eyebrow");
+  const btnGuardarCupon = document.getElementById("btn-guardar-cupon");
+  let cuponEnEdicionCodigo = null;
+
+  function abrirModalCupon(cupon) {
+    formCupon.reset();
+    cuponModalStatus.textContent = "";
+
+    if (cupon) {
+      cuponEnEdicionCodigo = cupon.codigo;
+      modalCuponEyebrow.textContent = "EDITAR CUPÓN";
+      modalCuponTitulo.textContent = "Editar cupón";
+      cuponCodigo.value = cupon.codigo;
+      cuponCodigo.disabled = true;
+      cuponCodigoNota.textContent = "El código no se puede cambiar — creá uno nuevo si necesitás otro.";
+      cuponTipo.value = cupon.discountType || "percentage";
+      cuponValor.value = cupon.value ?? "";
+      cuponVence.value = cupon.validUntil || "";
+      cuponLimite.value = cupon.usageLimit ?? "";
+      cuponActivo.checked = cupon.active !== false;
+    } else {
+      cuponEnEdicionCodigo = null;
+      modalCuponEyebrow.textContent = "NUEVO CUPÓN";
+      modalCuponTitulo.textContent = "Agregar cupón";
+      cuponCodigo.disabled = false;
+      cuponCodigoNota.textContent = "";
+      cuponTipo.value = "percentage";
+      cuponActivo.checked = true;
+    }
+
+    modalCupon.classList.remove("hidden-modal");
+    modalCupon.classList.add("flex");
+  }
+  function cerrarModalCupon() {
+    modalCupon.classList.add("hidden-modal");
+    modalCupon.classList.remove("flex");
+  }
+  document.getElementById("btn-agregar-cupon").addEventListener("click", () => abrirModalCupon(null));
+  modalCupon.querySelectorAll("[data-close-modal-cupon]").forEach((btn) => btn.addEventListener("click", cerrarModalCupon));
+  modalCupon.addEventListener("click", (e) => {
+    if (e.target === modalCupon) cerrarModalCupon();
+  });
+
+  formCupon.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const datos = {
+      discountType: cuponTipo.value,
+      value: Number(cuponValor.value) || 0,
+      validUntil: cuponVence.value,
+      usageLimit: Number(cuponLimite.value) || 1,
+      active: cuponActivo.checked
+    };
+
+    btnGuardarCupon.disabled = true;
+    btnGuardarCupon.textContent = "Guardando...";
+    cuponModalStatus.textContent = "";
+
+    try {
+      if (cuponEnEdicionCodigo) {
+        await updateDoc(doc(db, "cupones", cuponEnEdicionCodigo), datos);
+      } else {
+        const codigo = cuponCodigo.value.trim().toUpperCase();
+        if (!codigo) throw new Error("Código vacío");
+        datos.usedCount = 0;
+        await setDoc(doc(db, "cupones", codigo), datos);
+      }
+      cerrarModalCupon();
+    } catch (err) {
+      console.error(err);
+      cuponModalStatus.textContent = "No se pudo guardar. Revisá el código e intentá de nuevo.";
+    } finally {
+      btnGuardarCupon.disabled = false;
+      btnGuardarCupon.textContent = "Guardar";
+    }
+  });
 </script>
 </body>
 </html>
