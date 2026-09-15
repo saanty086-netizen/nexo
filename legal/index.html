@@ -1,1 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NEXO STORE — Términos y Privacidad</title>
+<link rel="icon" href="../favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png" />
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#08050f',
+          panel: '#0f0a1c',
+          panel2: '#150e28',
+          line: '#241a3d',
+          violet: '#9146ff',
+          violet2: '#c9a3ff',
+          cyan: '#4ff2ff',
+          ink: '#ece6fa',
+          mute: '#8b80ab',
+          bad: '#ff5f7e'
+        },
+        fontFamily: {
+          display: ['"Chakra Petch"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace']
+        }
+      }
+    }
+  };
+</script>
+<style>
+  html { overflow-x: hidden; }
+  body { background-color: #08050f; overflow-x: hidden; max-width: 100vw; }
+  .glass { background: rgba(15,10,28,0.55); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+  .glow-border { box-shadow: 0 0 0 1px rgba(145,70,255,0.25), 0 0 24px -8px rgba(79,242,255,0.15); }
+  .clip-corner { clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+  .hidden-modal { display: none !important; }
+  .tab-btn { padding: 0.6rem 1.2rem; font-size: 0.78rem; font-weight: 600; border: 1px solid #241a3d; background: #0f0a1c; color: #8b80ab; transition: all .15s; }
+  .tab-btn.tab-activo { background: linear-gradient(to right, #9146ff, #4ff2ff); color: #08050f; border-color: transparent; }
+  .legal-content h2 { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1.05rem; color: #ece6fa; margin-top: 1.75rem; margin-bottom: 0.6rem; }
+  .legal-content h2:first-child { margin-top: 0; }
+  .legal-content p { font-size: 0.85rem; line-height: 1.7; color: #b7aed6; margin-bottom: 0.8rem; }
+  .legal-content ul { margin: 0 0 0.8rem 1.1rem; list-style: disc; }
+  .legal-content li { font-size: 0.85rem; line-height: 1.7; color: #b7aed6; margin-bottom: 0.35rem; }
+  .legal-content strong { color: #ece6fa; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: #08050f; }
+  ::-webkit-scrollbar-thumb { background: #241a3d; border-radius: 4px; }
+</style>
+</head>
+<body class="font-mono text-ink min-h-screen">
+
+<header class="border-b border-line bg-panel px-5 md:px-8 py-4">
+  <div class="max-w-3xl mx-auto flex items-center justify-between gap-4">
+    <a href="../" class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full border-2 border-violet overflow-hidden glow-border shrink-0">
+        <img src="../assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" loading="eager" />
+      </div>
+      <div>
+        <p class="font-display font-bold text-base leading-none">NEXO</p>
+        <p class="text-[10px] text-mute tracking-[0.2em] mt-1">STORE</p>
+      </div>
+    </a>
+    <a href="../" class="text-[11px] text-mute hover:text-cyan transition-colors">← Volver a la tienda</a>
+  </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-5 md:px-8 py-10">
+  <p class="text-cyan text-xs tracking-[0.25em] font-semibold mb-3">LEGAL</p>
+  <h1 class="font-display font-bold text-2xl md:text-3xl mb-6">Términos y Privacidad</h1>
+
+  <div class="flex gap-2 mb-8 flex-wrap">
+    <button data-tab="terminos" class="tab-btn tab-activo">Términos y condiciones</button>
+    <button data-tab="privacidad" class="tab-btn">Política de privacidad</button>
+  </div>
+
+  <div class="border border-line bg-panel clip-corner p-5 md:p-7 legal-content">
+
+    <section id="panel-terminos" data-panel="terminos">
+      <p class="!text-mute !text-xs !mb-6">Última actualización: septiembre de 2026. Al confirmar un pedido, el comprador declara haber leído y aceptado estos términos.</p>
+
+      <h2>1. Sobre NEXO STORE</h2>
+      <p>NEXO STORE (en adelante, "el proveedor" o "NEXO") es un servicio de venta de cuentas y perfiles de plataformas de streaming, y de paquetes de seguidores para redes sociales. Los pedidos se coordinan por WhatsApp y la activación se realiza una vez confirmado el pago.</p>
+
+      <h2>2. Pedidos y condición de pago previo</h2>
+      <p>Al elegir un producto y enviar el pedido por WhatsApp, el comprador acepta el precio y las condiciones mostradas en el catálogo al momento de la compra.</p>
+      <p>El proveedor se reserva el derecho de no entregar ni activar ningún producto o servicio hasta que el comprador haya abonado la totalidad del precio acordado, o —en caso de haberse pactado un financiamiento o pago en cuotas— hasta que se cumplan las condiciones de ese financiamiento acordadas entre ambas partes.</p>
+
+      <h2>3. Garantías por tipo de producto</h2>
+      <p><strong>Seguidores:</strong> el servicio cuenta con una garantía de <strong>3 días corridos</strong> a partir de cada carga. Si dentro de ese período se detecta una baja y se realiza una recarga, la garantía de 3 días se reinicia nuevamente desde el momento de esa recarga.</p>
+      <p><strong>Cuentas de streaming:</strong> cuentan con una garantía de hasta <strong>30 días</strong>, cuyo plazo exacto depende de la duración del producto contratado (por ejemplo, un perfil de 30 días tiene garantía por ese mismo período). El plazo de garantía de cada producto se informa en el catálogo o al momento de la compra.</p>
+      <p>Fuera de los plazos de garantía indicados, NEXO no asume responsabilidad por caídas, bajas o inconvenientes del servicio.</p>
+
+      <h2>4. Reembolsos</h2>
+      <p>Como regla general, una vez entregada una cuenta o perfil <strong>no se realizan reembolsos</strong>; los reclamos dentro del período de garantía se resuelven mediante reposición o solución del inconveniente.</p>
+      <p>Como excepción, NEXO puede otorgar un <strong>reembolso parcial del 50% del pago efectuado</strong> cuando el comprador presente <strong>pruebas concretas del mal funcionamiento del servicio</strong> (por ejemplo, capturas de pantalla, videos u otra evidencia verificable) dentro del período de garantía correspondiente al producto. La evaluación de las pruebas y la procedencia del reembolso quedan a criterio de NEXO en cada caso.</p>
+
+      <h2>5. Soporte</h2>
+      <p>El comprador cuenta con soporte por WhatsApp durante todo el período de garantía correspondiente al producto adquirido. Pasado ese plazo, NEXO puede seguir asistiendo al cliente, pero ya no está obligado a resolver el reclamo sin costo.</p>
+
+      <h2>6. Entrega y naturaleza del servicio</h2>
+      <p>Los productos de streaming son perfiles o cuentas dentro de suscripciones ya activas. Los paquetes de seguidores se aplican al enlace de red social que el comprador proporciona, y ese perfil debe ser público para poder recibirlos. NEXO no se hace responsable por cambios en las políticas de las plataformas de terceros (Netflix, Disney+, HBO, Spotify, Crunchyroll, Prime Video u otras) que puedan afectar el servicio contratado.</p>
+
+      <h2>7. Marcas de terceros</h2>
+      <p>Los nombres y logos de Netflix, Disney+, HBO, Spotify, Crunchyroll, Prime Video y demás plataformas mencionadas pertenecen a sus respectivos dueños. NEXO STORE no está afiliado ni respaldado por ninguna de estas marcas; solo se mencionan para identificar el servicio ofrecido.</p>
+
+      <h2>8. Marco normativo — derechos del consumidor (Argentina)</h2>
+      <p>Como consumidor, te amparan especialmente:</p>
+      <ul>
+        <li>La <strong>Ley N° 24.240 de Defensa del Consumidor</strong>, que garantiza información veraz, trato digno y equitativo, y la posibilidad de reclamar por productos o servicios que no cumplan lo ofrecido.</li>
+        <li>El <strong>Código Civil y Comercial de la Nación</strong> (arts. 1092 a 1122), que regula los contratos de consumo y los contratos celebrados a distancia, incluyendo el deber de información y el derecho de revocación en compras online.</li>
+        <li>La <strong>Resolución 424/2020</strong> de la Secretaría de Comercio Interior ("Botón de Arrepentimiento"), que exige a los proveedores un medio simple para que el consumidor pueda desistir de una compra a distancia dentro de los 10 días de celebrado el contrato.</li>
+        <li>La <strong>Ley N° 25.326 de Protección de Datos Personales</strong>, que ampara el derecho a acceder, rectificar y solicitar la eliminación de tus datos personales (ver nuestra <a href="#privacidad" data-tab="privacidad" class="text-cyan hover:underline">Política de privacidad</a>).</li>
+      </ul>
+      <p>El Código Civil y Comercial (art. 1116) exceptúa del derecho de revocación a los contenidos digitales ya provistos con el consentimiento expreso del consumidor y a los bienes confeccionados o personalizados conforme a lo solicitado por este. Dado que las cuentas y los paquetes de seguidores se entregan y activan a pedido y con acuerdo previo del comprador, esta excepción resulta aplicable, lo cual es coherente con la política de reembolsos descripta en el punto 4 (sin reembolso salvo prueba concreta de mal funcionamiento) — sin perjuicio de las garantías detalladas en el punto 3, que sí aplican en todos los casos.</p>
+      <p class="!text-mute">Este resumen tiene fines informativos y no reemplaza el asesoramiento de un profesional. Ante cualquier duda sobre tus derechos como consumidor, podés consultar a Defensa del Consumidor de tu provincia o a un abogado especializado.</p>
+
+      <h2>9. Responsabilidad del comprador</h2>
+      <p>El comprador es responsable de proporcionar datos correctos (nombre, número de contacto y, cuando corresponda, el enlace de su cuenta de red social) para poder completar el pedido y hacer válida la garantía correspondiente.</p>
+
+      <h2>10. Cambios en estos términos</h2>
+      <p>Estos términos pueden actualizarse en cualquier momento. Los cambios se reflejan en esta misma página, y la versión vigente al momento de la compra es la que aplica a ese pedido.</p>
+    </section>
+
+    <section id="panel-privacidad" data-panel="privacidad" class="hidden-modal">
+      <h2>1. Qué datos recolectamos</h2>
+      <ul>
+        <li><strong>Nombre</strong> y <strong>número de teléfono</strong>, para poder contactarte y organizar tu pedido.</li>
+        <li><strong>Enlace de tu red social</strong>, únicamente cuando el pedido es de seguidores, para poder aplicar el paquete a la cuenta correcta.</li>
+      </ul>
+      <p>Además, usamos herramientas para monitorear el funcionamiento del sitio (por ejemplo, detectar errores o ver que todo cargue bien).</p>
+
+      <h2>2. Para qué usamos estos datos</h2>
+      <ul>
+        <li>Mantener el contacto por WhatsApp durante el pedido.</li>
+        <li>Organizar y llevar un orden de los pedidos.</li>
+        <li>Aplicar correctamente los paquetes de seguidores al enlace indicado.</li>
+        <li>Monitorear que el sitio funcione correctamente.</li>
+      </ul>
+
+      <h2>3. Con quién compartimos tus datos</h2>
+      <p>No compartimos tus datos con nadie. Se usan únicamente de forma interna para gestionar tu pedido.</p>
+
+      <h2>4. Cookies</h2>
+      <p>Usamos cookies básicas para que el sitio funcione correctamente y para estadísticas simples de uso. No las usamos para publicidad ni para rastrearte por otros sitios.</p>
+
+      <h2>5. Eliminación de tus datos</h2>
+      <p>Si querés que eliminemos tus datos, podés pedirlo en cualquier momento escribiéndonos por WhatsApp. Una vez recibida la solicitud, los eliminamos de nuestros registros.</p>
+
+      <h2>6. Cambios en esta política</h2>
+      <p>Esta política puede actualizarse en cualquier momento. Los cambios se reflejan en esta misma página.</p>
+    </section>
+
+  </div>
+</main>
+
+<script>
+  const botones = document.querySelectorAll("[data-tab]");
+  const paneles = document.querySelectorAll("[data-panel]");
+
+  function activarTab(nombre) {
+    botones.forEach((b) => b.classList.toggle("tab-activo", b.dataset.tab === nombre));
+    paneles.forEach((p) => p.classList.toggle("hidden-modal", p.dataset.panel !== nombre));
+  }
+
+  botones.forEach((b) => {
+    b.addEventListener("click", () => {
+      activarTab(b.dataset.tab);
+      history.replaceState(null, "", "#" + b.dataset.tab);
+    });
+  });
+
+  const hash = window.location.hash.replace("#", "");
+  if (hash === "privacidad" || hash === "terminos") {
+    activarTab(hash);
+  }
+</script>
+</body>
+</html>
 
