@@ -1,1 +1,2733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NEXO STORE — Panel de administración</title>
+<link rel="icon" href="../favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png" />
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#08050f',
+          panel: '#0f0a1c',
+          panel2: '#150e28',
+          line: '#241a3d',
+          violet: '#9146ff',
+          violet2: '#c9a3ff',
+          cyan: '#4ff2ff',
+          ink: '#ece6fa',
+          mute: '#8b80ab',
+          warn: '#ffb84f',
+          ok: '#4fffa0',
+          bad: '#ff5f7e'
+        },
+        fontFamily: {
+          display: ['"Chakra Petch"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace']
+        }
+      }
+    }
+  };
+</script>
+<style>
+  body { background-color: #08050f; }
+  .glow-border { box-shadow: 0 0 0 1px rgba(145,70,255,0.25); }
+  .clip-corner { clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+  .hidden-modal { display: none !important; }
+  select.estado-select { -webkit-appearance: none; appearance: none; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: #08050f; }
+  ::-webkit-scrollbar-thumb { background: #241a3d; border-radius: 4px; }
+  tbody tr { border-bottom: 1px solid #241a3d; }
+  .tab-btn { padding: 0.55rem 1.1rem; font-size: 0.8rem; font-weight: 600; border: 1px solid #241a3d; background: #0f0a1c; color: #8b80ab; transition: all .15s; }
+  .tab-btn.tab-activo { background: linear-gradient(to right, #9146ff, #4ff2ff); color: #08050f; border-color: transparent; }
+  .toggle-btn { font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 2px; border: 1px solid; transition: colors .15s; white-space: nowrap; }
+  .toggle-on { background: rgba(79,255,160,0.1); border-color: rgba(79,255,160,0.5); color: #4fffa0; }
+  .toggle-off { background: rgba(255,95,126,0.1); border-color: rgba(255,95,126,0.5); color: #ff5f7e; }
+</style>
+</head>
+<body class="font-mono text-ink min-h-screen">
+
+<!-- ============ PANTALLA DE LOGIN ============ -->
+<div id="pantalla-login" class="min-h-screen flex items-center justify-center px-4 py-10">
+  <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-full border-2 border-violet overflow-hidden shrink-0">
+        <img src="../assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" loading="eager" />
+      </div>
+      <div>
+        <p class="font-display font-bold text-base leading-none">NEXO</p>
+        <p class="text-[10px] text-mute tracking-[0.2em] mt-1">ACCESO PRIVADO</p>
+      </div>
+    </div>
+
+    <p id="auth-mode-label" class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">INGRESAR</p>
+    <h3 class="font-display font-bold text-xl mb-5">Mi cuenta</h3>
+
+    <form id="form-login" class="flex flex-col gap-4">
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Email</label>
+        <input required id="login-email" type="email" autocomplete="username" placeholder="admin@nexo.com"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Contraseña</label>
+        <input required id="login-password" type="password" autocomplete="current-password" placeholder="••••••••"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <button type="submit" id="btn-login"
+        class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+        Ingresar
+      </button>
+
+      <p id="login-status" class="text-xs text-bad min-h-[1rem] text-center"></p>
+
+      <p class="text-xs text-center text-mute -mt-1">
+        <span id="auth-toggle-text">¿No tenés cuenta?</span>
+        <button type="button" id="btn-auth-toggle" class="text-violet2 underline">Crear cuenta</button>
+      </p>
+    </form>
+
+    <div class="flex items-center gap-3 my-5">
+      <span class="flex-1 h-px bg-line"></span>
+      <span class="text-[10px] text-mute tracking-widest">O CONTINUAR CON</span>
+      <span class="flex-1 h-px bg-line"></span>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <button type="button" id="btn-login-google"
+        class="w-full border border-line bg-panel2 text-sm font-display font-semibold py-2.5 text-ink hover:border-violet transition-colors">
+        Continuar con Google
+      </button>
+      <button type="button" id="btn-login-anonimo"
+        class="w-full border border-line bg-panel2 text-sm font-display font-semibold py-2.5 text-mute hover:border-violet2 hover:text-violet2 transition-colors">
+        Continuar como invitado
+      </button>
+
+      <p id="social-auth-status" class="text-xs text-center text-mute min-h-[1rem]"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP ADMIN (oculto hasta loguearse) ============ -->
+<div id="app-admin" class="hidden-modal">
+
+<!-- ============ TOPBAR ============ -->
+<header class="border-b border-line bg-panel px-5 md:px-8 py-4">
+  <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full border-2 border-violet overflow-hidden shrink-0">
+        <img src="../assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" loading="eager" />
+      </div>
+      <div>
+        <p class="font-display font-bold text-base leading-none">NEXO</p>
+        <p class="text-[10px] text-mute tracking-[0.2em] mt-1">PANEL ADMIN</p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3 text-sm">
+      <div class="px-3.5 py-2 border border-line bg-panel2 clip-corner">
+        <span class="text-mute text-[11px]">Total</span>
+        <span id="count-total" class="font-display font-bold text-ink ml-2">0</span>
+      </div>
+      <div class="px-3.5 py-2 border border-line bg-panel2 clip-corner">
+        <span class="text-[11px]">⏳ Espera</span>
+        <span id="count-espera" class="font-display font-bold text-warn ml-2">0</span>
+      </div>
+      <div class="px-3.5 py-2 border border-line bg-panel2 clip-corner">
+        <span class="text-[11px]">✅ Activos</span>
+        <span id="count-activo" class="font-display font-bold text-ok ml-2">0</span>
+      </div>
+      <a href="https://palaciodigital.net/" target="_blank" rel="noopener noreferrer"
+        class="px-3.5 py-2 border border-violet text-violet2 text-[11px] font-display font-semibold clip-corner hover:bg-violet hover:text-bg transition-colors">
+        🏬 Palacio Digital
+      </a>
+      <button id="btn-logout" class="text-[11px] text-mute hover:text-bad transition-colors ml-1">Cerrar sesión</button>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-7xl mx-auto px-5 md:px-8 pt-6 flex gap-2 flex-wrap">
+  <button id="tab-pedidos" class="tab-btn tab-activo">Pedidos</button>
+  <button id="tab-productos" class="tab-btn">Productos</button>
+  <button id="tab-vencimientos" class="tab-btn">Vencimientos</button>
+  <button id="tab-finanzas" class="tab-btn">Finanzas</button>
+  <button id="tab-cupones" class="tab-btn">Cupones</button>
+</div>
+
+<!-- ============ SECCIÓN: PEDIDOS ============ -->
+<main id="seccion-pedidos" class="max-w-7xl mx-auto px-5 md:px-8 py-8">
+
+  <!-- ============ FILTROS ============ -->
+  <div class="flex flex-wrap items-center gap-3 mb-6">
+    <input id="input-buscar" type="text" placeholder="Buscar por nombre, teléfono o servicio..."
+      class="flex-1 min-w-[220px] bg-panel2 border border-line px-3.5 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+
+    <select id="select-filtro-estado"
+      class="estado-select bg-panel2 border border-line px-3.5 py-2.5 text-sm text-ink focus:outline-none focus:border-cyan">
+      <option value="todos">Todos</option>
+      <option value="espera">En espera</option>
+      <option value="activo">Activo</option>
+      <option value="cancelado">Cancelado</option>
+    </select>
+
+    <button id="btn-agregar"
+      class="bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm px-5 py-2.5 hover:opacity-90 transition-opacity whitespace-nowrap">
+      + Agregar cliente
+    </button>
+  </div>
+
+  <!-- ============ TABLA (desktop) ============ -->
+  <div class="hidden md:block border border-line bg-panel clip-corner overflow-x-auto">
+    <table class="w-full text-sm min-w-[900px]">
+      <thead>
+        <tr class="text-left text-[11px] text-mute border-b border-line">
+          <th class="px-4 py-3 font-medium">#</th>
+          <th class="px-4 py-3 font-medium">Llegada</th>
+          <th class="px-4 py-3 font-medium">Cliente</th>
+          <th class="px-4 py-3 font-medium">Teléfono</th>
+          <th class="px-4 py-3 font-medium">Servicio</th>
+          <th class="px-4 py-3 font-medium">Estado</th>
+          <th class="px-4 py-3 font-medium">Pago</th>
+          <th class="px-4 py-3 font-medium">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-pedidos"></tbody>
+    </table>
+  </div>
+
+  <!-- ============ TARJETAS (mobile) ============ -->
+  <div id="tarjetas-pedidos" class="md:hidden flex flex-col gap-2.5"></div>
+
+  <p id="tabla-vacio" class="hidden-modal text-center text-mute text-sm py-10">No hay pedidos que coincidan con el filtro.</p>
+</main>
+
+<!-- ============ SECCIÓN: PRODUCTOS ============ -->
+<main id="seccion-productos" class="hidden-modal max-w-7xl mx-auto px-5 md:px-8 py-8">
+
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+    <p class="text-mute text-xs max-w-md leading-relaxed">
+      Estos productos son los que se muestran en la tienda. Marcá "Oculto" para sacarlos de la web sin borrarlos,
+      y "Sin stock" para que se vean pero no se puedan pedir.
+    </p>
+    <button id="btn-agregar-producto"
+      class="bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm px-5 py-2.5 hover:opacity-90 transition-opacity whitespace-nowrap">
+      + Agregar producto
+    </button>
+  </div>
+
+  <input id="input-buscar-productos" type="text" placeholder="Buscar producto por nombre o categoría..."
+    class="w-full sm:max-w-sm bg-panel2 border border-line px-3.5 py-2.5 text-sm mb-6 placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+
+  <div class="hidden md:block border border-line bg-panel clip-corner overflow-x-auto">
+    <table class="w-full text-sm min-w-[860px]">
+      <thead>
+        <tr class="text-left text-[11px] text-mute border-b border-line">
+          <th class="px-4 py-3 font-medium">Producto</th>
+          <th class="px-4 py-3 font-medium">Categoría</th>
+          <th class="px-4 py-3 font-medium">Precio</th>
+          <th class="px-4 py-3 font-medium">Orden</th>
+          <th class="px-4 py-3 font-medium">Visibilidad</th>
+          <th class="px-4 py-3 font-medium">Stock</th>
+          <th class="px-4 py-3 font-medium">Proveedor</th>
+          <th class="px-4 py-3 font-medium">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-productos"></tbody>
+    </table>
+  </div>
+
+  <!-- ============ TARJETAS (mobile) ============ -->
+  <div id="tarjetas-productos" class="md:hidden flex flex-col gap-2.5"></div>
+
+  <p id="tabla-productos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste productos.</p>
+</main>
+
+<!-- ============ SECCIÓN: VENCIMIENTOS ============ -->
+<main id="seccion-vencimientos" class="hidden-modal max-w-7xl mx-auto px-5 md:px-8 py-8">
+
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <p class="text-mute text-xs max-w-md leading-relaxed">
+      Cuentas vendidas con fecha límite. Los pedidos nuevos aparecen acá solos para que cargues correo, contraseña
+      y fecha límite. Se marcan en amarillo cuando faltan 5 días o menos ("Por vencer") y en rojo cuando ya vencieron.
+    </p>
+    <button id="btn-agregar-vencimiento"
+      class="bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm px-5 py-2.5 hover:opacity-90 transition-opacity whitespace-nowrap">
+      + Agregar cliente
+    </button>
+  </div>
+
+  <div class="hidden md:block border border-line bg-panel clip-corner overflow-x-auto">
+    <table class="w-full text-sm min-w-[960px]">
+      <thead>
+        <tr class="text-left text-[11px] text-mute border-b border-line">
+          <th class="px-4 py-3 font-medium">Nombre</th>
+          <th class="px-4 py-3 font-medium">WhatsApp</th>
+          <th class="px-4 py-3 font-medium">Cuenta</th>
+          <th class="px-4 py-3 font-medium">Correo</th>
+          <th class="px-4 py-3 font-medium">Contraseña</th>
+          <th class="px-4 py-3 font-medium">Vencimiento</th>
+          <th class="px-4 py-3 font-medium">Estado</th>
+          <th class="px-4 py-3 font-medium">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-vencimientos"></tbody>
+    </table>
+  </div>
+
+  <!-- ============ TARJETAS (mobile) ============ -->
+  <div id="tarjetas-vencimientos" class="md:hidden flex flex-col gap-2.5"></div>
+
+  <p id="tabla-vencimientos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste clientes.</p>
+</main>
+
+<!-- ============ SECCIÓN: FINANZAS ============ -->
+<main id="seccion-finanzas" class="hidden-modal max-w-7xl mx-auto px-5 md:px-8 py-8">
+
+  <div class="mb-10">
+    <p class="text-mute text-xs mb-6 leading-relaxed max-w-2xl">
+      Cargá el costo en dólares de cada producto. Elegí el tipo de dólar y tocá "Aplicar" para traer la
+      cotización actual y calcular el costo en pesos, la ganancia y el margen de cada uno. La cotización
+      no se actualiza sola: solo cambia cuando volvés a tocar Aplicar.
+    </p>
+
+    <div class="border border-line bg-panel clip-corner p-6 mb-6">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">COTIZACIÓN</p>
+      <h3 class="font-display font-bold text-xl mb-5">Dólar para calcular costos</h3>
+      <div class="flex flex-wrap items-end gap-3">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Tipo de dólar</label>
+          <select id="rentabilidad-tipo-dolar"
+            class="estado-select bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+            <option value="blue">Blue</option>
+            <option value="oficial">Oficial</option>
+            <option value="tarjeta">Tarjeta</option>
+          </select>
+        </div>
+        <button type="button" id="btn-aplicar-cotizacion"
+          class="border border-violet text-violet2 text-sm font-display font-semibold px-5 py-2.5 hover:bg-violet hover:text-bg transition-colors">
+          Aplicar
+        </button>
+      </div>
+      <p id="rentabilidad-cotizacion-status" class="text-xs text-mute min-h-[1rem] mt-3"></p>
+    </div>
+
+    <div class="border border-line bg-panel clip-corner overflow-x-auto">
+      <table class="w-full text-sm min-w-[720px]">
+        <thead>
+          <tr class="text-left text-[11px] text-mute border-b border-line">
+            <th class="px-4 py-3 font-medium">Producto</th>
+            <th class="px-4 py-3 font-medium">Precio (ARS)</th>
+            <th class="px-4 py-3 font-medium">Costo (USD)</th>
+            <th class="px-4 py-3 font-medium">Costo (ARS)</th>
+            <th class="px-4 py-3 font-medium">Ganancia</th>
+            <th class="px-4 py-3 font-medium">Margen</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-rentabilidad"></tbody>
+      </table>
+      <p id="tabla-rentabilidad-vacio" class="hidden-modal text-center text-mute text-xs py-10">Todavía no cargaste productos.</p>
+    </div>
+  </div>
+
+  <div class="mb-10">
+    <p class="text-mute text-xs mb-6 leading-relaxed max-w-2xl">
+      Se calcula sobre los pedidos marcados como "Activo". A cada uno se le busca el producto por nombre y se le
+      resta su costo en pesos (según la cotización aplicada arriba) al precio pagado. Necesita que hayas tocado
+      "Aplicar" en la cotización y que el producto tenga costo en USD cargado; si falta alguno de los dos, esa
+      fila queda sin calcular.
+    </p>
+
+    <div class="grid sm:grid-cols-3 gap-4 mb-6">
+      <div class="border border-line bg-panel clip-corner p-5">
+        <p class="text-mute text-[11px] tracking-[0.15em] mb-1">TOTAL FACTURADO</p>
+        <p id="ventas-total-facturado" class="font-display font-bold text-2xl">$0</p>
+        <p id="ventas-cantidad" class="text-mute text-xs mt-1">0 pedidos activos</p>
+      </div>
+      <div class="border border-line bg-panel clip-corner p-5">
+        <p class="text-mute text-[11px] tracking-[0.15em] mb-1">GANANCIA CALCULADA</p>
+        <p id="ventas-ganancia-calculada" class="font-display font-bold text-2xl">—</p>
+        <p id="ventas-sin-costo" class="text-mute text-xs mt-1"></p>
+      </div>
+      <div class="border border-line bg-panel clip-corner p-5">
+        <p class="text-mute text-[11px] tracking-[0.15em] mb-1">GANANCIA TOTAL (CON AJUSTES)</p>
+        <p id="ventas-ganancia-total" class="font-display font-bold text-2xl">—</p>
+        <p id="ventas-ajustes-resumen" class="text-mute text-xs mt-1">Ajustes: $0</p>
+      </div>
+    </div>
+
+    <div class="border border-line bg-panel clip-corner overflow-x-auto">
+      <table class="w-full text-sm min-w-[640px]">
+        <thead>
+          <tr class="text-left text-[11px] text-mute border-b border-line">
+            <th class="px-4 py-3 font-medium">Cliente</th>
+            <th class="px-4 py-3 font-medium">Producto</th>
+            <th class="px-4 py-3 font-medium">Precio pagado</th>
+            <th class="px-4 py-3 font-medium">Costo (ARS)</th>
+            <th class="px-4 py-3 font-medium">Ganancia</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-ventas"></tbody>
+      </table>
+      <p id="tabla-ventas-vacio" class="hidden-modal text-center text-mute text-xs py-10">Todavía no hay pedidos activos.</p>
+    </div>
+  </div>
+
+  <div class="mb-10 grid md:grid-cols-2 gap-6">
+    <div class="border border-line bg-panel clip-corner p-6">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">AJUSTES</p>
+      <h3 class="font-display font-bold text-xl mb-2">Corregir ganancia manualmente</h3>
+      <p class="text-mute text-xs mb-5 leading-relaxed">
+        Si el cálculo automático quedó mal (costo cargado tarde, error de tipeo, etc.), sumá o restá un ajuste
+        acá. Queda asentado con motivo y fecha, sin tocar los pedidos ni los productos.
+      </p>
+      <form id="form-ajuste" class="flex flex-col gap-4">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Motivo</label>
+          <input required id="ajuste-motivo" type="text" placeholder="Ej: corrección costo Netflix octubre"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        </div>
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Monto (ARS, usá negativo para restar)</label>
+          <input required id="ajuste-monto" type="number" step="0.01" placeholder="-5000"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan" />
+        </div>
+        <p id="ajuste-status" class="text-xs text-mute min-h-[1rem]"></p>
+        <button type="submit" id="btn-guardar-ajuste"
+          class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+          Registrar ajuste
+        </button>
+      </form>
+    </div>
+
+    <div class="border border-line bg-panel clip-corner p-6">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">AJUSTES</p>
+      <h3 class="font-display font-bold text-xl mb-5">Historial</h3>
+      <div id="lista-ajustes" class="flex flex-col gap-2.5 max-h-80 overflow-y-auto"></div>
+      <p id="lista-ajustes-vacio" class="text-mute text-xs py-6 text-center">Todavía no cargaste ajustes.</p>
+    </div>
+  </div>
+
+  <div class="mb-10">
+    <p class="text-mute text-xs mb-6 leading-relaxed max-w-2xl">
+      Suma el costo en pesos (según la cotización aplicada arriba) de todos los productos marcados como
+      "Sin stock" en la pestaña Productos. Es una estimación de cuánta plata hace falta para reponerlos.
+    </p>
+
+    <div class="border border-line bg-panel clip-corner p-5 mb-6 max-w-xs">
+      <p class="text-mute text-[11px] tracking-[0.15em] mb-1">GASTO ESTIMADO PARA REPONER STOCK</p>
+      <p id="stock-gasto-total" class="font-display font-bold text-2xl">—</p>
+      <p id="stock-gasto-cantidad" class="text-mute text-xs mt-1">0 productos sin stock</p>
+    </div>
+
+    <div class="border border-line bg-panel clip-corner overflow-x-auto">
+      <table class="w-full text-sm min-w-[480px]">
+        <thead>
+          <tr class="text-left text-[11px] text-mute border-b border-line">
+            <th class="px-4 py-3 font-medium">Producto</th>
+            <th class="px-4 py-3 font-medium">Costo (USD)</th>
+            <th class="px-4 py-3 font-medium">Costo (ARS)</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-gastos-stock"></tbody>
+      </table>
+      <p id="tabla-gastos-stock-vacio" class="hidden-modal text-center text-mute text-xs py-10">No hay productos sin stock.</p>
+    </div>
+  </div>
+
+  <div class="max-w-md">
+    <p class="text-mute text-xs mb-6 leading-relaxed">
+      Definí acá el código de descuento que los clientes pueden ingresar al hacer un pedido en la tienda,
+      junto con el porcentaje que se les aplica. Podés desactivarlo cuando quieras sin perder los datos cargados.
+    </p>
+
+    <div class="border border-line bg-panel clip-corner p-6">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">DESCUENTOS</p>
+      <h3 class="font-display font-bold text-xl mb-5">Código de descuento</h3>
+
+      <form id="form-descuento" class="flex flex-col gap-4">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Código</label>
+          <input id="descuento-codigo" type="text" placeholder="Ej: NEXO10"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        </div>
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Aplicar a</label>
+          <select id="descuento-producto"
+            class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+            <option value="todos">Todos los productos</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Porcentaje de descuento</label>
+          <input id="descuento-porcentaje" type="number" min="0" max="100" step="1" placeholder="10"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        </div>
+        <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+          <input id="descuento-activo" type="checkbox" class="w-4 h-4 accent-violet" />
+          Código activo (visible para los clientes)
+        </label>
+
+        <p id="descuento-config-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+        <button type="submit" id="btn-guardar-descuento"
+          class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+          Guardar
+        </button>
+      </form>
+    </div>
+
+    <div class="border border-line bg-panel clip-corner p-6 mt-6">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">DESCUENTOS</p>
+      <h3 class="font-display font-bold text-xl mb-5">Nuevo código de descuento</h3>
+
+      <form id="form-nuevo-descuento" class="flex flex-col gap-4">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Nombre del código</label>
+          <input required id="nuevo-descuento-nombre" type="text" placeholder="Ej: VERANO25"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-mute block mb-1.5">Tipo</label>
+            <select id="nuevo-descuento-tipo"
+              class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+              <option value="percentage">Porcentaje (%)</option>
+              <option value="fixed">Monto fijo ($)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-mute block mb-1.5">Valor</label>
+            <input required id="nuevo-descuento-valor" type="number" min="0" step="0.01" placeholder="10"
+              class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan" />
+          </div>
+        </div>
+
+        <p id="nuevo-descuento-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+        <button type="submit" id="btn-guardar-nuevo-descuento"
+          class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+          Crear código
+        </button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<!-- ============ SECCIÓN: CUPONES ============ -->
+<main id="seccion-cupones" class="hidden-modal max-w-7xl mx-auto px-5 md:px-8 py-8">
+
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <p class="text-mute text-xs max-w-md leading-relaxed">
+      Cupones de descuento (multi-uso) aplicables desde el pedido rápido de la tienda. "Usados" cuenta cuántas veces ya se usó.
+      Esto es independiente del código único de la pestaña Finanzas.
+    </p>
+    <button id="btn-agregar-cupon"
+      class="bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm px-5 py-2.5 hover:opacity-90 transition-opacity whitespace-nowrap">
+      + Agregar cupón
+    </button>
+  </div>
+
+  <div class="hidden md:block border border-line bg-panel clip-corner overflow-x-auto">
+    <table class="w-full text-sm min-w-[760px]">
+      <thead>
+        <tr class="text-left text-[11px] text-mute border-b border-line">
+          <th class="px-4 py-3 font-medium">Código</th>
+          <th class="px-4 py-3 font-medium">Descuento</th>
+          <th class="px-4 py-3 font-medium">Vence</th>
+          <th class="px-4 py-3 font-medium">Usados</th>
+          <th class="px-4 py-3 font-medium">Activo</th>
+          <th class="px-4 py-3 font-medium">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-cupones"></tbody>
+    </table>
+  </div>
+
+  <!-- ============ TARJETAS (mobile) ============ -->
+  <div id="tarjetas-cupones" class="md:hidden flex flex-col gap-2.5"></div>
+
+  <p id="tabla-cupones-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste cupones.</p>
+</main>
+
+<!-- ============ TEMPLATE: FILA CUPÓN ============ -->
+<template id="tpl-fila-cupon">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle">
+    <td class="px-4 py-3 font-display font-bold text-ink" data-field="codigo"></td>
+    <td class="px-4 py-3" data-field="descuento"></td>
+    <td class="px-4 py-3 text-mute text-xs" data-field="vence"></td>
+    <td class="px-4 py-3 text-mute" data-field="usados"></td>
+    <td class="px-4 py-3">
+      <button data-field="btn-activo" class="toggle-btn"></button>
+    </td>
+    <td class="px-4 py-3">
+      <div class="flex items-center gap-2 whitespace-nowrap">
+        <button data-field="btn-editar-cupon" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+        <button data-field="btn-eliminar-cupon" class="text-[11px] text-bad border border-bad/40 px-2.5 py-1.5 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+      </div>
+    </td>
+  </tr>
+</template>
+
+<!-- ============ TEMPLATE: TARJETA CUPÓN (mobile) ============ -->
+<template id="tpl-tarjeta-cupon">
+  <div class="border border-line bg-panel clip-corner p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-display font-bold text-sm text-ink truncate" data-field="codigo"></p>
+        <p class="text-xs text-mute mt-0.5" data-field="descuento"></p>
+        <p class="text-[11px] text-mute mt-0.5" data-field="vence-usados"></p>
+      </div>
+      <button data-field="btn-activo" class="toggle-btn shrink-0"></button>
+    </div>
+    <div class="mt-3 flex items-center gap-2">
+      <button data-field="btn-editar-cupon" class="flex-1 text-[11px] text-violet2 border border-violet/40 py-2 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+      <button data-field="btn-eliminar-cupon" class="flex-1 text-[11px] text-bad border border-bad/40 py-2 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+    </div>
+  </div>
+</template>
+
+<!-- ============ MODAL: AGREGAR / EDITAR CUPÓN ============ -->
+<div id="modal-cupon" class="hidden-modal fixed inset-0 z-50 items-center justify-center px-4 bg-bg/80 backdrop-blur-sm">
+  <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6 relative max-h-[90vh] overflow-y-auto">
+    <button data-close-modal-cupon class="absolute top-4 right-4 text-mute hover:text-cyan text-sm">✕</button>
+    <p id="modal-cupon-eyebrow" class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">CUPÓN</p>
+    <h3 id="modal-cupon-titulo" class="font-display font-bold text-xl mb-5">Agregar cupón</h3>
+
+    <form id="form-cupon" class="flex flex-col gap-4">
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Código</label>
+        <input required id="cupon-codigo" type="text" placeholder="BIENVENIDO10"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        <p id="cupon-codigo-nota" class="text-[10px] text-mute/70 mt-1"></p>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Tipo</label>
+          <select id="cupon-tipo" class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+            <option value="percentage">Porcentaje</option>
+            <option value="fixed">Monto fijo</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Valor</label>
+          <input required id="cupon-valor" type="number" min="0" step="0.01" placeholder="10"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan" />
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Vence</label>
+          <input required id="cupon-vence" type="date"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink focus:outline-none focus:border-cyan" />
+        </div>
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Límite de usos</label>
+          <input required id="cupon-limite" type="number" min="1" step="1" placeholder="50"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan" />
+        </div>
+      </div>
+      <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+        <input id="cupon-activo" type="checkbox" checked class="w-4 h-4 accent-violet" />
+        Activo
+      </label>
+
+      <p id="cupon-modal-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+      <button type="submit" id="btn-guardar-cupon"
+        class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+        Guardar
+      </button>
+    </form>
+  </div>
+</div>
+<template id="tpl-fila-rentabilidad">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle">
+    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
+    <td class="px-4 py-3 text-cyan font-display font-bold whitespace-nowrap" data-field="precio"></td>
+    <td class="px-4 py-3">
+      <input data-field="input-costo-usd" type="number" min="0" step="0.01" placeholder="0.00"
+        class="w-24 bg-panel2 border border-line px-2 py-1.5 text-sm focus:outline-none focus:border-cyan" />
+    </td>
+    <td class="px-4 py-3 text-mute whitespace-nowrap" data-field="costo-ars">—</td>
+    <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="ganancia">—</td>
+    <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="margen">—</td>
+  </tr>
+</template>
+
+<!-- ============ TEMPLATE: FILA VENTA (pedido activo) ============ -->
+<template id="tpl-fila-venta">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle">
+    <td class="px-4 py-3" data-field="cliente"></td>
+    <td class="px-4 py-3 font-semibold" data-field="producto"></td>
+    <td class="px-4 py-3 text-cyan font-display font-bold whitespace-nowrap" data-field="precio"></td>
+    <td class="px-4 py-3 text-mute whitespace-nowrap" data-field="costo">—</td>
+    <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="ganancia">—</td>
+  </tr>
+</template>
+
+<!-- ============ TEMPLATE: AJUSTE DE GANANCIA ============ -->
+<template id="tpl-ajuste">
+  <div class="flex items-center justify-between gap-3 bg-panel2 border border-line px-3.5 py-2.5">
+    <div class="min-w-0">
+      <p data-field="motivo" class="text-sm truncate"></p>
+      <p data-field="fecha" class="text-[11px] text-mute"></p>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <span data-field="monto" class="font-display font-semibold text-sm"></span>
+      <button data-field="btn-eliminar"
+        class="text-[11px] text-bad border border-bad/40 px-2 py-1 hover:bg-bad hover:text-bg transition-colors">✕</button>
+    </div>
+  </div>
+</template>
+
+<!-- ============ TEMPLATE: FILA GASTO STOCK ============ -->
+<template id="tpl-fila-gasto-stock">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle">
+    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
+    <td class="px-4 py-3 text-mute whitespace-nowrap" data-field="costo-usd">—</td>
+    <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="costo-ars">—</td>
+  </tr>
+</template>
+
+<!-- ============ TEMPLATE: FILA PEDIDO ============ -->
+<template id="tpl-fila">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle">
+    <td class="px-4 py-3 text-mute" data-field="indice"></td>
+    <td class="px-4 py-3 text-mute text-xs whitespace-nowrap" data-field="fecha"></td>
+    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
+    <td class="px-4 py-3 text-mute" data-field="telefono"></td>
+    <td class="px-4 py-3" data-field="servicio"></td>
+    <td class="px-4 py-3">
+      <select data-field="estado-select" class="estado-select bg-panel2 border border-line px-2.5 py-1.5 text-xs focus:outline-none focus:border-cyan">
+        <option value="espera">En espera</option>
+        <option value="activo">Activo</option>
+        <option value="cancelado">Cancelado</option>
+      </select>
+    </td>
+    <td class="px-4 py-3">
+      <button data-field="pago-badge" class="text-[11px] font-semibold px-2.5 py-1.5 clip-corner border transition-colors"></button>
+    </td>
+    <td class="px-4 py-3">
+      <div class="flex items-center gap-2 whitespace-nowrap">
+        <button data-field="btn-chat" class="text-[11px] text-cyan border border-cyan/40 px-2.5 py-1.5 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
+        <button data-field="btn-editar" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+        <button data-field="btn-eliminar" class="text-[11px] text-bad border border-bad/40 px-2.5 py-1.5 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+      </div>
+    </td>
+  </tr>
+</template>
+
+<!-- ============ TEMPLATE: TARJETA PEDIDO (mobile) ============ -->
+<template id="tpl-tarjeta-pedido">
+  <div class="border border-line bg-panel clip-corner p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-display font-bold text-sm text-ink truncate" data-field="nombre"></p>
+        <p class="text-xs text-mute mt-0.5 truncate" data-field="servicio"></p>
+      </div>
+      <button data-field="pago-badge" class="shrink-0 text-[11px] font-semibold px-2.5 py-1.5 clip-corner border transition-colors"></button>
+    </div>
+
+    <div class="mt-3">
+      <select data-field="estado-select" class="estado-select w-full bg-panel2 border border-line px-2.5 py-2 text-xs focus:outline-none focus:border-cyan">
+        <option value="espera">En espera</option>
+        <option value="activo">Activo</option>
+        <option value="cancelado">Cancelado</option>
+      </select>
+    </div>
+
+    <div class="mt-3 flex items-center gap-2">
+      <button data-field="btn-chat" class="flex-1 text-[11px] text-cyan border border-cyan/40 py-2 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
+      <button data-field="btn-ver-mas" class="flex-1 text-[11px] text-mute border border-line py-2 hover:border-violet2 hover:text-violet2 transition-colors">Ver más ▾</button>
+    </div>
+
+    <div data-field="detalle" class="hidden-modal mt-3 pt-3 border-t border-line flex flex-col gap-2">
+      <p class="text-[11px] text-mute" data-field="fecha"></p>
+      <p class="text-xs text-mute" data-field="telefono"></p>
+      <div class="flex items-center gap-2 mt-1">
+        <button data-field="btn-editar" class="flex-1 text-[11px] text-violet2 border border-violet/40 py-2 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+        <button data-field="btn-eliminar" class="flex-1 text-[11px] text-bad border border-bad/40 py-2 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ============ TEMPLATE: FILA PRODUCTO ============ -->
+<template id="tpl-fila-producto">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle">
+    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
+    <td class="px-4 py-3 text-mute text-xs" data-field="categoria"></td>
+    <td class="px-4 py-3 text-cyan font-display font-bold" data-field="precio"></td>
+    <td class="px-4 py-3">
+      <input data-field="input-orden" type="number" step="1"
+        class="w-16 bg-panel2 border border-line px-2 py-1.5 text-xs text-ink focus:outline-none focus:border-cyan" />
+    </td>
+    <td class="px-4 py-3">
+      <button data-field="btn-visible" class="toggle-btn"></button>
+    </td>
+    <td class="px-4 py-3">
+      <button data-field="btn-stock" class="toggle-btn"></button>
+    </td>
+    <td class="px-4 py-3">
+      <a data-field="btn-proveedor" target="_blank" rel="noopener noreferrer"
+        class="text-[11px] text-cyan border border-cyan/40 px-2.5 py-1.5 hover:bg-cyan hover:text-bg transition-colors whitespace-nowrap inline-block">🔗 Ver proveedor</a>
+      <span data-field="sin-proveedor" class="text-[11px] text-mute/60">—</span>
+    </td>
+    <td class="px-4 py-3">
+      <div class="flex items-center gap-2 whitespace-nowrap">
+        <button data-field="btn-editar-producto" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+        <button data-field="btn-eliminar-producto" class="text-[11px] text-bad border border-bad/40 px-2.5 py-1.5 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+      </div>
+    </td>
+  </tr>
+</template>
+
+<!-- ============ TEMPLATE: TARJETA PRODUCTO (mobile) ============ -->
+<template id="tpl-tarjeta-producto">
+  <div class="border border-line bg-panel clip-corner p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-display font-bold text-sm text-ink truncate" data-field="nombre"></p>
+        <p class="text-xs text-mute mt-0.5" data-field="categoria"></p>
+      </div>
+      <p class="shrink-0 text-cyan font-display font-bold text-sm" data-field="precio"></p>
+    </div>
+
+    <div class="mt-3 flex items-center gap-2">
+      <a data-field="btn-proveedor" target="_blank" rel="noopener noreferrer"
+        class="hidden-modal flex-1 text-center text-[11px] text-cyan border border-cyan/40 py-2 hover:bg-cyan hover:text-bg transition-colors">🔗 Ver proveedor</a>
+      <button data-field="btn-ver-mas" class="flex-1 text-[11px] text-mute border border-line py-2 hover:border-violet2 hover:text-violet2 transition-colors">Ver más ▾</button>
+    </div>
+
+    <div data-field="detalle" class="hidden-modal mt-3 pt-3 border-t border-line flex flex-col gap-2.5">
+      <div class="flex items-center gap-2">
+        <label class="text-[11px] text-mute shrink-0">Orden</label>
+        <input data-field="input-orden" type="number" step="1"
+          class="w-16 bg-panel2 border border-line px-2 py-1.5 text-xs text-ink focus:outline-none focus:border-cyan" />
+        <button data-field="btn-visible" class="toggle-btn"></button>
+        <button data-field="btn-stock" class="toggle-btn"></button>
+      </div>
+      <div class="flex items-center gap-2">
+        <button data-field="btn-editar-producto" class="flex-1 text-[11px] text-violet2 border border-violet/40 py-2 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+        <button data-field="btn-eliminar-producto" class="flex-1 text-[11px] text-bad border border-bad/40 py-2 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ============ TEMPLATE: FILA VENCIMIENTO ============ -->
+<template id="tpl-fila-vencimiento">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle">
+    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
+    <td class="px-4 py-3 text-mute" data-field="telefono"></td>
+    <td class="px-4 py-3" data-field="cuenta"></td>
+    <td class="px-4 py-3 text-mute text-xs" data-field="correo"></td>
+    <td class="px-4 py-3 font-mono text-xs" data-field="password"></td>
+    <td class="px-4 py-3 text-mute text-xs whitespace-nowrap" data-field="vencimiento"></td>
+    <td class="px-4 py-3">
+      <span data-field="badge-estado" class="text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap"></span>
+    </td>
+    <td class="px-4 py-3">
+      <div class="flex items-center gap-2 whitespace-nowrap">
+        <button data-field="btn-chat" class="text-[11px] text-cyan border border-cyan/40 px-2.5 py-1.5 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
+        <button data-field="btn-editar-vencimiento" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+        <button data-field="btn-eliminar-vencimiento" class="text-[11px] text-bad border border-bad/40 px-2.5 py-1.5 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+      </div>
+    </td>
+  </tr>
+</template>
+
+<!-- ============ TEMPLATE: TARJETA VENCIMIENTO (mobile) ============ -->
+<template id="tpl-tarjeta-vencimiento">
+  <div class="border border-line bg-panel clip-corner p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-display font-bold text-sm text-ink truncate" data-field="nombre"></p>
+        <p class="text-xs text-mute mt-0.5 truncate" data-field="cuenta"></p>
+      </div>
+      <span data-field="badge-estado" class="shrink-0 text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap"></span>
+    </div>
+
+    <p class="text-[11px] text-mute mt-2" data-field="vencimiento"></p>
+
+    <div class="mt-3 flex items-center gap-2">
+      <button data-field="btn-chat" class="flex-1 text-[11px] text-cyan border border-cyan/40 py-2 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
+      <button data-field="btn-ver-mas" class="flex-1 text-[11px] text-mute border border-line py-2 hover:border-violet2 hover:text-violet2 transition-colors">Ver más ▾</button>
+    </div>
+
+    <div data-field="detalle" class="hidden-modal mt-3 pt-3 border-t border-line flex flex-col gap-2">
+      <p class="text-xs text-mute" data-field="telefono"></p>
+      <p class="text-xs text-mute" data-field="correo"></p>
+      <p class="text-xs font-mono text-mute" data-field="password"></p>
+      <div class="flex items-center gap-2 mt-1">
+        <button data-field="btn-editar-vencimiento" class="flex-1 text-[11px] text-violet2 border border-violet/40 py-2 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+        <button data-field="btn-eliminar-vencimiento" class="flex-1 text-[11px] text-bad border border-bad/40 py-2 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ============ TEMPLATE: FILA PEDIDO PENDIENTE DE COMPLETAR (Vencimientos) ============ -->
+<template id="tpl-fila-pendiente">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle opacity-90">
+    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
+    <td class="px-4 py-3 text-mute" data-field="telefono"></td>
+    <td class="px-4 py-3" data-field="cuenta"></td>
+    <td class="px-4 py-3 text-mute text-xs" colspan="2">Todavía sin correo/contraseña</td>
+    <td class="px-4 py-3 text-mute text-xs whitespace-nowrap">Sin definir</td>
+    <td class="px-4 py-3">
+      <span class="text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap bg-panel2 border-line text-mute">Pedido nuevo</span>
+    </td>
+    <td class="px-4 py-3">
+      <div class="flex items-center gap-2 whitespace-nowrap">
+        <button data-field="btn-chat" class="text-[11px] text-cyan border border-cyan/40 px-2.5 py-1.5 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
+        <button data-field="btn-completar" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Completar datos</button>
+      </div>
+    </td>
+  </tr>
+</template>
+
+<!-- ============ TEMPLATE: TARJETA PEDIDO PENDIENTE (mobile, Vencimientos) ============ -->
+<template id="tpl-tarjeta-pendiente">
+  <div class="border border-line bg-panel clip-corner p-4 opacity-90">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-display font-bold text-sm text-ink truncate" data-field="nombre"></p>
+        <p class="text-xs text-mute mt-0.5 truncate" data-field="cuenta"></p>
+      </div>
+      <span class="shrink-0 text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap bg-panel2 border-line text-mute">Pedido nuevo</span>
+    </div>
+    <div class="mt-3 flex items-center gap-2">
+      <button data-field="btn-chat" class="flex-1 text-[11px] text-cyan border border-cyan/40 py-2 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
+      <button data-field="btn-completar" class="flex-1 text-[11px] text-violet2 border border-violet/40 py-2 hover:bg-violet hover:text-bg transition-colors">Completar datos</button>
+    </div>
+  </div>
+</template>
+
+<!-- ============ MODAL: AGREGAR / EDITAR CLIENTE ============ -->
+<div id="modal-cliente" class="hidden-modal fixed inset-0 z-50 items-center justify-center px-4 bg-bg/80 backdrop-blur-sm">
+  <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6 relative">
+    <button data-close-modal class="absolute top-4 right-4 text-mute hover:text-cyan text-sm">✕</button>
+
+    <p id="modal-cliente-titulo-eyebrow" class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">CLIENTE</p>
+    <h3 id="modal-cliente-titulo" class="font-display font-bold text-xl mb-5">Agregar cliente</h3>
+
+    <form id="form-cliente" class="flex flex-col gap-4">
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Nombre completo</label>
+        <input required id="cliente-nombre" type="text" placeholder="Nombre del cliente"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Número de WhatsApp</label>
+        <input required id="cliente-telefono" type="tel" placeholder="+549 261 xxxxxxx"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Servicio</label>
+        <input required id="cliente-servicio" type="text" placeholder="Ej: Netflix Premium"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Estado</label>
+        <select id="cliente-estado" class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+          <option value="espera">En espera</option>
+          <option value="activo">Activo</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+      </div>
+
+      <p id="cliente-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+      <button type="submit" id="btn-guardar-cliente"
+        class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+        Guardar
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: AGREGAR / EDITAR PRODUCTO ============ -->
+<div id="modal-producto" class="hidden-modal fixed inset-0 z-50 items-center justify-center px-4 bg-bg/80 backdrop-blur-sm overflow-y-auto py-8">
+  <div class="w-full max-w-md bg-panel border border-line clip-corner glow-border p-6 relative my-auto">
+    <button data-close-modal-producto class="absolute top-4 right-4 text-mute hover:text-cyan text-sm">✕</button>
+
+    <p id="modal-producto-titulo-eyebrow" class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">PRODUCTO</p>
+    <h3 id="modal-producto-titulo" class="font-display font-bold text-xl mb-5">Agregar producto</h3>
+
+    <form id="form-producto" class="flex flex-col gap-4">
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Nombre</label>
+        <input required id="producto-nombre" type="text" placeholder="Ej: Netflix Premium"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Categoría</label>
+        <select id="producto-categoria" class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+          <option value="streaming">Streaming</option>
+          <option value="seguidores">Seguidores</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Precio (ARS)</label>
+        <input required id="producto-precio" type="number" min="0" step="1" placeholder="3500"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Orden (menor número aparece primero)</label>
+        <input id="producto-orden" type="number" step="1" placeholder="0"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Descripción corta</label>
+        <input id="producto-descripcion" type="text" placeholder="Perfil individual, calidad 4K, 30 días."
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Detalles / características (uno por línea)</label>
+        <textarea id="producto-caracteristicas" rows="3" placeholder="Pantallas simultáneas: 1&#10;Calidad: 4K&#10;Duración: 30 días"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan resize-none"></textarea>
+      </div>
+
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Imagen (URL o ruta local, opcional)</label>
+        <p class="text-[10px] text-mute/70 -mt-1 mb-1">Ej: https://... o assets/netflix.png (si subiste la imagen a esa carpeta del repo)</p>
+        <input id="producto-imagen" type="text" placeholder="https://... o assets/netflix.png"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Enlace del proveedor (opcional)</label>
+        <p class="text-[10px] text-mute/70 -mt-1 mb-1">Sitio donde comprás este producto. Aparece como botón "Ver proveedor" para acceder rápido a la compra.</p>
+        <input id="producto-proveedor" type="url" placeholder="https://proveedor.com/producto"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <div class="flex items-center gap-6 pt-1">
+        <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+          <input id="producto-visible" type="checkbox" checked class="w-4 h-4 accent-violet" />
+          Visible en la tienda
+        </label>
+        <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+          <input id="producto-stock" type="checkbox" checked class="w-4 h-4 accent-violet" />
+          Con stock
+        </label>
+      </div>
+
+      <p id="producto-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+      <button type="submit" id="btn-guardar-producto"
+        class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+        Guardar
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: AGREGAR / EDITAR VENCIMIENTO ============ -->
+<div id="modal-vencimiento" class="hidden-modal fixed inset-0 z-50 items-center justify-center px-4 bg-bg/80 backdrop-blur-sm overflow-y-auto py-8">
+  <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6 relative my-auto">
+    <button data-close-modal-vencimiento class="absolute top-4 right-4 text-mute hover:text-cyan text-sm">✕</button>
+
+    <p id="modal-vencimiento-titulo-eyebrow" class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">CLIENTE</p>
+    <h3 id="modal-vencimiento-titulo" class="font-display font-bold text-xl mb-5">Agregar cliente</h3>
+
+    <form id="form-vencimiento" class="flex flex-col gap-4">
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Nombre completo</label>
+        <input required id="vencimiento-nombre" type="text" placeholder="Nombre del cliente"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Número de WhatsApp</label>
+        <input required id="vencimiento-telefono" type="tel" placeholder="+549 261 xxxxxxx"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Cuenta / Servicio</label>
+        <input required id="vencimiento-cuenta" type="text" placeholder="Ej: Netflix Premium"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Correo de la cuenta</label>
+        <input id="vencimiento-correo" type="text" placeholder="correo@ejemplo.com"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Contraseña de la cuenta</label>
+        <input id="vencimiento-password" type="text" placeholder="••••••••"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Fecha límite</label>
+        <input required id="vencimiento-fecha" type="date"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink focus:outline-none focus:border-cyan" />
+      </div>
+
+      <p id="vencimiento-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+      <button type="submit" id="btn-guardar-vencimiento"
+        class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+        Guardar
+      </button>
+    </form>
+  </div>
+</div>
+
+</div><!-- /app-admin -->
+
+<script type="module">
+  // -----------------------------
+  // Firebase — se reutiliza la instancia de firebase.js
+  // (evita inicializar la app dos veces y reaprovecha los
+  // helpers de login social/telefónico que ya estaban ahí).
+  // -----------------------------
+  import {
+    auth,
+    db,
+    loginConGoogle,
+    loginAnonimo,
+    crearCodigoDescuento
+  } from "../firebase.js";
+  import {
+    setPersistence,
+    browserSessionPersistence,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import {
+    collection,
+    query,
+    orderBy,
+    onSnapshot,
+    doc,
+    addDoc,
+    updateDoc,
+    setDoc,
+    deleteDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const pedidosRef = collection(db, "pedidos_nexo");
+  const productosRef = collection(db, "productos");
+  const configuracionRef = doc(db, "configuracion", "descuento");
+  const cuponesRef = collection(db, "cupones");
+  const ajustesRef = collection(db, "ajustesGanancia");
+
+  // -----------------------------
+  // Sesión: no se guarda entre visitas.
+  // Con browserSessionPersistence, cerrar la pestaña/navegador
+  // cierra la sesión y la próxima vez pide loguearse de nuevo,
+  // sin importar qué método de login se haya usado.
+  // -----------------------------
+  let sesionLista = setPersistence(auth, browserSessionPersistence);
+
+  const pantallaLogin = document.getElementById("pantalla-login");
+  const appAdmin = document.getElementById("app-admin");
+  const formLogin = document.getElementById("form-login");
+  const loginEmail = document.getElementById("login-email");
+  const loginPassword = document.getElementById("login-password");
+  const loginStatus = document.getElementById("login-status");
+  const btnLogin = document.getElementById("btn-login");
+  const authModeLabel = document.getElementById("auth-mode-label");
+  const authToggleText = document.getElementById("auth-toggle-text");
+  const btnAuthToggle = document.getElementById("btn-auth-toggle");
+  const socialAuthStatus = document.getElementById("social-auth-status");
+
+  let listenersIniciados = false;
+  let authMode = "login"; // login | register
+
+  // -----------------------------
+  // Toggle: Ingresar / Crear cuenta
+  // -----------------------------
+  btnAuthToggle.addEventListener("click", () => {
+    authMode = authMode === "login" ? "register" : "login";
+    if (authMode === "login") {
+      authModeLabel.textContent = "INGRESAR";
+      btnLogin.textContent = "Ingresar";
+      authToggleText.textContent = "¿No tenés cuenta?";
+      btnAuthToggle.textContent = "Crear cuenta";
+    } else {
+      authModeLabel.textContent = "CREAR CUENTA";
+      btnLogin.textContent = "Registrarme";
+      authToggleText.textContent = "¿Ya tenés cuenta?";
+      btnAuthToggle.textContent = "Ingresar";
+    }
+    loginStatus.textContent = "";
+  });
+
+  // -----------------------------
+  // Login / registro con email y contraseña
+  // -----------------------------
+  formLogin.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loginStatus.textContent = "";
+    btnLogin.disabled = true;
+    const textoOriginal = btnLogin.textContent;
+    btnLogin.textContent = authMode === "login" ? "Ingresando..." : "Creando cuenta...";
+    try {
+      await sesionLista;
+      if (authMode === "login") {
+        await signInWithEmailAndPassword(auth, loginEmail.value.trim(), loginPassword.value);
+      } else {
+        await createUserWithEmailAndPassword(auth, loginEmail.value.trim(), loginPassword.value);
+      }
+      // onAuthStateChanged se encarga de mostrar el panel si corresponde
+    } catch (err) {
+      console.error(err);
+      loginStatus.textContent =
+        authMode === "login" ? "Email o contraseña incorrectos." : "No se pudo crear la cuenta. Probá con otro email.";
+    } finally {
+      btnLogin.disabled = false;
+      btnLogin.textContent = textoOriginal;
+    }
+  });
+
+  // -----------------------------
+  // Login con Google
+  // -----------------------------
+  document.getElementById("btn-login-google").addEventListener("click", async () => {
+    socialAuthStatus.textContent = "Abriendo Google...";
+    try {
+      await sesionLista;
+      await loginConGoogle();
+    } catch (err) {
+      console.error(err);
+      socialAuthStatus.textContent = "No se pudo iniciar sesión con Google.";
+    }
+  });
+
+  // -----------------------------
+  // Login anónimo
+  // -----------------------------
+  document.getElementById("btn-login-anonimo").addEventListener("click", async () => {
+    socialAuthStatus.textContent = "Ingresando como invitado...";
+    try {
+      await sesionLista;
+      await loginAnonimo();
+    } catch (err) {
+      console.error(err);
+      socialAuthStatus.textContent = "No se pudo ingresar como invitado.";
+    }
+  });
+
+  // -----------------------------
+  // Emails autorizados como admin. Para sumar a alguien más,
+  // agregá su email acá (todo en minúsculas) y también en
+  // firestore.rules (misma lista, dentro de esAdmin()).
+  // -----------------------------
+  const ADMIN_EMAILS = [
+    "saanty086@gmail.com"
+  ];
+
+  // -----------------------------
+  // Guard de acceso — corre sin importar el método de login usado.
+  // Se compara el email de la cuenta contra ADMIN_EMAILS, sin
+  // necesidad de crear documentos ni buscar UIDs a mano.
+  // -----------------------------
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      appAdmin.classList.add("hidden-modal");
+      pantallaLogin.classList.remove("hidden-modal");
+      formLogin.reset();
+      socialAuthStatus.textContent = "";
+      return;
+    }
+
+    const email = (user.email || "").toLowerCase().trim();
+    const esAdmin = email && ADMIN_EMAILS.includes(email);
+
+    if (!esAdmin) {
+      loginStatus.textContent = user.email
+        ? "Esta cuenta (" + user.email + ") no está autorizada como administrador."
+        : "Esa forma de ingresar (invitado/teléfono) no está autorizada como administrador.";
+      await signOut(auth);
+      return;
+    }
+
+    pantallaLogin.classList.add("hidden-modal");
+    appAdmin.classList.remove("hidden-modal");
+
+    if (!listenersIniciados) {
+      listenersIniciados = true;
+      iniciarEscuchaPedidos();
+      iniciarEscuchaProductos();
+      iniciarEscuchaVencimientos();
+      iniciarEscuchaDescuento();
+      iniciarEscuchaCupones();
+      iniciarEscuchaAjustes();
+    }
+  });
+
+  document.getElementById("btn-logout").addEventListener("click", async () => {
+    await signOut(auth);
+  });
+
+  // -----------------------------
+  // Tabs
+  // -----------------------------
+  const tabPedidos = document.getElementById("tab-pedidos");
+  const tabProductos = document.getElementById("tab-productos");
+  const tabVencimientos = document.getElementById("tab-vencimientos");
+  const tabFinanzas = document.getElementById("tab-finanzas");
+  const tabCupones = document.getElementById("tab-cupones");
+  const seccionPedidos = document.getElementById("seccion-pedidos");
+  const seccionProductos = document.getElementById("seccion-productos");
+  const seccionVencimientos = document.getElementById("seccion-vencimientos");
+  const seccionFinanzas = document.getElementById("seccion-finanzas");
+  const seccionCupones = document.getElementById("seccion-cupones");
+
+  function activarTab(activa) {
+    [tabPedidos, tabProductos, tabVencimientos, tabFinanzas, tabCupones].forEach((t) => t.classList.remove("tab-activo"));
+    [seccionPedidos, seccionProductos, seccionVencimientos, seccionFinanzas, seccionCupones].forEach((s) => s.classList.add("hidden-modal"));
+    activa.tab.classList.add("tab-activo");
+    activa.seccion.classList.remove("hidden-modal");
+  }
+
+  tabPedidos.addEventListener("click", () => activarTab({ tab: tabPedidos, seccion: seccionPedidos }));
+  tabProductos.addEventListener("click", () => activarTab({ tab: tabProductos, seccion: seccionProductos }));
+  tabVencimientos.addEventListener("click", () => activarTab({ tab: tabVencimientos, seccion: seccionVencimientos }));
+  tabFinanzas.addEventListener("click", () => activarTab({ tab: tabFinanzas, seccion: seccionFinanzas }));
+  tabCupones.addEventListener("click", () => activarTab({ tab: tabCupones, seccion: seccionCupones }));
+
+  // -----------------------------
+  // Estado en memoria + render — PEDIDOS
+  // -----------------------------
+  let pedidosCache = [];
+
+  const tabla = document.getElementById("tabla-pedidos");
+  const tablaVacio = document.getElementById("tabla-vacio");
+  const inputBuscar = document.getElementById("input-buscar");
+  const selectFiltroEstado = document.getElementById("select-filtro-estado");
+  const tpl = document.getElementById("tpl-fila");
+
+  function iniciarEscuchaPedidos() {
+    const q = query(pedidosRef, orderBy("fecha", "desc"));
+    onSnapshot(q, (snapshot) => {
+      pedidosCache = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+      actualizarContadores();
+      renderTabla();
+      renderTablaVencimientos();
+      renderVentas();
+    });
+  }
+
+  function actualizarContadores() {
+    document.getElementById("count-total").textContent = pedidosCache.length;
+    document.getElementById("count-espera").textContent =
+      pedidosCache.filter((p) => p.estado === "espera").length;
+    document.getElementById("count-activo").textContent =
+      pedidosCache.filter((p) => p.estado === "activo").length;
+  }
+
+  function formatearFecha(fechaField) {
+    if (!fechaField || !fechaField.toDate) return "—";
+    const d = fechaField.toDate();
+    return d.toLocaleDateString("es-AR") + " " + d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function pedidosFiltrados() {
+    const texto = inputBuscar.value.trim().toLowerCase();
+    const filtroEstado = selectFiltroEstado.value;
+
+    return pedidosCache.filter((p) => {
+      const coincideEstado = filtroEstado === "todos" || p.estado === filtroEstado;
+      const coincideTexto =
+        !texto ||
+        (p.nombre || "").toLowerCase().includes(texto) ||
+        (p.telefono || "").toLowerCase().includes(texto) ||
+        (p.servicio || "").toLowerCase().includes(texto);
+      return coincideEstado && coincideTexto;
+    });
+  }
+
+  function pintarBadgePago(btn, pagado) {
+    btn.textContent = pagado ? "Pagado" : "Pendiente";
+    btn.className = pagado
+      ? "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border transition-colors bg-ok/10 border-ok/50 text-ok"
+      : "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border transition-colors bg-warn/10 border-warn/50 text-warn";
+  }
+
+  const tarjetasPedidos = document.getElementById("tarjetas-pedidos");
+  const tplTarjetaPedido = document.getElementById("tpl-tarjeta-pedido");
+
+  function renderTabla() {
+    const lista = pedidosFiltrados();
+    tabla.innerHTML = "";
+    tarjetasPedidos.innerHTML = "";
+
+    if (lista.length === 0) {
+      tablaVacio.classList.remove("hidden-modal");
+    } else {
+      tablaVacio.classList.add("hidden-modal");
+    }
+
+    lista.forEach((pedido, index) => {
+      const mensajeChat = `Hola ${pedido.nombre || ""}! Te escribimos por tu pedido de ${pedido.servicio || "tu servicio"} en NEXO.`;
+      const telefonoLimpio = (pedido.telefono || "").replace(/[^0-9]/g, "");
+      const irAlChat = () => window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensajeChat)}`, "_blank");
+      const eliminarPedido = async () => {
+        const confirmar = window.confirm(`¿Eliminar el pedido de ${pedido.nombre || "este cliente"}? Esta acción no se puede deshacer.`);
+        if (confirmar) {
+          await deleteDoc(doc(db, "pedidos_nexo", pedido.id));
+        }
+      };
+
+      // ---- Fila desktop ----
+      const nodo = tpl.content.cloneNode(true);
+
+      nodo.querySelector('[data-field="indice"]').textContent = index + 1;
+      nodo.querySelector('[data-field="fecha"]').textContent = formatearFecha(pedido.fecha);
+      nodo.querySelector('[data-field="nombre"]').textContent = pedido.nombre || "—";
+      nodo.querySelector('[data-field="telefono"]').textContent = pedido.telefono || "—";
+      nodo.querySelector('[data-field="servicio"]').textContent = pedido.servicio || "—";
+
+      const estadoSelect = nodo.querySelector('[data-field="estado-select"]');
+      estadoSelect.value = pedido.estado || "espera";
+      estadoSelect.addEventListener("change", async () => {
+        await updateDoc(doc(db, "pedidos_nexo", pedido.id), { estado: estadoSelect.value });
+      });
+
+      const pagoBtn = nodo.querySelector('[data-field="pago-badge"]');
+      pintarBadgePago(pagoBtn, !!pedido.pagado);
+      pagoBtn.addEventListener("click", async () => {
+        await updateDoc(doc(db, "pedidos_nexo", pedido.id), { pagado: !pedido.pagado });
+      });
+
+      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", irAlChat);
+      nodo.querySelector('[data-field="btn-editar"]').addEventListener("click", () => abrirModalCliente(pedido));
+      nodo.querySelector('[data-field="btn-eliminar"]').addEventListener("click", eliminarPedido);
+
+      tabla.appendChild(nodo);
+
+      // ---- Tarjeta mobile ----
+      const tarjeta = tplTarjetaPedido.content.cloneNode(true);
+
+      tarjeta.querySelector('[data-field="nombre"]').textContent = pedido.nombre || "—";
+      tarjeta.querySelector('[data-field="servicio"]').textContent = pedido.servicio || "—";
+      tarjeta.querySelector('[data-field="fecha"]').textContent = "Llegó: " + formatearFecha(pedido.fecha);
+      tarjeta.querySelector('[data-field="telefono"]').textContent = "Tel: " + (pedido.telefono || "—");
+
+      const pagoBtnT = tarjeta.querySelector('[data-field="pago-badge"]');
+      pintarBadgePago(pagoBtnT, !!pedido.pagado);
+      pagoBtnT.addEventListener("click", async () => {
+        await updateDoc(doc(db, "pedidos_nexo", pedido.id), { pagado: !pedido.pagado });
+      });
+
+      const estadoSelectT = tarjeta.querySelector('[data-field="estado-select"]');
+      estadoSelectT.value = pedido.estado || "espera";
+      estadoSelectT.addEventListener("change", async () => {
+        await updateDoc(doc(db, "pedidos_nexo", pedido.id), { estado: estadoSelectT.value });
+      });
+
+      tarjeta.querySelector('[data-field="btn-chat"]').addEventListener("click", irAlChat);
+      activarVerMas(tarjeta.querySelector('[data-field="btn-ver-mas"]'), tarjeta.querySelector('[data-field="detalle"]'));
+      tarjeta.querySelector('[data-field="btn-editar"]').addEventListener("click", () => abrirModalCliente(pedido));
+      tarjeta.querySelector('[data-field="btn-eliminar"]').addEventListener("click", eliminarPedido);
+
+      tarjetasPedidos.appendChild(tarjeta);
+    });
+  }
+
+  inputBuscar.addEventListener("input", renderTabla);
+  selectFiltroEstado.addEventListener("change", renderTabla);
+
+  // -----------------------------
+  // Modal agregar / editar cliente
+  // -----------------------------
+  const modalCliente = document.getElementById("modal-cliente");
+  const formCliente = document.getElementById("form-cliente");
+  const clienteNombre = document.getElementById("cliente-nombre");
+  const clienteTelefono = document.getElementById("cliente-telefono");
+  const clienteServicio = document.getElementById("cliente-servicio");
+  const clienteEstado = document.getElementById("cliente-estado");
+  const clienteStatus = document.getElementById("cliente-status");
+  const modalClienteTitulo = document.getElementById("modal-cliente-titulo");
+  const modalClienteEyebrow = document.getElementById("modal-cliente-titulo-eyebrow");
+  const btnGuardarCliente = document.getElementById("btn-guardar-cliente");
+
+  let pedidoEnEdicionId = null;
+
+  function abrirModalCliente(pedido) {
+    formCliente.reset();
+    clienteStatus.textContent = "";
+
+    if (pedido) {
+      pedidoEnEdicionId = pedido.id;
+      modalClienteEyebrow.textContent = "EDITAR CLIENTE";
+      modalClienteTitulo.textContent = "Editar pedido";
+      clienteNombre.value = pedido.nombre || "";
+      clienteTelefono.value = pedido.telefono || "";
+      clienteServicio.value = pedido.servicio || "";
+      clienteEstado.value = pedido.estado || "espera";
+    } else {
+      pedidoEnEdicionId = null;
+      modalClienteEyebrow.textContent = "NUEVO CLIENTE";
+      modalClienteTitulo.textContent = "Agregar cliente";
+      clienteEstado.value = "espera";
+    }
+
+    modalCliente.classList.remove("hidden-modal");
+    modalCliente.classList.add("flex");
+  }
+
+  function cerrarModalCliente() {
+    modalCliente.classList.add("hidden-modal");
+    modalCliente.classList.remove("flex");
+  }
+
+  document.getElementById("btn-agregar").addEventListener("click", () => abrirModalCliente(null));
+  document.querySelectorAll("[data-close-modal]").forEach((btn) => btn.addEventListener("click", cerrarModalCliente));
+  modalCliente.addEventListener("click", (e) => {
+    if (e.target === modalCliente) cerrarModalCliente();
+  });
+
+  formCliente.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const datos = {
+      nombre: clienteNombre.value.trim(),
+      telefono: clienteTelefono.value.trim(),
+      servicio: clienteServicio.value.trim(),
+      estado: clienteEstado.value
+    };
+
+    btnGuardarCliente.disabled = true;
+    btnGuardarCliente.textContent = "Guardando...";
+
+    try {
+      if (pedidoEnEdicionId) {
+        await updateDoc(doc(db, "pedidos_nexo", pedidoEnEdicionId), datos);
+      } else {
+        await addDoc(pedidosRef, {
+          ...datos,
+          pagado: false,
+          fecha: serverTimestamp()
+        });
+      }
+      cerrarModalCliente();
+    } catch (err) {
+      console.error(err);
+      clienteStatus.textContent = "No se pudo guardar. Intentá de nuevo.";
+    } finally {
+      btnGuardarCliente.disabled = false;
+      btnGuardarCliente.textContent = "Guardar";
+    }
+  });
+
+  // -----------------------------
+  // Estado en memoria + render — PRODUCTOS
+  // -----------------------------
+  let productosCache = [];
+
+  const tablaProductos = document.getElementById("tabla-productos");
+  const tablaProductosVacio = document.getElementById("tabla-productos-vacio");
+  const tplProducto = document.getElementById("tpl-fila-producto");
+  const inputBuscarProductos = document.getElementById("input-buscar-productos");
+
+  const CATEGORIA_LABEL = {
+    streaming: "Streaming",
+    seguidores: "Seguidores"
+  };
+
+  function productosFiltrados() {
+    const texto = inputBuscarProductos.value.trim().toLowerCase();
+    if (!texto) return productosCache;
+    return productosCache.filter((p) => {
+      const nombre = (p.nombre || "").toLowerCase();
+      const categoria = (CATEGORIA_LABEL[p.categoria] || p.categoria || "").toLowerCase();
+      return nombre.includes(texto) || categoria.includes(texto);
+    });
+  }
+
+  inputBuscarProductos.addEventListener("input", renderTablaProductos);
+
+  function iniciarEscuchaProductos() {
+    const q = query(productosRef, orderBy("nombre", "asc"));
+    onSnapshot(q, (snapshot) => {
+      productosCache = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+      renderTablaProductos();
+      actualizarOpcionesProductoDescuento();
+      renderTablaRentabilidad();
+      renderVentas();
+      renderGastosStock();
+    });
+  }
+
+  function formatearPrecio(numero) {
+    const n = Number(numero) || 0;
+    return "$" + n.toLocaleString("es-AR");
+  }
+
+  function pintarToggle(btn, activo, textoOn, textoOff) {
+    btn.textContent = activo ? textoOn : textoOff;
+    btn.className = "toggle-btn " + (activo ? "toggle-on" : "toggle-off");
+  }
+
+  // Helper genérico para el botón "Ver más / Ver menos" de las tarjetas mobile
+  function activarVerMas(btnVerMas, detalle) {
+    btnVerMas.addEventListener("click", () => {
+      const abierto = detalle.classList.contains("hidden-modal");
+      detalle.classList.toggle("hidden-modal", !abierto);
+      btnVerMas.textContent = abierto ? "Ver menos ▴" : "Ver más ▾";
+    });
+  }
+
+  const tarjetasProductos = document.getElementById("tarjetas-productos");
+  const tplTarjetaProducto = document.getElementById("tpl-tarjeta-producto");
+
+  function renderTablaProductos() {
+    tablaProductos.innerHTML = "";
+    tarjetasProductos.innerHTML = "";
+
+    const lista = productosFiltrados();
+
+    if (lista.length === 0) {
+      tablaProductosVacio.textContent =
+        productosCache.length === 0 ? "Todavía no cargaste productos." : "No hay productos que coincidan con la búsqueda.";
+      tablaProductosVacio.classList.remove("hidden-modal");
+    } else {
+      tablaProductosVacio.classList.add("hidden-modal");
+    }
+
+    lista.forEach((producto) => {
+      const visible = producto.visible !== false; // por defecto visible si no está definido
+      const hayStock = producto.hayStock !== false; // por defecto con stock si no está definido
+      const tieneProveedor = !!(producto.proveedor && producto.proveedor.trim());
+
+      const eliminarProducto = async () => {
+        const confirmar = window.confirm(`¿Eliminar "${producto.nombre || "este producto"}"? Esta acción no se puede deshacer.`);
+        if (confirmar) {
+          await deleteDoc(doc(db, "productos", producto.id));
+        }
+      };
+
+      // ---- Fila desktop ----
+      const nodo = tplProducto.content.cloneNode(true);
+
+      nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre || "—";
+      nodo.querySelector('[data-field="categoria"]').textContent = CATEGORIA_LABEL[producto.categoria] || producto.categoria || "—";
+      nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
+
+      const inputOrden = nodo.querySelector('[data-field="input-orden"]');
+      inputOrden.value = producto.orden ?? 0;
+      inputOrden.addEventListener("change", async () => {
+        await updateDoc(doc(db, "productos", producto.id), { orden: Number(inputOrden.value) || 0 });
+      });
+
+      const btnVisible = nodo.querySelector('[data-field="btn-visible"]');
+      pintarToggle(btnVisible, visible, "Visible", "Oculto");
+      btnVisible.addEventListener("click", async () => {
+        await updateDoc(doc(db, "productos", producto.id), { visible: !visible });
+      });
+
+      const btnStock = nodo.querySelector('[data-field="btn-stock"]');
+      pintarToggle(btnStock, hayStock, "Con stock", "Sin stock");
+      btnStock.addEventListener("click", async () => {
+        await updateDoc(doc(db, "productos", producto.id), { hayStock: !hayStock });
+      });
+
+      const btnProveedor = nodo.querySelector('[data-field="btn-proveedor"]');
+      const sinProveedor = nodo.querySelector('[data-field="sin-proveedor"]');
+      if (tieneProveedor) {
+        btnProveedor.href = producto.proveedor.trim();
+        btnProveedor.classList.remove("hidden-modal");
+        sinProveedor.classList.add("hidden-modal");
+      } else {
+        btnProveedor.classList.add("hidden-modal");
+        sinProveedor.classList.remove("hidden-modal");
+      }
+
+      nodo.querySelector('[data-field="btn-editar-producto"]').addEventListener("click", () => {
+        abrirModalProducto(producto);
+      });
+      nodo.querySelector('[data-field="btn-eliminar-producto"]').addEventListener("click", eliminarProducto);
+
+      tablaProductos.appendChild(nodo);
+
+      // ---- Tarjeta mobile ----
+      const tarjeta = tplTarjetaProducto.content.cloneNode(true);
+
+      tarjeta.querySelector('[data-field="nombre"]').textContent = producto.nombre || "—";
+      tarjeta.querySelector('[data-field="categoria"]').textContent = CATEGORIA_LABEL[producto.categoria] || producto.categoria || "—";
+      tarjeta.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
+
+      const btnProveedorT = tarjeta.querySelector('[data-field="btn-proveedor"]');
+      if (tieneProveedor) {
+        btnProveedorT.href = producto.proveedor.trim();
+        btnProveedorT.classList.remove("hidden-modal");
+      }
+
+      const inputOrdenT = tarjeta.querySelector('[data-field="input-orden"]');
+      inputOrdenT.value = producto.orden ?? 0;
+      inputOrdenT.addEventListener("change", async () => {
+        await updateDoc(doc(db, "productos", producto.id), { orden: Number(inputOrdenT.value) || 0 });
+      });
+
+      const btnVisibleT = tarjeta.querySelector('[data-field="btn-visible"]');
+      pintarToggle(btnVisibleT, visible, "Visible", "Oculto");
+      btnVisibleT.addEventListener("click", async () => {
+        await updateDoc(doc(db, "productos", producto.id), { visible: !visible });
+      });
+
+      const btnStockT = tarjeta.querySelector('[data-field="btn-stock"]');
+      pintarToggle(btnStockT, hayStock, "Con stock", "Sin stock");
+      btnStockT.addEventListener("click", async () => {
+        await updateDoc(doc(db, "productos", producto.id), { hayStock: !hayStock });
+      });
+
+      activarVerMas(tarjeta.querySelector('[data-field="btn-ver-mas"]'), tarjeta.querySelector('[data-field="detalle"]'));
+      tarjeta.querySelector('[data-field="btn-editar-producto"]').addEventListener("click", () => abrirModalProducto(producto));
+      tarjeta.querySelector('[data-field="btn-eliminar-producto"]').addEventListener("click", eliminarProducto);
+
+      tarjetasProductos.appendChild(tarjeta);
+    });
+  }
+
+  document.getElementById("btn-agregar-producto").addEventListener("click", () => abrirModalProducto(null));
+
+  // -----------------------------
+  // Modal agregar / editar producto
+  // -----------------------------
+  const modalProducto = document.getElementById("modal-producto");
+  const formProducto = document.getElementById("form-producto");
+  const productoNombre = document.getElementById("producto-nombre");
+  const productoCategoria = document.getElementById("producto-categoria");
+  const productoPrecio = document.getElementById("producto-precio");
+  const productoDescripcion = document.getElementById("producto-descripcion");
+  const productoCaracteristicas = document.getElementById("producto-caracteristicas");
+  const productoImagen = document.getElementById("producto-imagen");
+  const productoProveedor = document.getElementById("producto-proveedor");
+  const productoOrden = document.getElementById("producto-orden");
+  const productoVisible = document.getElementById("producto-visible");
+  const productoStock = document.getElementById("producto-stock");
+  const productoStatus = document.getElementById("producto-status");
+  const modalProductoTitulo = document.getElementById("modal-producto-titulo");
+  const modalProductoEyebrow = document.getElementById("modal-producto-titulo-eyebrow");
+  const btnGuardarProducto = document.getElementById("btn-guardar-producto");
+
+  let productoEnEdicionId = null;
+
+  function abrirModalProducto(producto) {
+    formProducto.reset();
+    productoStatus.textContent = "";
+
+    if (producto) {
+      productoEnEdicionId = producto.id;
+      modalProductoEyebrow.textContent = "EDITAR PRODUCTO";
+      modalProductoTitulo.textContent = "Editar producto";
+      productoNombre.value = producto.nombre || "";
+      productoCategoria.value = producto.categoria || "streaming";
+      productoPrecio.value = producto.precio || "";
+      productoDescripcion.value = producto.descripcion || "";
+      productoCaracteristicas.value = Array.isArray(producto.caracteristicas) ? producto.caracteristicas.join("\n") : "";
+      productoImagen.value = producto.imagen || "";
+      productoProveedor.value = producto.proveedor || "";
+      productoOrden.value = producto.orden ?? 0;
+      productoVisible.checked = producto.visible !== false;
+      productoStock.checked = producto.hayStock !== false;
+    } else {
+      productoEnEdicionId = null;
+      modalProductoEyebrow.textContent = "NUEVO PRODUCTO";
+      modalProductoTitulo.textContent = "Agregar producto";
+      productoCategoria.value = "streaming";
+      productoOrden.value = 0;
+      productoVisible.checked = true;
+      productoStock.checked = true;
+    }
+
+    modalProducto.classList.remove("hidden-modal");
+    modalProducto.classList.add("flex");
+  }
+
+  function cerrarModalProducto() {
+    modalProducto.classList.add("hidden-modal");
+    modalProducto.classList.remove("flex");
+  }
+
+  document.querySelectorAll("[data-close-modal-producto]").forEach((btn) => btn.addEventListener("click", cerrarModalProducto));
+  modalProducto.addEventListener("click", (e) => {
+    if (e.target === modalProducto) cerrarModalProducto();
+  });
+
+  formProducto.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const caracteristicas = productoCaracteristicas.value
+      .split("\n")
+      .map((linea) => linea.trim())
+      .filter(Boolean);
+
+    const datos = {
+      nombre: productoNombre.value.trim(),
+      categoria: productoCategoria.value,
+      precio: Number(productoPrecio.value) || 0,
+      descripcion: productoDescripcion.value.trim(),
+      caracteristicas,
+      imagen: productoImagen.value.trim(),
+      proveedor: productoProveedor.value.trim(),
+      orden: Number(productoOrden.value) || 0,
+      visible: productoVisible.checked,
+      hayStock: productoStock.checked
+    };
+
+    btnGuardarProducto.disabled = true;
+    btnGuardarProducto.textContent = "Guardando...";
+
+    try {
+      if (productoEnEdicionId) {
+        await updateDoc(doc(db, "productos", productoEnEdicionId), datos);
+      } else {
+        await addDoc(productosRef, datos);
+      }
+      cerrarModalProducto();
+    } catch (err) {
+      console.error(err);
+      productoStatus.textContent = "No se pudo guardar. Intentá de nuevo.";
+    } finally {
+      btnGuardarProducto.disabled = false;
+      btnGuardarProducto.textContent = "Guardar";
+    }
+  });
+
+  // -----------------------------
+  // Estado en memoria + render — VENCIMIENTOS (clientes)
+  // -----------------------------
+  const clientesRef = collection(db, "clientes");
+  let clientesCache = [];
+
+  const tablaVencimientos = document.getElementById("tabla-vencimientos");
+  const tablaVencimientosVacio = document.getElementById("tabla-vencimientos-vacio");
+  const tplVencimiento = document.getElementById("tpl-fila-vencimiento");
+
+  function iniciarEscuchaVencimientos() {
+    const q = query(clientesRef, orderBy("fechaVencimiento", "asc"));
+    onSnapshot(q, (snapshot) => {
+      clientesCache = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+      renderTablaVencimientos();
+    });
+  }
+
+  function diasRestantes(fechaStr) {
+    if (!fechaStr) return null;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const venc = new Date(fechaStr + "T00:00:00");
+    return Math.round((venc - hoy) / (1000 * 60 * 60 * 24));
+  }
+
+  function formatearFechaSimple(fechaStr) {
+    if (!fechaStr) return "—";
+    const [y, m, d] = fechaStr.split("-");
+    return `${d}/${m}/${y}`;
+  }
+
+  function pintarBadgeEstadoVencimiento(el, dias) {
+    if (dias === null) {
+      el.textContent = "—";
+      el.className = "text-[11px] text-mute";
+      return;
+    }
+    if (dias <= 0) {
+      el.textContent = "Vencido";
+      el.className = "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap bg-bad/10 border-bad/50 text-bad";
+    } else if (dias <= 5) {
+      el.textContent = `Por vencer (${dias}d)`;
+      el.className = "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap bg-warn/10 border-warn/50 text-warn";
+    } else {
+      el.textContent = `Activo (${dias}d)`;
+      el.className = "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap bg-ok/10 border-ok/50 text-ok";
+    }
+  }
+
+  const tarjetasVencimientos = document.getElementById("tarjetas-vencimientos");
+  const tplTarjetaVencimiento = document.getElementById("tpl-tarjeta-vencimiento");
+
+  function renderTablaVencimientos() {
+    tablaVencimientos.innerHTML = "";
+    tarjetasVencimientos.innerHTML = "";
+
+    const idsConvertidos = new Set(clientesCache.filter((c) => c.pedidoId).map((c) => c.pedidoId));
+    const pendientes = pedidosCache.filter(
+      (p) => p.estado !== "cancelado" && !idsConvertidos.has(p.id)
+    );
+
+    if (clientesCache.length === 0 && pendientes.length === 0) {
+      tablaVencimientosVacio.classList.remove("hidden-modal");
+    } else {
+      tablaVencimientosVacio.classList.add("hidden-modal");
+    }
+
+    clientesCache.forEach((cliente) => {
+      const dias = diasRestantes(cliente.fechaVencimiento);
+      const irAlChat = () => {
+        const mensaje =
+          `Hola ${cliente.nombre || ""}! Te avisamos que tu servicio de ${cliente.cuenta || "tu cuenta"} ` +
+          `va a vencer el día ${formatearFechaSimple(cliente.fechaVencimiento)}. ` +
+          `¿Deseas renovar para no perder tu historial ni tu cuenta?`;
+        const telefonoLimpio = (cliente.telefono || "").replace(/[^0-9]/g, "");
+        if (!telefonoLimpio) {
+          alert("Este cliente no tiene un WhatsApp cargado todavía. Editalo para agregarlo.");
+          return;
+        }
+        window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
+      };
+      const eliminarCliente = async () => {
+        const confirmar = window.confirm(`¿Eliminar a "${cliente.nombre || "este cliente"}"? Esta acción no se puede deshacer.`);
+        if (confirmar) {
+          await deleteDoc(doc(db, "clientes", cliente.id));
+        }
+      };
+
+      // ---- Fila desktop ----
+      const nodo = tplVencimiento.content.cloneNode(true);
+
+      nodo.querySelector('[data-field="nombre"]').textContent = cliente.nombre || "—";
+      nodo.querySelector('[data-field="telefono"]').textContent = cliente.telefono || "—";
+      nodo.querySelector('[data-field="cuenta"]').textContent = cliente.cuenta || "—";
+      nodo.querySelector('[data-field="correo"]').textContent = cliente.correo || "—";
+      nodo.querySelector('[data-field="password"]').textContent = cliente.password || "—";
+      nodo.querySelector('[data-field="vencimiento"]').textContent = formatearFechaSimple(cliente.fechaVencimiento);
+
+      pintarBadgeEstadoVencimiento(nodo.querySelector('[data-field="badge-estado"]'), dias);
+
+      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", irAlChat);
+      nodo.querySelector('[data-field="btn-editar-vencimiento"]').addEventListener("click", () => abrirModalVencimiento(cliente));
+      nodo.querySelector('[data-field="btn-eliminar-vencimiento"]').addEventListener("click", eliminarCliente);
+
+      tablaVencimientos.appendChild(nodo);
+
+      // ---- Tarjeta mobile ----
+      const tarjeta = tplTarjetaVencimiento.content.cloneNode(true);
+
+      tarjeta.querySelector('[data-field="nombre"]').textContent = cliente.nombre || "—";
+      tarjeta.querySelector('[data-field="cuenta"]').textContent = cliente.cuenta || "—";
+      tarjeta.querySelector('[data-field="vencimiento"]').textContent = "Vence: " + formatearFechaSimple(cliente.fechaVencimiento);
+      tarjeta.querySelector('[data-field="telefono"]').textContent = "WhatsApp: " + (cliente.telefono || "—");
+      tarjeta.querySelector('[data-field="correo"]').textContent = "Correo: " + (cliente.correo || "—");
+      tarjeta.querySelector('[data-field="password"]').textContent = "Contraseña: " + (cliente.password || "—");
+
+      pintarBadgeEstadoVencimiento(tarjeta.querySelector('[data-field="badge-estado"]'), dias);
+
+      tarjeta.querySelector('[data-field="btn-chat"]').addEventListener("click", irAlChat);
+      activarVerMas(tarjeta.querySelector('[data-field="btn-ver-mas"]'), tarjeta.querySelector('[data-field="detalle"]'));
+      tarjeta.querySelector('[data-field="btn-editar-vencimiento"]').addEventListener("click", () => abrirModalVencimiento(cliente));
+      tarjeta.querySelector('[data-field="btn-eliminar-vencimiento"]').addEventListener("click", eliminarCliente);
+
+      tarjetasVencimientos.appendChild(tarjeta);
+    });
+
+    // Pedidos que todavía no tienen ficha de cliente/vencimiento cargada:
+    // aparecen solos acá para que se les complete correo, contraseña y fecha límite.
+    const tplPendiente = document.getElementById("tpl-fila-pendiente");
+    const tplTarjetaPendiente = document.getElementById("tpl-tarjeta-pendiente");
+    pendientes.forEach((pedido) => {
+      const irAlChatPendiente = () => {
+        const telefonoLimpio = (pedido.telefono || "").replace(/[^0-9]/g, "");
+        if (!telefonoLimpio) {
+          alert("Este pedido todavía no tiene WhatsApp cargado. Usá 'Completar datos' para agregarlo.");
+          return;
+        }
+        const mensaje = `Hola ${pedido.nombre || ""}! Te escribimos por tu pedido de ${pedido.servicio || "tu servicio"} en NEXO.`;
+        window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
+      };
+
+      // ---- Tarjeta mobile (pendiente) ----
+      const tarjetaPendiente = tplTarjetaPendiente.content.cloneNode(true);
+      tarjetaPendiente.querySelector('[data-field="nombre"]').textContent = pedido.nombre || "—";
+      tarjetaPendiente.querySelector('[data-field="cuenta"]').textContent = pedido.servicio || "—";
+      tarjetaPendiente.querySelector('[data-field="btn-chat"]').addEventListener("click", irAlChatPendiente);
+      tarjetaPendiente.querySelector('[data-field="btn-completar"]').addEventListener("click", () => {
+        abrirModalVencimiento(
+          {
+            nombre: pedido.nombre || "",
+            telefono: pedido.telefono || "",
+            cuenta: pedido.servicio || "",
+            correo: "",
+            password: "",
+            fechaVencimiento: ""
+          },
+          pedido.id
+        );
+      });
+      tarjetasVencimientos.appendChild(tarjetaPendiente);
+
+      // ---- Fila desktop (pendiente) ----
+      const nodo = tplPendiente.content.cloneNode(true);
+
+      nodo.querySelector('[data-field="nombre"]').textContent = pedido.nombre || "—";
+      nodo.querySelector('[data-field="telefono"]').textContent = pedido.telefono || "—";
+      nodo.querySelector('[data-field="cuenta"]').textContent = pedido.servicio || "—";
+
+      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", irAlChatPendiente);
+
+      nodo.querySelector('[data-field="btn-completar"]').addEventListener("click", () => {
+        abrirModalVencimiento(
+          {
+            nombre: pedido.nombre || "",
+            telefono: pedido.telefono || "",
+            cuenta: pedido.servicio || "",
+            correo: "",
+            password: "",
+            fechaVencimiento: ""
+          },
+          pedido.id
+        );
+      });
+
+      tablaVencimientos.appendChild(nodo);
+    });
+  }
+
+  document.getElementById("btn-agregar-vencimiento").addEventListener("click", () => abrirModalVencimiento(null));
+
+  // -----------------------------
+  // Modal agregar / editar vencimiento
+  // -----------------------------
+  const modalVencimiento = document.getElementById("modal-vencimiento");
+  const formVencimiento = document.getElementById("form-vencimiento");
+  const vencimientoNombre = document.getElementById("vencimiento-nombre");
+  const vencimientoTelefono = document.getElementById("vencimiento-telefono");
+  const vencimientoCuenta = document.getElementById("vencimiento-cuenta");
+  const vencimientoCorreo = document.getElementById("vencimiento-correo");
+  const vencimientoPassword = document.getElementById("vencimiento-password");
+  const vencimientoFecha = document.getElementById("vencimiento-fecha");
+  const vencimientoStatus = document.getElementById("vencimiento-status");
+  const modalVencimientoTitulo = document.getElementById("modal-vencimiento-titulo");
+  const modalVencimientoEyebrow = document.getElementById("modal-vencimiento-titulo-eyebrow");
+  const btnGuardarVencimiento = document.getElementById("btn-guardar-vencimiento");
+
+  let vencimientoEnEdicionId = null;
+  let pedidoIdParaVincular = null;
+
+  function abrirModalVencimiento(cliente, pedidoId) {
+    formVencimiento.reset();
+    vencimientoStatus.textContent = "";
+    pedidoIdParaVincular = pedidoId || null;
+
+    if (cliente && cliente.id) {
+      vencimientoEnEdicionId = cliente.id;
+      modalVencimientoEyebrow.textContent = "EDITAR CLIENTE";
+      modalVencimientoTitulo.textContent = "Editar cliente";
+      vencimientoNombre.value = cliente.nombre || "";
+      vencimientoTelefono.value = cliente.telefono || "";
+      vencimientoCuenta.value = cliente.cuenta || "";
+      vencimientoCorreo.value = cliente.correo || "";
+      vencimientoPassword.value = cliente.password || "";
+      vencimientoFecha.value = cliente.fechaVencimiento || "";
+    } else if (cliente) {
+      // Viene de un pedido sin ficha todavía: se precargan sus datos.
+      vencimientoEnEdicionId = null;
+      modalVencimientoEyebrow.textContent = "COMPLETAR DATOS";
+      modalVencimientoTitulo.textContent = "Completar datos del pedido";
+      vencimientoNombre.value = cliente.nombre || "";
+      vencimientoTelefono.value = cliente.telefono || "";
+      vencimientoCuenta.value = cliente.cuenta || "";
+      vencimientoCorreo.value = "";
+      vencimientoPassword.value = "";
+      vencimientoFecha.value = "";
+    } else {
+      vencimientoEnEdicionId = null;
+      modalVencimientoEyebrow.textContent = "NUEVO CLIENTE";
+      modalVencimientoTitulo.textContent = "Agregar cliente";
+    }
+
+    modalVencimiento.classList.remove("hidden-modal");
+    modalVencimiento.classList.add("flex");
+  }
+
+  function cerrarModalVencimiento() {
+    modalVencimiento.classList.add("hidden-modal");
+    modalVencimiento.classList.remove("flex");
+  }
+
+  document.querySelectorAll("[data-close-modal-vencimiento]").forEach((btn) => btn.addEventListener("click", cerrarModalVencimiento));
+  modalVencimiento.addEventListener("click", (e) => {
+    if (e.target === modalVencimiento) cerrarModalVencimiento();
+  });
+
+  formVencimiento.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const datos = {
+      nombre: vencimientoNombre.value.trim(),
+      telefono: vencimientoTelefono.value.trim(),
+      cuenta: vencimientoCuenta.value.trim(),
+      correo: vencimientoCorreo.value.trim(),
+      password: vencimientoPassword.value.trim(),
+      fechaVencimiento: vencimientoFecha.value
+    };
+
+    if (!vencimientoEnEdicionId && pedidoIdParaVincular) {
+      datos.pedidoId = pedidoIdParaVincular;
+    }
+
+    btnGuardarVencimiento.disabled = true;
+    btnGuardarVencimiento.textContent = "Guardando...";
+
+    try {
+      if (vencimientoEnEdicionId) {
+        await updateDoc(doc(db, "clientes", vencimientoEnEdicionId), datos);
+      } else {
+        await addDoc(clientesRef, datos);
+      }
+      pedidoIdParaVincular = null;
+      cerrarModalVencimiento();
+    } catch (err) {
+      console.error(err);
+      vencimientoStatus.textContent = "No se pudo guardar. Intentá de nuevo.";
+    } finally {
+      btnGuardarVencimiento.disabled = false;
+      btnGuardarVencimiento.textContent = "Guardar";
+    }
+  });
+
+  // -----------------------------
+  // FINANZAS: código de descuento global de la tienda.
+  // Se guarda en configuracion/descuento -> { codigo, porcentaje, activo }.
+  // -----------------------------
+  const formDescuento = document.getElementById("form-descuento");
+  const descuentoCodigo = document.getElementById("descuento-codigo");
+  const descuentoProducto = document.getElementById("descuento-producto");
+  const descuentoPorcentaje = document.getElementById("descuento-porcentaje");
+  const descuentoActivoCheckbox = document.getElementById("descuento-activo");
+  const descuentoConfigStatus = document.getElementById("descuento-config-status");
+  const btnGuardarDescuento = document.getElementById("btn-guardar-descuento");
+
+  let descuentoProductoActual = "todos";
+
+  function aplicarSeleccionProductoDescuento() {
+    const existe = Array.from(descuentoProducto.options).some((o) => o.value === descuentoProductoActual);
+    descuentoProducto.value = existe ? descuentoProductoActual : "todos";
+  }
+
+  function actualizarOpcionesProductoDescuento() {
+    descuentoProducto.innerHTML = '<option value="todos">Todos los productos</option>';
+    productosCache.forEach((p) => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = p.nombre || "(sin nombre)";
+      descuentoProducto.appendChild(opt);
+    });
+    aplicarSeleccionProductoDescuento();
+  }
+
+  function iniciarEscuchaDescuento() {
+    onSnapshot(configuracionRef, (snap) => {
+      const data = snap.exists() ? snap.data() : {};
+      descuentoCodigo.value = data.codigo || "";
+      descuentoPorcentaje.value = data.porcentaje ?? "";
+      descuentoActivoCheckbox.checked = data.activo === true;
+      descuentoProductoActual = data.productoId || "todos";
+      aplicarSeleccionProductoDescuento();
+    });
+  }
+
+  formDescuento.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const productoIdSeleccionado = descuentoProducto.value;
+    const productoNombreSeleccionado =
+      productoIdSeleccionado === "todos"
+        ? ""
+        : descuentoProducto.options[descuentoProducto.selectedIndex].textContent;
+
+    const datos = {
+      codigo: descuentoCodigo.value.trim().toUpperCase(),
+      productoId: productoIdSeleccionado,
+      productoNombre: productoNombreSeleccionado,
+      porcentaje: Number(descuentoPorcentaje.value) || 0,
+      activo: descuentoActivoCheckbox.checked
+    };
+
+    btnGuardarDescuento.disabled = true;
+    btnGuardarDescuento.textContent = "Guardando...";
+    descuentoConfigStatus.textContent = "";
+
+    try {
+      await setDoc(configuracionRef, datos, { merge: true });
+      descuentoConfigStatus.textContent = "Descuento guardado.";
+    } catch (err) {
+      console.error(err);
+      descuentoConfigStatus.textContent = "No se pudo guardar. Intentá de nuevo.";
+    } finally {
+      btnGuardarDescuento.disabled = false;
+      btnGuardarDescuento.textContent = "Guardar";
+    }
+  });
+
+  // -----------------------------
+  // DESCUENTOS: creación de nuevos códigos (colección "descuentos")
+  // -----------------------------
+  const formNuevoDescuento = document.getElementById("form-nuevo-descuento");
+  const nuevoDescuentoNombre = document.getElementById("nuevo-descuento-nombre");
+  const nuevoDescuentoTipo = document.getElementById("nuevo-descuento-tipo");
+  const nuevoDescuentoValor = document.getElementById("nuevo-descuento-valor");
+  const nuevoDescuentoStatus = document.getElementById("nuevo-descuento-status");
+  const btnGuardarNuevoDescuento = document.getElementById("btn-guardar-nuevo-descuento");
+
+  formNuevoDescuento.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    btnGuardarNuevoDescuento.disabled = true;
+    btnGuardarNuevoDescuento.textContent = "Guardando...";
+    nuevoDescuentoStatus.textContent = "";
+    nuevoDescuentoStatus.className = "text-xs text-mute min-h-[1rem]";
+
+    try {
+      await crearCodigoDescuento({
+        nombre: nuevoDescuentoNombre.value,
+        tipo: nuevoDescuentoTipo.value,
+        valor: nuevoDescuentoValor.value
+      });
+      nuevoDescuentoStatus.textContent = "Código creado correctamente.";
+      nuevoDescuentoStatus.className = "text-xs text-cyan min-h-[1rem]";
+      formNuevoDescuento.reset();
+    } catch (err) {
+      console.error(err);
+      nuevoDescuentoStatus.textContent = err.message || "No se pudo crear el código. Intentá de nuevo.";
+      nuevoDescuentoStatus.className = "text-xs text-bad min-h-[1rem]";
+    } finally {
+      btnGuardarNuevoDescuento.disabled = false;
+      btnGuardarNuevoDescuento.textContent = "Crear código";
+    }
+  });
+
+  // -----------------------------
+  // FINANZAS: rentabilidad — costo en USD por producto vs precio en ARS.
+  // El costo en USD se guarda por producto (productos/{id}.costoUsd).
+  // La cotización se trae de dolarapi.com (sin API key) solo al tocar
+  // "Aplicar"; nunca se refresca sola ni al cargar la página.
+  // -----------------------------
+  const tablaRentabilidad = document.getElementById("tabla-rentabilidad");
+  const tablaRentabilidadVacio = document.getElementById("tabla-rentabilidad-vacio");
+  const tplRentabilidad = document.getElementById("tpl-fila-rentabilidad");
+  const selectTipoDolar = document.getElementById("rentabilidad-tipo-dolar");
+  const btnAplicarCotizacion = document.getElementById("btn-aplicar-cotizacion");
+  const rentabilidadCotizacionStatus = document.getElementById("rentabilidad-cotizacion-status");
+
+  let cotizacionActual = null; // { tipo, valor } — queda null hasta tocar "Aplicar"
+
+  btnAplicarCotizacion.addEventListener("click", async () => {
+    const tipo = selectTipoDolar.value;
+    btnAplicarCotizacion.disabled = true;
+    const textoOriginal = btnAplicarCotizacion.textContent;
+    btnAplicarCotizacion.textContent = "Consultando...";
+    rentabilidadCotizacionStatus.textContent = "";
+    rentabilidadCotizacionStatus.classList.remove("text-bad");
+
+    try {
+      const resp = await fetch(`https://dolarapi.com/v1/dolares/${tipo}`);
+      if (!resp.ok) throw new Error("Respuesta no válida de la API de cotización");
+      const data = await resp.json();
+      const valor = Number(data.venta);
+      if (!valor) throw new Error("La API no devolvió un valor de venta");
+
+      cotizacionActual = { tipo, valor };
+      rentabilidadCotizacionStatus.textContent =
+        `Dólar ${data.nombre || tipo}: ${formatearPrecio(valor)} · aplicado a los costos.`;
+    } catch (err) {
+      console.error(err);
+      cotizacionActual = null;
+      rentabilidadCotizacionStatus.textContent = "No se pudo traer la cotización. Probá de nuevo.";
+      rentabilidadCotizacionStatus.classList.add("text-bad");
+    } finally {
+      btnAplicarCotizacion.disabled = false;
+      btnAplicarCotizacion.textContent = textoOriginal;
+      renderTablaRentabilidad();
+      renderVentas();
+      renderGastosStock();
+    }
+  });
+
+  async function guardarCostoUsd(productoId, valor) {
+    try {
+      await updateDoc(doc(db, "productos", productoId), { costoUsd: valor });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function renderTablaRentabilidad() {
+    if (!tablaRentabilidad) return;
+    tablaRentabilidad.innerHTML = "";
+
+    if (productosCache.length === 0) {
+      tablaRentabilidadVacio.classList.remove("hidden-modal");
+      return;
+    }
+    tablaRentabilidadVacio.classList.add("hidden-modal");
+
+    productosCache.forEach((producto) => {
+      const nodo = tplRentabilidad.content.cloneNode(true);
+      nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre || "(sin nombre)";
+      nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
+
+      const inputCosto = nodo.querySelector('[data-field="input-costo-usd"]');
+      inputCosto.value = producto.costoUsd ?? "";
+      inputCosto.addEventListener("change", () => {
+        guardarCostoUsd(producto.id, Number(inputCosto.value) || 0);
+      });
+
+      const celdaCostoArs = nodo.querySelector('[data-field="costo-ars"]');
+      const celdaGanancia = nodo.querySelector('[data-field="ganancia"]');
+      const celdaMargen = nodo.querySelector('[data-field="margen"]');
+
+      const precio = Number(producto.precio) || 0;
+      const costoUsd = Number(producto.costoUsd) || 0;
+
+      if (!cotizacionActual || !costoUsd) {
+        celdaCostoArs.textContent = "—";
+        celdaGanancia.textContent = "—";
+        celdaMargen.textContent = "—";
+      } else {
+        const costoArs = costoUsd * cotizacionActual.valor;
+        const ganancia = precio - costoArs;
+        const margen = precio > 0 ? (ganancia / precio) * 100 : 0;
+        const colorGanancia = ganancia >= 0 ? "text-ok" : "text-bad";
+
+        celdaCostoArs.textContent = formatearPrecio(Math.round(costoArs));
+        celdaGanancia.textContent = formatearPrecio(Math.round(ganancia));
+        celdaGanancia.className = "px-4 py-3 font-semibold whitespace-nowrap " + colorGanancia;
+        celdaMargen.textContent = margen.toFixed(1) + "%";
+        celdaMargen.className = "px-4 py-3 font-semibold whitespace-nowrap " + colorGanancia;
+      }
+
+      tablaRentabilidad.appendChild(nodo);
+    });
+  }
+
+  // -----------------------------
+  // FINANZAS: ventas y ganancias — se calcula sobre los pedidos
+  // marcados como "Activo" (pedidos_nexo). El costo de cada uno se
+  // busca por nombre de producto (pedido.servicio === producto.nombre)
+  // y usa la misma cotización aplicada arriba. Se suman los ajustes
+  // manuales para llegar a la ganancia total.
+  // -----------------------------
+  const tablaVentas = document.getElementById("tabla-ventas");
+  const tablaVentasVacio = document.getElementById("tabla-ventas-vacio");
+  const tplVenta = document.getElementById("tpl-fila-venta");
+  const ventasTotalFacturado = document.getElementById("ventas-total-facturado");
+  const ventasCantidad = document.getElementById("ventas-cantidad");
+  const ventasGananciaCalculada = document.getElementById("ventas-ganancia-calculada");
+  const ventasSinCosto = document.getElementById("ventas-sin-costo");
+  const ventasGananciaTotal = document.getElementById("ventas-ganancia-total");
+  const ventasAjustesResumen = document.getElementById("ventas-ajustes-resumen");
+
+  function buscarProductoPorNombre(nombreServicio) {
+    const buscado = (nombreServicio || "").trim().toLowerCase();
+    return productosCache.find((p) => (p.nombre || "").trim().toLowerCase() === buscado);
+  }
+
+  function totalAjustes() {
+    return ajustesCache.reduce((acc, a) => acc + (Number(a.monto) || 0), 0);
+  }
+
+  function renderVentas() {
+    if (!tablaVentas) return;
+    tablaVentas.innerHTML = "";
+
+    const pedidosActivos = pedidosCache.filter((p) => p.estado === "activo");
+
+    let totalFacturado = 0;
+    let gananciaCalculada = 0;
+    let sinCosto = 0;
+
+    ventasCantidad.textContent = `${pedidosActivos.length} pedido${pedidosActivos.length === 1 ? "" : "s"} activo${pedidosActivos.length === 1 ? "" : "s"}`;
+
+    if (pedidosActivos.length === 0) {
+      tablaVentasVacio.classList.remove("hidden-modal");
+    } else {
+      tablaVentasVacio.classList.add("hidden-modal");
+    }
+
+    pedidosActivos.forEach((pedido) => {
+      const precio = Number(pedido.precio) || 0;
+      totalFacturado += precio;
+
+      const nodo = tplVenta.content.cloneNode(true);
+      nodo.querySelector('[data-field="cliente"]').textContent = pedido.nombre || "—";
+      nodo.querySelector('[data-field="producto"]').textContent = pedido.servicio || "—";
+      nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(precio);
+
+      const celdaCosto = nodo.querySelector('[data-field="costo"]');
+      const celdaGanancia = nodo.querySelector('[data-field="ganancia"]');
+
+      const producto = buscarProductoPorNombre(pedido.servicio);
+      const costoUsd = producto ? Number(producto.costoUsd) || 0 : 0;
+
+      if (!cotizacionActual || !costoUsd) {
+        celdaCosto.textContent = "—";
+        celdaGanancia.textContent = "—";
+        sinCosto++;
+      } else {
+        const costoArs = costoUsd * cotizacionActual.valor;
+        const ganancia = precio - costoArs;
+        gananciaCalculada += ganancia;
+
+        celdaCosto.textContent = formatearPrecio(Math.round(costoArs));
+        celdaGanancia.textContent = formatearPrecio(Math.round(ganancia));
+        celdaGanancia.className = "px-4 py-3 font-semibold whitespace-nowrap " + (ganancia >= 0 ? "text-ok" : "text-bad");
+      }
+
+      tablaVentas.appendChild(nodo);
+    });
+
+    ventasTotalFacturado.textContent = formatearPrecio(totalFacturado);
+
+    ventasGananciaCalculada.textContent = cotizacionActual ? formatearPrecio(Math.round(gananciaCalculada)) : "—";
+    ventasSinCosto.textContent = !cotizacionActual
+      ? "Aplicá una cotización arriba para calcular."
+      : sinCosto > 0
+        ? `${sinCosto} pedido${sinCosto === 1 ? "" : "s"} sin costo cargado.`
+        : "Todos los pedidos activos tienen costo cargado.";
+
+    const ajustes = totalAjustes();
+    ventasAjustesResumen.textContent = `Ajustes: ${(ajustes >= 0 ? "+" : "") + formatearPrecio(ajustes)}`;
+
+    if (cotizacionActual) {
+      const gananciaTotal = gananciaCalculada + ajustes;
+      ventasGananciaTotal.textContent = formatearPrecio(Math.round(gananciaTotal));
+      ventasGananciaTotal.className = "font-display font-bold text-2xl " + (gananciaTotal >= 0 ? "text-ok" : "text-bad");
+    } else {
+      ventasGananciaTotal.textContent = "—";
+      ventasGananciaTotal.className = "font-display font-bold text-2xl";
+    }
+  }
+
+  // -----------------------------
+  // FINANZAS: ajustes manuales de ganancia (colección "ajustesGanancia")
+  // Sirven para corregir el total calculado (costo cargado tarde, error
+  // de tipeo, etc.) dejando un registro con motivo y fecha, sin tocar
+  // los pedidos ni los productos.
+  // -----------------------------
+  let ajustesCache = [];
+  const listaAjustes = document.getElementById("lista-ajustes");
+  const listaAjustesVacio = document.getElementById("lista-ajustes-vacio");
+  const tplAjuste = document.getElementById("tpl-ajuste");
+  const formAjuste = document.getElementById("form-ajuste");
+  const ajusteMotivo = document.getElementById("ajuste-motivo");
+  const ajusteMonto = document.getElementById("ajuste-monto");
+  const ajusteStatus = document.getElementById("ajuste-status");
+  const btnGuardarAjuste = document.getElementById("btn-guardar-ajuste");
+
+  function iniciarEscuchaAjustes() {
+    const q = query(ajustesRef, orderBy("fecha", "desc"));
+    onSnapshot(q, (snapshot) => {
+      ajustesCache = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+      renderListaAjustes();
+      renderVentas();
+    });
+  }
+
+  function renderListaAjustes() {
+    if (!listaAjustes) return;
+    listaAjustes.innerHTML = "";
+
+    if (ajustesCache.length === 0) {
+      listaAjustesVacio.classList.remove("hidden-modal");
+      return;
+    }
+    listaAjustesVacio.classList.add("hidden-modal");
+
+    ajustesCache.forEach((ajuste) => {
+      const nodo = tplAjuste.content.cloneNode(true);
+      nodo.querySelector('[data-field="motivo"]').textContent = ajuste.motivo || "(sin motivo)";
+      nodo.querySelector('[data-field="fecha"]').textContent = formatearFecha(ajuste.fecha);
+
+      const monto = Number(ajuste.monto) || 0;
+      const montoEl = nodo.querySelector('[data-field="monto"]');
+      montoEl.textContent = (monto >= 0 ? "+" : "") + formatearPrecio(monto);
+      montoEl.className = "font-display font-semibold text-sm " + (monto >= 0 ? "text-ok" : "text-bad");
+
+      nodo.querySelector('[data-field="btn-eliminar"]').addEventListener("click", async () => {
+        const confirmar = window.confirm("¿Eliminar este ajuste? Esta acción no se puede deshacer.");
+        if (!confirmar) return;
+        try {
+          await deleteDoc(doc(db, "ajustesGanancia", ajuste.id));
+        } catch (err) {
+          console.error(err);
+        }
+      });
+
+      listaAjustes.appendChild(nodo);
+    });
+  }
+
+  formAjuste.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const motivo = ajusteMotivo.value.trim();
+    const monto = Number(ajusteMonto.value);
+
+    if (!motivo) {
+      ajusteStatus.textContent = "Escribí un motivo para el ajuste.";
+      ajusteStatus.className = "text-xs text-bad min-h-[1rem]";
+      return;
+    }
+    if (!Number.isFinite(monto) || monto === 0) {
+      ajusteStatus.textContent = "El monto tiene que ser un número distinto de 0.";
+      ajusteStatus.className = "text-xs text-bad min-h-[1rem]";
+      return;
+    }
+
+    btnGuardarAjuste.disabled = true;
+    btnGuardarAjuste.textContent = "Guardando...";
+    ajusteStatus.textContent = "";
+    ajusteStatus.className = "text-xs text-mute min-h-[1rem]";
+
+    try {
+      await addDoc(ajustesRef, { motivo, monto, fecha: serverTimestamp() });
+      ajusteStatus.textContent = "Ajuste registrado.";
+      ajusteStatus.className = "text-xs text-cyan min-h-[1rem]";
+      formAjuste.reset();
+    } catch (err) {
+      console.error(err);
+      ajusteStatus.textContent = "No se pudo guardar el ajuste. Intentá de nuevo.";
+      ajusteStatus.className = "text-xs text-bad min-h-[1rem]";
+    } finally {
+      btnGuardarAjuste.disabled = false;
+      btnGuardarAjuste.textContent = "Registrar ajuste";
+    }
+  });
+
+  // -----------------------------
+  // FINANZAS: gastos para reponer stock — suma el costo en pesos de
+  // todos los productos marcados "Sin stock" (productos/{id}.hayStock
+  // === false), usando la misma cotización aplicada arriba.
+  // -----------------------------
+  const tablaGastosStock = document.getElementById("tabla-gastos-stock");
+  const tablaGastosStockVacio = document.getElementById("tabla-gastos-stock-vacio");
+  const tplGastoStock = document.getElementById("tpl-fila-gasto-stock");
+  const stockGastoTotal = document.getElementById("stock-gasto-total");
+  const stockGastoCantidad = document.getElementById("stock-gasto-cantidad");
+
+  function renderGastosStock() {
+    if (!tablaGastosStock) return;
+    tablaGastosStock.innerHTML = "";
+
+    const sinStock = productosCache.filter((p) => p.hayStock === false);
+
+    stockGastoCantidad.textContent = `${sinStock.length} producto${sinStock.length === 1 ? "" : "s"} sin stock`;
+
+    if (sinStock.length === 0) {
+      tablaGastosStockVacio.classList.remove("hidden-modal");
+    } else {
+      tablaGastosStockVacio.classList.add("hidden-modal");
+    }
+
+    let total = 0;
+
+    sinStock.forEach((producto) => {
+      const nodo = tplGastoStock.content.cloneNode(true);
+      nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre || "(sin nombre)";
+
+      const costoUsd = Number(producto.costoUsd) || 0;
+      nodo.querySelector('[data-field="costo-usd"]').textContent = costoUsd ? "US$ " + costoUsd.toLocaleString("es-AR") : "—";
+
+      const celdaArs = nodo.querySelector('[data-field="costo-ars"]');
+      if (!cotizacionActual || !costoUsd) {
+        celdaArs.textContent = "—";
+      } else {
+        const costoArs = costoUsd * cotizacionActual.valor;
+        total += costoArs;
+        celdaArs.textContent = formatearPrecio(Math.round(costoArs));
+      }
+
+      tablaGastosStock.appendChild(nodo);
+    });
+
+    stockGastoTotal.textContent = cotizacionActual ? formatearPrecio(Math.round(total)) : "—";
+  }
+
+  // =========================================================
+  // CUPONES (multi-uso, independientes del código único de Finanzas)
+  // =========================================================
+  let cuponesCache = [];
+  const tablaCupones = document.getElementById("tabla-cupones");
+  const tablaCuponesVacio = document.getElementById("tabla-cupones-vacio");
+  const tarjetasCupones = document.getElementById("tarjetas-cupones");
+  const tplFilaCupon = document.getElementById("tpl-fila-cupon");
+  const tplTarjetaCupon = document.getElementById("tpl-tarjeta-cupon");
+
+  function iniciarEscuchaCupones() {
+    onSnapshot(cuponesRef, (snapshot) => {
+      cuponesCache = snapshot.docs
+        .map((docSnap) => ({ codigo: docSnap.id, ...docSnap.data() }))
+        .sort((a, b) => a.codigo.localeCompare(b.codigo));
+      renderCupones();
+    });
+  }
+
+  function formatearDescuentoCupon(c) {
+    return c.discountType === "percentage" ? `${c.value}%` : formatearPrecio(c.value);
+  }
+
+  function formatearFechaCortaCupon(fechaStr) {
+    if (!fechaStr) return "—";
+    const d = new Date(fechaStr + "T00:00:00");
+    return d.toLocaleDateString("es-AR");
+  }
+
+  function renderCupones() {
+    tablaCupones.innerHTML = "";
+    tarjetasCupones.innerHTML = "";
+    tablaCuponesVacio.classList.toggle("hidden-modal", cuponesCache.length > 0);
+
+    cuponesCache.forEach((cupon) => {
+      const activo = cupon.active !== false;
+      const usadosTexto = `${cupon.usedCount || 0} / ${cupon.usageLimit ?? "∞"}`;
+
+      const fila = tplFilaCupon.content.cloneNode(true);
+      fila.querySelector('[data-field="codigo"]').textContent = cupon.codigo;
+      fila.querySelector('[data-field="descuento"]').textContent = formatearDescuentoCupon(cupon);
+      fila.querySelector('[data-field="vence"]').textContent = formatearFechaCortaCupon(cupon.validUntil);
+      fila.querySelector('[data-field="usados"]').textContent = usadosTexto;
+
+      const btnActivoFila = fila.querySelector('[data-field="btn-activo"]');
+      pintarToggle(btnActivoFila, activo, "Activo", "Inactivo");
+      btnActivoFila.addEventListener("click", async () => {
+        await updateDoc(doc(db, "cupones", cupon.codigo), { active: !activo });
+      });
+
+      fila.querySelector('[data-field="btn-editar-cupon"]').addEventListener("click", () => abrirModalCupon(cupon));
+      fila.querySelector('[data-field="btn-eliminar-cupon"]').addEventListener("click", async () => {
+        if (window.confirm(`¿Eliminar el cupón "${cupon.codigo}"? Esta acción no se puede deshacer.`)) {
+          await deleteDoc(doc(db, "cupones", cupon.codigo));
+        }
+      });
+      tablaCupones.appendChild(fila);
+
+      const tarjeta = tplTarjetaCupon.content.cloneNode(true);
+      tarjeta.querySelector('[data-field="codigo"]').textContent = cupon.codigo;
+      tarjeta.querySelector('[data-field="descuento"]').textContent = formatearDescuentoCupon(cupon);
+      tarjeta.querySelector('[data-field="vence-usados"]').textContent =
+        `Vence: ${formatearFechaCortaCupon(cupon.validUntil)} · Usados: ${usadosTexto}`;
+
+      const btnActivoTarjeta = tarjeta.querySelector('[data-field="btn-activo"]');
+      pintarToggle(btnActivoTarjeta, activo, "Activo", "Inactivo");
+      btnActivoTarjeta.addEventListener("click", async () => {
+        await updateDoc(doc(db, "cupones", cupon.codigo), { active: !activo });
+      });
+
+      tarjeta.querySelector('[data-field="btn-editar-cupon"]').addEventListener("click", () => abrirModalCupon(cupon));
+      tarjeta.querySelector('[data-field="btn-eliminar-cupon"]').addEventListener("click", async () => {
+        if (window.confirm(`¿Eliminar el cupón "${cupon.codigo}"? Esta acción no se puede deshacer.`)) {
+          await deleteDoc(doc(db, "cupones", cupon.codigo));
+        }
+      });
+      tarjetasCupones.appendChild(tarjeta);
+    });
+  }
+
+  // Modal agregar/editar cupón — el código es el ID del documento, así que no se puede editar
+  const modalCupon = document.getElementById("modal-cupon");
+  const formCupon = document.getElementById("form-cupon");
+  const cuponCodigo = document.getElementById("cupon-codigo");
+  const cuponCodigoNota = document.getElementById("cupon-codigo-nota");
+  const cuponTipo = document.getElementById("cupon-tipo");
+  const cuponValor = document.getElementById("cupon-valor");
+  const cuponVence = document.getElementById("cupon-vence");
+  const cuponLimite = document.getElementById("cupon-limite");
+  const cuponActivo = document.getElementById("cupon-activo");
+  const cuponModalStatus = document.getElementById("cupon-modal-status");
+  const modalCuponTitulo = document.getElementById("modal-cupon-titulo");
+  const modalCuponEyebrow = document.getElementById("modal-cupon-eyebrow");
+  const btnGuardarCupon = document.getElementById("btn-guardar-cupon");
+  let cuponEnEdicionCodigo = null;
+
+  function abrirModalCupon(cupon) {
+    formCupon.reset();
+    cuponModalStatus.textContent = "";
+
+    if (cupon) {
+      cuponEnEdicionCodigo = cupon.codigo;
+      modalCuponEyebrow.textContent = "EDITAR CUPÓN";
+      modalCuponTitulo.textContent = "Editar cupón";
+      cuponCodigo.value = cupon.codigo;
+      cuponCodigo.disabled = true;
+      cuponCodigoNota.textContent = "El código no se puede cambiar — creá uno nuevo si necesitás otro.";
+      cuponTipo.value = cupon.discountType || "percentage";
+      cuponValor.value = cupon.value ?? "";
+      cuponVence.value = cupon.validUntil || "";
+      cuponLimite.value = cupon.usageLimit ?? "";
+      cuponActivo.checked = cupon.active !== false;
+    } else {
+      cuponEnEdicionCodigo = null;
+      modalCuponEyebrow.textContent = "NUEVO CUPÓN";
+      modalCuponTitulo.textContent = "Agregar cupón";
+      cuponCodigo.disabled = false;
+      cuponCodigoNota.textContent = "";
+      cuponTipo.value = "percentage";
+      cuponActivo.checked = true;
+    }
+
+    modalCupon.classList.remove("hidden-modal");
+    modalCupon.classList.add("flex");
+  }
+  function cerrarModalCupon() {
+    modalCupon.classList.add("hidden-modal");
+    modalCupon.classList.remove("flex");
+  }
+  document.getElementById("btn-agregar-cupon").addEventListener("click", () => abrirModalCupon(null));
+  modalCupon.querySelectorAll("[data-close-modal-cupon]").forEach((btn) => btn.addEventListener("click", cerrarModalCupon));
+  modalCupon.addEventListener("click", (e) => {
+    if (e.target === modalCupon) cerrarModalCupon();
+  });
+
+  formCupon.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const datos = {
+      discountType: cuponTipo.value,
+      value: Number(cuponValor.value) || 0,
+      validUntil: cuponVence.value,
+      usageLimit: Number(cuponLimite.value) || 1,
+      active: cuponActivo.checked
+    };
+
+    btnGuardarCupon.disabled = true;
+    btnGuardarCupon.textContent = "Guardando...";
+    cuponModalStatus.textContent = "";
+
+    try {
+      if (cuponEnEdicionCodigo) {
+        await updateDoc(doc(db, "cupones", cuponEnEdicionCodigo), datos);
+      } else {
+        const codigo = cuponCodigo.value.trim().toUpperCase();
+        if (!codigo) throw new Error("Código vacío");
+        datos.usedCount = 0;
+        await setDoc(doc(db, "cupones", codigo), datos);
+      }
+      cerrarModalCupon();
+    } catch (err) {
+      console.error(err);
+      cuponModalStatus.textContent = "No se pudo guardar. Revisá el código e intentá de nuevo.";
+    } finally {
+      btnGuardarCupon.disabled = false;
+      btnGuardarCupon.textContent = "Guardar";
+    }
+  });
+</script>
+</body>
+</html>
 
