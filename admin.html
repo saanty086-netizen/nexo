@@ -4,6 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NEXO STORE — Panel de administración</title>
+<link rel="icon" href="favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -57,8 +61,8 @@
 <div id="pantalla-login" class="min-h-screen flex items-center justify-center px-4 py-10">
   <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6">
     <div class="flex items-center gap-3 mb-6">
-      <div class="w-10 h-10 rounded-full border-2 border-violet flex items-center justify-center">
-        <span class="font-display font-bold text-cyan text-base">N</span>
+      <div class="w-10 h-10 rounded-full border-2 border-violet overflow-hidden shrink-0">
+        <img src="assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" loading="eager" />
       </div>
       <div>
         <p class="font-display font-bold text-base leading-none">NEXO</p>
@@ -122,8 +126,8 @@
 <header class="border-b border-line bg-panel px-5 md:px-8 py-4">
   <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-full border-2 border-violet flex items-center justify-center">
-        <span class="font-display font-bold text-cyan text-base">N</span>
+      <div class="w-10 h-10 rounded-full border-2 border-violet overflow-hidden shrink-0">
+        <img src="assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" loading="eager" />
       </div>
       <div>
         <p class="font-display font-bold text-base leading-none">NEXO</p>
@@ -183,8 +187,8 @@
     </button>
   </div>
 
-  <!-- ============ TABLA ============ -->
-  <div class="border border-line bg-panel clip-corner overflow-x-auto">
+  <!-- ============ TABLA (desktop) ============ -->
+  <div class="hidden md:block border border-line bg-panel clip-corner overflow-x-auto">
     <table class="w-full text-sm min-w-[900px]">
       <thead>
         <tr class="text-left text-[11px] text-mute border-b border-line">
@@ -200,8 +204,12 @@
       </thead>
       <tbody id="tabla-pedidos"></tbody>
     </table>
-    <p id="tabla-vacio" class="hidden-modal text-center text-mute text-sm py-10">No hay pedidos que coincidan con el filtro.</p>
   </div>
+
+  <!-- ============ TARJETAS (mobile) ============ -->
+  <div id="tarjetas-pedidos" class="md:hidden flex flex-col gap-2.5"></div>
+
+  <p id="tabla-vacio" class="hidden-modal text-center text-mute text-sm py-10">No hay pedidos que coincidan con el filtro.</p>
 </main>
 
 <!-- ============ SECCIÓN: PRODUCTOS ============ -->
@@ -221,8 +229,8 @@
   <input id="input-buscar-productos" type="text" placeholder="Buscar producto por nombre o categoría..."
     class="w-full sm:max-w-sm bg-panel2 border border-line px-3.5 py-2.5 text-sm mb-6 placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
 
-  <div class="border border-line bg-panel clip-corner overflow-x-auto">
-    <table class="w-full text-sm min-w-[820px]">
+  <div class="hidden md:block border border-line bg-panel clip-corner overflow-x-auto">
+    <table class="w-full text-sm min-w-[860px]">
       <thead>
         <tr class="text-left text-[11px] text-mute border-b border-line">
           <th class="px-4 py-3 font-medium">Producto</th>
@@ -231,13 +239,18 @@
           <th class="px-4 py-3 font-medium">Orden</th>
           <th class="px-4 py-3 font-medium">Visibilidad</th>
           <th class="px-4 py-3 font-medium">Stock</th>
+          <th class="px-4 py-3 font-medium">Proveedor</th>
           <th class="px-4 py-3 font-medium">Acciones</th>
         </tr>
       </thead>
       <tbody id="tabla-productos"></tbody>
     </table>
-    <p id="tabla-productos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste productos.</p>
   </div>
+
+  <!-- ============ TARJETAS (mobile) ============ -->
+  <div id="tarjetas-productos" class="md:hidden flex flex-col gap-2.5"></div>
+
+  <p id="tabla-productos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste productos.</p>
 </main>
 
 <!-- ============ SECCIÓN: VENCIMIENTOS ============ -->
@@ -254,7 +267,7 @@
     </button>
   </div>
 
-  <div class="border border-line bg-panel clip-corner overflow-x-auto">
+  <div class="hidden md:block border border-line bg-panel clip-corner overflow-x-auto">
     <table class="w-full text-sm min-w-[960px]">
       <thead>
         <tr class="text-left text-[11px] text-mute border-b border-line">
@@ -270,8 +283,12 @@
       </thead>
       <tbody id="tabla-vencimientos"></tbody>
     </table>
-    <p id="tabla-vencimientos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste clientes.</p>
   </div>
+
+  <!-- ============ TARJETAS (mobile) ============ -->
+  <div id="tarjetas-vencimientos" class="md:hidden flex flex-col gap-2.5"></div>
+
+  <p id="tabla-vencimientos-vacio" class="hidden-modal text-center text-mute text-sm py-10">Todavía no cargaste clientes.</p>
 </main>
 
 <!-- ============ SECCIÓN: FINANZAS ============ -->
@@ -712,6 +729,41 @@
   </tr>
 </template>
 
+<!-- ============ TEMPLATE: TARJETA PEDIDO (mobile) ============ -->
+<template id="tpl-tarjeta-pedido">
+  <div class="border border-line bg-panel clip-corner p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-display font-bold text-sm text-ink truncate" data-field="nombre"></p>
+        <p class="text-xs text-mute mt-0.5 truncate" data-field="servicio"></p>
+      </div>
+      <button data-field="pago-badge" class="shrink-0 text-[11px] font-semibold px-2.5 py-1.5 clip-corner border transition-colors"></button>
+    </div>
+
+    <div class="mt-3">
+      <select data-field="estado-select" class="estado-select w-full bg-panel2 border border-line px-2.5 py-2 text-xs focus:outline-none focus:border-cyan">
+        <option value="espera">En espera</option>
+        <option value="activo">Activo</option>
+        <option value="cancelado">Cancelado</option>
+      </select>
+    </div>
+
+    <div class="mt-3 flex items-center gap-2">
+      <button data-field="btn-chat" class="flex-1 text-[11px] text-cyan border border-cyan/40 py-2 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
+      <button data-field="btn-ver-mas" class="flex-1 text-[11px] text-mute border border-line py-2 hover:border-violet2 hover:text-violet2 transition-colors">Ver más ▾</button>
+    </div>
+
+    <div data-field="detalle" class="hidden-modal mt-3 pt-3 border-t border-line flex flex-col gap-2">
+      <p class="text-[11px] text-mute" data-field="fecha"></p>
+      <p class="text-xs text-mute" data-field="telefono"></p>
+      <div class="flex items-center gap-2 mt-1">
+        <button data-field="btn-editar" class="flex-1 text-[11px] text-violet2 border border-violet/40 py-2 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+        <button data-field="btn-eliminar" class="flex-1 text-[11px] text-bad border border-bad/40 py-2 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</template>
+
 <!-- ============ TEMPLATE: FILA PRODUCTO ============ -->
 <template id="tpl-fila-producto">
   <tr class="hover:bg-panel2/60 transition-colors align-middle">
@@ -729,12 +781,50 @@
       <button data-field="btn-stock" class="toggle-btn"></button>
     </td>
     <td class="px-4 py-3">
+      <a data-field="btn-proveedor" target="_blank" rel="noopener noreferrer"
+        class="text-[11px] text-cyan border border-cyan/40 px-2.5 py-1.5 hover:bg-cyan hover:text-bg transition-colors whitespace-nowrap inline-block">🔗 Ver proveedor</a>
+      <span data-field="sin-proveedor" class="text-[11px] text-mute/60">—</span>
+    </td>
+    <td class="px-4 py-3">
       <div class="flex items-center gap-2 whitespace-nowrap">
         <button data-field="btn-editar-producto" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Editar</button>
         <button data-field="btn-eliminar-producto" class="text-[11px] text-bad border border-bad/40 px-2.5 py-1.5 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
       </div>
     </td>
   </tr>
+</template>
+
+<!-- ============ TEMPLATE: TARJETA PRODUCTO (mobile) ============ -->
+<template id="tpl-tarjeta-producto">
+  <div class="border border-line bg-panel clip-corner p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-display font-bold text-sm text-ink truncate" data-field="nombre"></p>
+        <p class="text-xs text-mute mt-0.5" data-field="categoria"></p>
+      </div>
+      <p class="shrink-0 text-cyan font-display font-bold text-sm" data-field="precio"></p>
+    </div>
+
+    <div class="mt-3 flex items-center gap-2">
+      <a data-field="btn-proveedor" target="_blank" rel="noopener noreferrer"
+        class="hidden-modal flex-1 text-center text-[11px] text-cyan border border-cyan/40 py-2 hover:bg-cyan hover:text-bg transition-colors">🔗 Ver proveedor</a>
+      <button data-field="btn-ver-mas" class="flex-1 text-[11px] text-mute border border-line py-2 hover:border-violet2 hover:text-violet2 transition-colors">Ver más ▾</button>
+    </div>
+
+    <div data-field="detalle" class="hidden-modal mt-3 pt-3 border-t border-line flex flex-col gap-2.5">
+      <div class="flex items-center gap-2">
+        <label class="text-[11px] text-mute shrink-0">Orden</label>
+        <input data-field="input-orden" type="number" step="1"
+          class="w-16 bg-panel2 border border-line px-2 py-1.5 text-xs text-ink focus:outline-none focus:border-cyan" />
+        <button data-field="btn-visible" class="toggle-btn"></button>
+        <button data-field="btn-stock" class="toggle-btn"></button>
+      </div>
+      <div class="flex items-center gap-2">
+        <button data-field="btn-editar-producto" class="flex-1 text-[11px] text-violet2 border border-violet/40 py-2 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+        <button data-field="btn-eliminar-producto" class="flex-1 text-[11px] text-bad border border-bad/40 py-2 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <!-- ============ TEMPLATE: FILA VENCIMIENTO ============ -->
@@ -759,6 +849,36 @@
   </tr>
 </template>
 
+<!-- ============ TEMPLATE: TARJETA VENCIMIENTO (mobile) ============ -->
+<template id="tpl-tarjeta-vencimiento">
+  <div class="border border-line bg-panel clip-corner p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-display font-bold text-sm text-ink truncate" data-field="nombre"></p>
+        <p class="text-xs text-mute mt-0.5 truncate" data-field="cuenta"></p>
+      </div>
+      <span data-field="badge-estado" class="shrink-0 text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap"></span>
+    </div>
+
+    <p class="text-[11px] text-mute mt-2" data-field="vencimiento"></p>
+
+    <div class="mt-3 flex items-center gap-2">
+      <button data-field="btn-chat" class="flex-1 text-[11px] text-cyan border border-cyan/40 py-2 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
+      <button data-field="btn-ver-mas" class="flex-1 text-[11px] text-mute border border-line py-2 hover:border-violet2 hover:text-violet2 transition-colors">Ver más ▾</button>
+    </div>
+
+    <div data-field="detalle" class="hidden-modal mt-3 pt-3 border-t border-line flex flex-col gap-2">
+      <p class="text-xs text-mute" data-field="telefono"></p>
+      <p class="text-xs text-mute" data-field="correo"></p>
+      <p class="text-xs font-mono text-mute" data-field="password"></p>
+      <div class="flex items-center gap-2 mt-1">
+        <button data-field="btn-editar-vencimiento" class="flex-1 text-[11px] text-violet2 border border-violet/40 py-2 hover:bg-violet hover:text-bg transition-colors">Editar</button>
+        <button data-field="btn-eliminar-vencimiento" class="flex-1 text-[11px] text-bad border border-bad/40 py-2 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</template>
+
 <!-- ============ TEMPLATE: FILA PEDIDO PENDIENTE DE COMPLETAR (Vencimientos) ============ -->
 <template id="tpl-fila-pendiente">
   <tr class="hover:bg-panel2/60 transition-colors align-middle opacity-90">
@@ -777,6 +897,23 @@
       </div>
     </td>
   </tr>
+</template>
+
+<!-- ============ TEMPLATE: TARJETA PEDIDO PENDIENTE (mobile, Vencimientos) ============ -->
+<template id="tpl-tarjeta-pendiente">
+  <div class="border border-line bg-panel clip-corner p-4 opacity-90">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-display font-bold text-sm text-ink truncate" data-field="nombre"></p>
+        <p class="text-xs text-mute mt-0.5 truncate" data-field="cuenta"></p>
+      </div>
+      <span class="shrink-0 text-[11px] font-semibold px-2.5 py-1.5 clip-corner border whitespace-nowrap bg-panel2 border-line text-mute">Pedido nuevo</span>
+    </div>
+    <div class="mt-3 flex items-center gap-2">
+      <button data-field="btn-chat" class="flex-1 text-[11px] text-cyan border border-cyan/40 py-2 hover:bg-cyan hover:text-bg transition-colors">Chat</button>
+      <button data-field="btn-completar" class="flex-1 text-[11px] text-violet2 border border-violet/40 py-2 hover:bg-violet hover:text-bg transition-colors">Completar datos</button>
+    </div>
+  </div>
 </template>
 
 <!-- ============ MODAL: AGREGAR / EDITAR CLIENTE ============ -->
@@ -873,6 +1010,13 @@
         <label class="text-xs text-mute block mb-1.5">Imagen (URL o ruta local, opcional)</label>
         <p class="text-[10px] text-mute/70 -mt-1 mb-1">Ej: https://... o assets/netflix.png (si subiste la imagen a esa carpeta del repo)</p>
         <input id="producto-imagen" type="text" placeholder="https://... o assets/netflix.png"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Enlace del proveedor (opcional)</label>
+        <p class="text-[10px] text-mute/70 -mt-1 mb-1">Sitio donde comprás este producto. Aparece como botón "Ver proveedor" para acceder rápido a la compra.</p>
+        <input id="producto-proveedor" type="url" placeholder="https://proveedor.com/producto"
           class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
       </div>
 
@@ -1223,9 +1367,13 @@
       : "text-[11px] font-semibold px-2.5 py-1.5 clip-corner border transition-colors bg-warn/10 border-warn/50 text-warn";
   }
 
+  const tarjetasPedidos = document.getElementById("tarjetas-pedidos");
+  const tplTarjetaPedido = document.getElementById("tpl-tarjeta-pedido");
+
   function renderTabla() {
     const lista = pedidosFiltrados();
     tabla.innerHTML = "";
+    tarjetasPedidos.innerHTML = "";
 
     if (lista.length === 0) {
       tablaVacio.classList.remove("hidden-modal");
@@ -1234,6 +1382,17 @@
     }
 
     lista.forEach((pedido, index) => {
+      const mensajeChat = `Hola ${pedido.nombre || ""}! Te escribimos por tu pedido de ${pedido.servicio || "tu servicio"} en NEXO.`;
+      const telefonoLimpio = (pedido.telefono || "").replace(/[^0-9]/g, "");
+      const irAlChat = () => window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensajeChat)}`, "_blank");
+      const eliminarPedido = async () => {
+        const confirmar = window.confirm(`¿Eliminar el pedido de ${pedido.nombre || "este cliente"}? Esta acción no se puede deshacer.`);
+        if (confirmar) {
+          await deleteDoc(doc(db, "pedidos_nexo", pedido.id));
+        }
+      };
+
+      // ---- Fila desktop ----
       const nodo = tpl.content.cloneNode(true);
 
       nodo.querySelector('[data-field="indice"]').textContent = index + 1;
@@ -1254,24 +1413,38 @@
         await updateDoc(doc(db, "pedidos_nexo", pedido.id), { pagado: !pedido.pagado });
       });
 
-      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", () => {
-        const mensaje = `Hola ${pedido.nombre || ""}! Te escribimos por tu pedido de ${pedido.servicio || "tu servicio"} en NEXO.`;
-        const telefonoLimpio = (pedido.telefono || "").replace(/[^0-9]/g, "");
-        window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
-      });
-
-      nodo.querySelector('[data-field="btn-editar"]').addEventListener("click", () => {
-        abrirModalCliente(pedido);
-      });
-
-      nodo.querySelector('[data-field="btn-eliminar"]').addEventListener("click", async () => {
-        const confirmar = window.confirm(`¿Eliminar el pedido de ${pedido.nombre || "este cliente"}? Esta acción no se puede deshacer.`);
-        if (confirmar) {
-          await deleteDoc(doc(db, "pedidos_nexo", pedido.id));
-        }
-      });
+      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", irAlChat);
+      nodo.querySelector('[data-field="btn-editar"]').addEventListener("click", () => abrirModalCliente(pedido));
+      nodo.querySelector('[data-field="btn-eliminar"]').addEventListener("click", eliminarPedido);
 
       tabla.appendChild(nodo);
+
+      // ---- Tarjeta mobile ----
+      const tarjeta = tplTarjetaPedido.content.cloneNode(true);
+
+      tarjeta.querySelector('[data-field="nombre"]').textContent = pedido.nombre || "—";
+      tarjeta.querySelector('[data-field="servicio"]').textContent = pedido.servicio || "—";
+      tarjeta.querySelector('[data-field="fecha"]').textContent = "Llegó: " + formatearFecha(pedido.fecha);
+      tarjeta.querySelector('[data-field="telefono"]').textContent = "Tel: " + (pedido.telefono || "—");
+
+      const pagoBtnT = tarjeta.querySelector('[data-field="pago-badge"]');
+      pintarBadgePago(pagoBtnT, !!pedido.pagado);
+      pagoBtnT.addEventListener("click", async () => {
+        await updateDoc(doc(db, "pedidos_nexo", pedido.id), { pagado: !pedido.pagado });
+      });
+
+      const estadoSelectT = tarjeta.querySelector('[data-field="estado-select"]');
+      estadoSelectT.value = pedido.estado || "espera";
+      estadoSelectT.addEventListener("change", async () => {
+        await updateDoc(doc(db, "pedidos_nexo", pedido.id), { estado: estadoSelectT.value });
+      });
+
+      tarjeta.querySelector('[data-field="btn-chat"]').addEventListener("click", irAlChat);
+      activarVerMas(tarjeta.querySelector('[data-field="btn-ver-mas"]'), tarjeta.querySelector('[data-field="detalle"]'));
+      tarjeta.querySelector('[data-field="btn-editar"]').addEventListener("click", () => abrirModalCliente(pedido));
+      tarjeta.querySelector('[data-field="btn-eliminar"]').addEventListener("click", eliminarPedido);
+
+      tarjetasPedidos.appendChild(tarjeta);
     });
   }
 
@@ -1410,8 +1583,21 @@
     btn.className = "toggle-btn " + (activo ? "toggle-on" : "toggle-off");
   }
 
+  // Helper genérico para el botón "Ver más / Ver menos" de las tarjetas mobile
+  function activarVerMas(btnVerMas, detalle) {
+    btnVerMas.addEventListener("click", () => {
+      const abierto = detalle.classList.contains("hidden-modal");
+      detalle.classList.toggle("hidden-modal", !abierto);
+      btnVerMas.textContent = abierto ? "Ver menos ▴" : "Ver más ▾";
+    });
+  }
+
+  const tarjetasProductos = document.getElementById("tarjetas-productos");
+  const tplTarjetaProducto = document.getElementById("tpl-tarjeta-producto");
+
   function renderTablaProductos() {
     tablaProductos.innerHTML = "";
+    tarjetasProductos.innerHTML = "";
 
     const lista = productosFiltrados();
 
@@ -1424,6 +1610,18 @@
     }
 
     lista.forEach((producto) => {
+      const visible = producto.visible !== false; // por defecto visible si no está definido
+      const hayStock = producto.hayStock !== false; // por defecto con stock si no está definido
+      const tieneProveedor = !!(producto.proveedor && producto.proveedor.trim());
+
+      const eliminarProducto = async () => {
+        const confirmar = window.confirm(`¿Eliminar "${producto.nombre || "este producto"}"? Esta acción no se puede deshacer.`);
+        if (confirmar) {
+          await deleteDoc(doc(db, "productos", producto.id));
+        }
+      };
+
+      // ---- Fila desktop ----
       const nodo = tplProducto.content.cloneNode(true);
 
       nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre || "—";
@@ -1435,9 +1633,6 @@
       inputOrden.addEventListener("change", async () => {
         await updateDoc(doc(db, "productos", producto.id), { orden: Number(inputOrden.value) || 0 });
       });
-
-      const visible = producto.visible !== false; // por defecto visible si no está definido
-      const hayStock = producto.hayStock !== false; // por defecto con stock si no está definido
 
       const btnVisible = nodo.querySelector('[data-field="btn-visible"]');
       pintarToggle(btnVisible, visible, "Visible", "Oculto");
@@ -1451,18 +1646,60 @@
         await updateDoc(doc(db, "productos", producto.id), { hayStock: !hayStock });
       });
 
+      const btnProveedor = nodo.querySelector('[data-field="btn-proveedor"]');
+      const sinProveedor = nodo.querySelector('[data-field="sin-proveedor"]');
+      if (tieneProveedor) {
+        btnProveedor.href = producto.proveedor.trim();
+        btnProveedor.classList.remove("hidden-modal");
+        sinProveedor.classList.add("hidden-modal");
+      } else {
+        btnProveedor.classList.add("hidden-modal");
+        sinProveedor.classList.remove("hidden-modal");
+      }
+
       nodo.querySelector('[data-field="btn-editar-producto"]').addEventListener("click", () => {
         abrirModalProducto(producto);
       });
-
-      nodo.querySelector('[data-field="btn-eliminar-producto"]').addEventListener("click", async () => {
-        const confirmar = window.confirm(`¿Eliminar "${producto.nombre || "este producto"}"? Esta acción no se puede deshacer.`);
-        if (confirmar) {
-          await deleteDoc(doc(db, "productos", producto.id));
-        }
-      });
+      nodo.querySelector('[data-field="btn-eliminar-producto"]').addEventListener("click", eliminarProducto);
 
       tablaProductos.appendChild(nodo);
+
+      // ---- Tarjeta mobile ----
+      const tarjeta = tplTarjetaProducto.content.cloneNode(true);
+
+      tarjeta.querySelector('[data-field="nombre"]').textContent = producto.nombre || "—";
+      tarjeta.querySelector('[data-field="categoria"]').textContent = CATEGORIA_LABEL[producto.categoria] || producto.categoria || "—";
+      tarjeta.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
+
+      const btnProveedorT = tarjeta.querySelector('[data-field="btn-proveedor"]');
+      if (tieneProveedor) {
+        btnProveedorT.href = producto.proveedor.trim();
+        btnProveedorT.classList.remove("hidden-modal");
+      }
+
+      const inputOrdenT = tarjeta.querySelector('[data-field="input-orden"]');
+      inputOrdenT.value = producto.orden ?? 0;
+      inputOrdenT.addEventListener("change", async () => {
+        await updateDoc(doc(db, "productos", producto.id), { orden: Number(inputOrdenT.value) || 0 });
+      });
+
+      const btnVisibleT = tarjeta.querySelector('[data-field="btn-visible"]');
+      pintarToggle(btnVisibleT, visible, "Visible", "Oculto");
+      btnVisibleT.addEventListener("click", async () => {
+        await updateDoc(doc(db, "productos", producto.id), { visible: !visible });
+      });
+
+      const btnStockT = tarjeta.querySelector('[data-field="btn-stock"]');
+      pintarToggle(btnStockT, hayStock, "Con stock", "Sin stock");
+      btnStockT.addEventListener("click", async () => {
+        await updateDoc(doc(db, "productos", producto.id), { hayStock: !hayStock });
+      });
+
+      activarVerMas(tarjeta.querySelector('[data-field="btn-ver-mas"]'), tarjeta.querySelector('[data-field="detalle"]'));
+      tarjeta.querySelector('[data-field="btn-editar-producto"]').addEventListener("click", () => abrirModalProducto(producto));
+      tarjeta.querySelector('[data-field="btn-eliminar-producto"]').addEventListener("click", eliminarProducto);
+
+      tarjetasProductos.appendChild(tarjeta);
     });
   }
 
@@ -1479,6 +1716,7 @@
   const productoDescripcion = document.getElementById("producto-descripcion");
   const productoCaracteristicas = document.getElementById("producto-caracteristicas");
   const productoImagen = document.getElementById("producto-imagen");
+  const productoProveedor = document.getElementById("producto-proveedor");
   const productoOrden = document.getElementById("producto-orden");
   const productoVisible = document.getElementById("producto-visible");
   const productoStock = document.getElementById("producto-stock");
@@ -1503,6 +1741,7 @@
       productoDescripcion.value = producto.descripcion || "";
       productoCaracteristicas.value = Array.isArray(producto.caracteristicas) ? producto.caracteristicas.join("\n") : "";
       productoImagen.value = producto.imagen || "";
+      productoProveedor.value = producto.proveedor || "";
       productoOrden.value = producto.orden ?? 0;
       productoVisible.checked = producto.visible !== false;
       productoStock.checked = producto.hayStock !== false;
@@ -1545,6 +1784,7 @@
       descripcion: productoDescripcion.value.trim(),
       caracteristicas,
       imagen: productoImagen.value.trim(),
+      proveedor: productoProveedor.value.trim(),
       orden: Number(productoOrden.value) || 0,
       visible: productoVisible.checked,
       hayStock: productoStock.checked
@@ -1619,8 +1859,12 @@
     }
   }
 
+  const tarjetasVencimientos = document.getElementById("tarjetas-vencimientos");
+  const tplTarjetaVencimiento = document.getElementById("tpl-tarjeta-vencimiento");
+
   function renderTablaVencimientos() {
     tablaVencimientos.innerHTML = "";
+    tarjetasVencimientos.innerHTML = "";
 
     const idsConvertidos = new Set(clientesCache.filter((c) => c.pedidoId).map((c) => c.pedidoId));
     const pendientes = pedidosCache.filter(
@@ -1634,19 +1878,8 @@
     }
 
     clientesCache.forEach((cliente) => {
-      const nodo = tplVencimiento.content.cloneNode(true);
-
-      nodo.querySelector('[data-field="nombre"]').textContent = cliente.nombre || "—";
-      nodo.querySelector('[data-field="telefono"]').textContent = cliente.telefono || "—";
-      nodo.querySelector('[data-field="cuenta"]').textContent = cliente.cuenta || "—";
-      nodo.querySelector('[data-field="correo"]').textContent = cliente.correo || "—";
-      nodo.querySelector('[data-field="password"]').textContent = cliente.password || "—";
-      nodo.querySelector('[data-field="vencimiento"]').textContent = formatearFechaSimple(cliente.fechaVencimiento);
-
       const dias = diasRestantes(cliente.fechaVencimiento);
-      pintarBadgeEstadoVencimiento(nodo.querySelector('[data-field="badge-estado"]'), dias);
-
-      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", () => {
+      const irAlChat = () => {
         const mensaje =
           `Hola ${cliente.nombre || ""}! Te avisamos que tu servicio de ${cliente.cuenta || "tu cuenta"} ` +
           `va a vencer el día ${formatearFechaSimple(cliente.fechaVencimiento)}. ` +
@@ -1657,33 +1890,58 @@
           return;
         }
         window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
-      });
-
-      nodo.querySelector('[data-field="btn-editar-vencimiento"]').addEventListener("click", () => {
-        abrirModalVencimiento(cliente);
-      });
-
-      nodo.querySelector('[data-field="btn-eliminar-vencimiento"]').addEventListener("click", async () => {
+      };
+      const eliminarCliente = async () => {
         const confirmar = window.confirm(`¿Eliminar a "${cliente.nombre || "este cliente"}"? Esta acción no se puede deshacer.`);
         if (confirmar) {
           await deleteDoc(doc(db, "clientes", cliente.id));
         }
-      });
+      };
+
+      // ---- Fila desktop ----
+      const nodo = tplVencimiento.content.cloneNode(true);
+
+      nodo.querySelector('[data-field="nombre"]').textContent = cliente.nombre || "—";
+      nodo.querySelector('[data-field="telefono"]').textContent = cliente.telefono || "—";
+      nodo.querySelector('[data-field="cuenta"]').textContent = cliente.cuenta || "—";
+      nodo.querySelector('[data-field="correo"]').textContent = cliente.correo || "—";
+      nodo.querySelector('[data-field="password"]').textContent = cliente.password || "—";
+      nodo.querySelector('[data-field="vencimiento"]').textContent = formatearFechaSimple(cliente.fechaVencimiento);
+
+      pintarBadgeEstadoVencimiento(nodo.querySelector('[data-field="badge-estado"]'), dias);
+
+      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", irAlChat);
+      nodo.querySelector('[data-field="btn-editar-vencimiento"]').addEventListener("click", () => abrirModalVencimiento(cliente));
+      nodo.querySelector('[data-field="btn-eliminar-vencimiento"]').addEventListener("click", eliminarCliente);
 
       tablaVencimientos.appendChild(nodo);
+
+      // ---- Tarjeta mobile ----
+      const tarjeta = tplTarjetaVencimiento.content.cloneNode(true);
+
+      tarjeta.querySelector('[data-field="nombre"]').textContent = cliente.nombre || "—";
+      tarjeta.querySelector('[data-field="cuenta"]').textContent = cliente.cuenta || "—";
+      tarjeta.querySelector('[data-field="vencimiento"]').textContent = "Vence: " + formatearFechaSimple(cliente.fechaVencimiento);
+      tarjeta.querySelector('[data-field="telefono"]').textContent = "WhatsApp: " + (cliente.telefono || "—");
+      tarjeta.querySelector('[data-field="correo"]').textContent = "Correo: " + (cliente.correo || "—");
+      tarjeta.querySelector('[data-field="password"]').textContent = "Contraseña: " + (cliente.password || "—");
+
+      pintarBadgeEstadoVencimiento(tarjeta.querySelector('[data-field="badge-estado"]'), dias);
+
+      tarjeta.querySelector('[data-field="btn-chat"]').addEventListener("click", irAlChat);
+      activarVerMas(tarjeta.querySelector('[data-field="btn-ver-mas"]'), tarjeta.querySelector('[data-field="detalle"]'));
+      tarjeta.querySelector('[data-field="btn-editar-vencimiento"]').addEventListener("click", () => abrirModalVencimiento(cliente));
+      tarjeta.querySelector('[data-field="btn-eliminar-vencimiento"]').addEventListener("click", eliminarCliente);
+
+      tarjetasVencimientos.appendChild(tarjeta);
     });
 
     // Pedidos que todavía no tienen ficha de cliente/vencimiento cargada:
     // aparecen solos acá para que se les complete correo, contraseña y fecha límite.
     const tplPendiente = document.getElementById("tpl-fila-pendiente");
+    const tplTarjetaPendiente = document.getElementById("tpl-tarjeta-pendiente");
     pendientes.forEach((pedido) => {
-      const nodo = tplPendiente.content.cloneNode(true);
-
-      nodo.querySelector('[data-field="nombre"]').textContent = pedido.nombre || "—";
-      nodo.querySelector('[data-field="telefono"]').textContent = pedido.telefono || "—";
-      nodo.querySelector('[data-field="cuenta"]').textContent = pedido.servicio || "—";
-
-      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", () => {
+      const irAlChatPendiente = () => {
         const telefonoLimpio = (pedido.telefono || "").replace(/[^0-9]/g, "");
         if (!telefonoLimpio) {
           alert("Este pedido todavía no tiene WhatsApp cargado. Usá 'Completar datos' para agregarlo.");
@@ -1691,7 +1949,36 @@
         }
         const mensaje = `Hola ${pedido.nombre || ""}! Te escribimos por tu pedido de ${pedido.servicio || "tu servicio"} en NEXO.`;
         window.open(`https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`, "_blank");
+      };
+
+      // ---- Tarjeta mobile (pendiente) ----
+      const tarjetaPendiente = tplTarjetaPendiente.content.cloneNode(true);
+      tarjetaPendiente.querySelector('[data-field="nombre"]').textContent = pedido.nombre || "—";
+      tarjetaPendiente.querySelector('[data-field="cuenta"]').textContent = pedido.servicio || "—";
+      tarjetaPendiente.querySelector('[data-field="btn-chat"]').addEventListener("click", irAlChatPendiente);
+      tarjetaPendiente.querySelector('[data-field="btn-completar"]').addEventListener("click", () => {
+        abrirModalVencimiento(
+          {
+            nombre: pedido.nombre || "",
+            telefono: pedido.telefono || "",
+            cuenta: pedido.servicio || "",
+            correo: "",
+            password: "",
+            fechaVencimiento: ""
+          },
+          pedido.id
+        );
       });
+      tarjetasVencimientos.appendChild(tarjetaPendiente);
+
+      // ---- Fila desktop (pendiente) ----
+      const nodo = tplPendiente.content.cloneNode(true);
+
+      nodo.querySelector('[data-field="nombre"]').textContent = pedido.nombre || "—";
+      nodo.querySelector('[data-field="telefono"]').textContent = pedido.telefono || "—";
+      nodo.querySelector('[data-field="cuenta"]').textContent = pedido.servicio || "—";
+
+      nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", irAlChatPendiente);
 
       nodo.querySelector('[data-field="btn-completar"]').addEventListener("click", () => {
         abrirModalVencimiento(

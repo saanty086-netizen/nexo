@@ -4,6 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NEXO STORE — Streaming y seguidores</title>
+<link rel="icon" href="favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -172,8 +176,8 @@
   <!-- ============ SIDEBAR (desktop) ============ -->
   <aside class="hidden md:flex md:flex-col md:w-64 shrink-0 border-r border-line bg-panel px-6 py-8">
     <div class="flex items-center gap-3 mb-10">
-      <div class="w-11 h-11 rounded-full border-2 border-violet flex items-center justify-center glow-border">
-        <span class="font-display font-bold text-cyan text-lg">N</span>
+      <div class="w-11 h-11 rounded-full border-2 border-violet overflow-hidden glow-border shrink-0">
+        <img src="assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="44" height="44" loading="eager" />
       </div>
       <div>
         <p class="font-display font-bold text-lg leading-none tracking-wide">NEXO</p>
@@ -196,8 +200,8 @@
   <!-- ============ TOPBAR fijo (mobile) ============ -->
   <header class="md:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center justify-between px-4 bg-[#08050f]/95 backdrop-blur border-b border-line">
     <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-full border-2 border-violet flex items-center justify-center shrink-0">
-        <span class="font-display font-bold text-cyan text-xs">N</span>
+      <div class="w-8 h-8 rounded-full border-2 border-violet overflow-hidden shrink-0">
+        <img src="assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="32" height="32" loading="eager" />
       </div>
       <span class="font-display font-bold text-sm tracking-wide">NEXO STORE</span>
     </div>
@@ -269,6 +273,14 @@
         </div>
       </section>
 
+      <footer class="mt-10 pt-6 border-t border-line pb-24 md:pb-6">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-mute/70">
+          <span>© NEXO STORE</span>
+          <a href="legal.html#terminos" class="hover:text-cyan transition-colors">Términos y condiciones</a>
+          <a href="legal.html#privacidad" class="hover:text-cyan transition-colors">Privacidad</a>
+        </div>
+      </footer>
+
     </div>
   </main>
 </div>
@@ -325,6 +337,15 @@
 
         <p id="pedido-status" class="text-xs text-mute min-h-[1rem]"></p>
 
+        <label class="flex items-start gap-2.5 text-xs text-mute leading-relaxed cursor-pointer select-none">
+          <input required id="input-acepta-terminos" type="checkbox"
+            class="mt-0.5 w-4 h-4 shrink-0 accent-violet cursor-pointer" />
+          <span>
+            Leí y acepto los
+            <a href="legal.html#terminos" target="_blank" class="text-cyan hover:underline">Términos y condiciones</a>.
+          </span>
+        </label>
+
         <button type="submit" id="btn-confirmar"
           class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-4 sm:py-3 mt-1 hover:opacity-90 transition-opacity">
           Confirmar y abrir WhatsApp
@@ -341,8 +362,8 @@
     <div class="pack-card__media" data-field="imagen-wrap">
       <img data-field="imagen" class="hidden-modal absolute inset-0 w-full h-full object-cover" />
       <div data-field="imagen-fallback" class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-violet/25 via-panel2 to-cyan/10">
-        <div class="w-10 h-10 rounded-full border-2 border-violet/70 flex items-center justify-center">
-          <span class="font-display font-bold text-cyan text-sm">N</span>
+        <div class="w-12 h-12 rounded-full border-2 border-violet/70 overflow-hidden">
+          <img src="assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="48" height="48" loading="lazy" />
         </div>
       </div>
     </div>
@@ -685,6 +706,7 @@
   const inputLinkCuenta = document.getElementById("input-link-cuenta");
   const pedidoStatus = document.getElementById("pedido-status");
   const btnConfirmar = document.getElementById("btn-confirmar");
+  const inputAceptaTerminos = document.getElementById("input-acepta-terminos");
   const inputCodigoDescuento = document.getElementById("codigoDescuento");
   const btnAplicarDescuento = document.getElementById("btn-aplicar-descuento");
   const descuentoStatus = document.getElementById("descuento-status");
@@ -840,6 +862,11 @@
       return;
     }
 
+    if (!inputAceptaTerminos.checked) {
+      pedidoStatus.textContent = "Tenés que aceptar los Términos y condiciones para continuar.";
+      return;
+    }
+
     btnConfirmar.disabled = true;
     btnConfirmar.textContent = "Guardando...";
     pedidoStatus.textContent = "";
@@ -906,6 +933,35 @@
     const url = `https://wa.me/${WHATSAPP_NEXO}?text=${encodeURIComponent(mensaje)}`;
     window.location.href = url;
   });
+</script>
+
+<!-- ============ AVISO DE COOKIES (mini) ============ -->
+<div id="cookie-banner" class="hidden-modal fixed inset-x-0 bottom-0 z-[60] p-3 md:p-4">
+  <div class="glass border border-line max-w-2xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3 clip-corner">
+    <p class="text-[11px] text-mute leading-relaxed flex-1">
+      Usamos cookies básicas para que el sitio funcione bien y para estadísticas de uso.
+      <a href="legal.html#privacidad" class="text-cyan hover:underline">Más info</a>.
+    </p>
+    <button id="btn-cookie-ok"
+      class="shrink-0 text-[11px] font-display font-semibold px-4 py-2 border border-violet text-violet2 hover:bg-violet hover:text-bg transition-colors">
+      Entendido
+    </button>
+  </div>
+</div>
+<script>
+  (function () {
+    const KEY = "nexo_cookies_ok";
+    const banner = document.getElementById("cookie-banner");
+    const btn = document.getElementById("btn-cookie-ok");
+    if (!banner || !btn) return;
+    if (!localStorage.getItem(KEY)) {
+      banner.classList.remove("hidden-modal");
+    }
+    btn.addEventListener("click", () => {
+      localStorage.setItem(KEY, "1");
+      banner.classList.add("hidden-modal");
+    });
+  })();
 </script>
 </body>
 </html>
