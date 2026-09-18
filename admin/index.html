@@ -452,7 +452,7 @@
   <div class="max-w-md">
     <p class="text-mute text-xs mb-6 leading-relaxed">
       Definí acá el código de descuento que los clientes pueden ingresar al hacer un pedido en la tienda,
-      junto con el porcentaje que se les aplica. Podés desactivarlo cuando quieras sin perder los datos cargados.
+      junto con el porcentaje o el monto fijo que se les aplica. Podés desactivarlo cuando quieras sin perder los datos cargados.
     </p>
 
     <div class="border border-line bg-panel clip-corner p-6">
@@ -472,10 +472,20 @@
             <option value="todos">Todos los productos</option>
           </select>
         </div>
-        <div>
-          <label class="text-xs text-mute block mb-1.5">Porcentaje de descuento</label>
-          <input id="descuento-porcentaje" type="number" min="0" max="100" step="1" placeholder="10"
-            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-mute block mb-1.5">Tipo</label>
+            <select id="descuento-tipo"
+              class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+              <option value="percentage">Porcentaje</option>
+              <option value="fixed">Monto fijo</option>
+            </select>
+          </div>
+          <div>
+            <label id="descuento-valor-label" class="text-xs text-mute block mb-1.5">Porcentaje de descuento</label>
+            <input id="descuento-valor" type="number" min="0" step="0.01" placeholder="10"
+              class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+          </div>
         </div>
         <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
           <input id="descuento-activo" type="checkbox" class="w-4 h-4 accent-violet" />
@@ -2082,17 +2092,36 @@
 
   // -----------------------------
   // FINANZAS: código de descuento global de la tienda.
-  // Se guarda en configuracion/descuento -> { codigo, porcentaje, activo }.
+  // Se guarda en configuracion/descuento -> { codigo, tipo, valor, porcentaje, activo }.
+  // "tipo" es "percentage" (valor en %) o "fixed" (valor en pesos, descontado tal cual).
+  // "porcentaje" se mantiene en espejo de "valor" solo cuando tipo es "percentage",
+  // para no romper integraciones viejas que todavía lean ese campo.
   // -----------------------------
   const formDescuento = document.getElementById("form-descuento");
   const descuentoCodigo = document.getElementById("descuento-codigo");
   const descuentoProducto = document.getElementById("descuento-producto");
-  const descuentoPorcentaje = document.getElementById("descuento-porcentaje");
+  const descuentoTipo = document.getElementById("descuento-tipo");
+  const descuentoValor = document.getElementById("descuento-valor");
+  const descuentoValorLabel = document.getElementById("descuento-valor-label");
   const descuentoActivoCheckbox = document.getElementById("descuento-activo");
   const descuentoConfigStatus = document.getElementById("descuento-config-status");
   const btnGuardarDescuento = document.getElementById("btn-guardar-descuento");
 
   let descuentoProductoActual = "todos";
+
+  function actualizarCamposValorDescuento() {
+    const esFijo = descuentoTipo.value === "fixed";
+    descuentoValorLabel.textContent = esFijo ? "Monto fijo de descuento (ARS)" : "Porcentaje de descuento";
+    descuentoValor.placeholder = esFijo ? "1500" : "10";
+    if (esFijo) {
+      descuentoValor.removeAttribute("max");
+    } else {
+      descuentoValor.setAttribute("max", "100");
+    }
+  }
+
+  descuentoTipo.addEventListener("change", actualizarCamposValorDescuento);
+  actualizarCamposValorDescuento();
 
   function aplicarSeleccionProductoDescuento() {
     const existe = Array.from(descuentoProducto.options).some((o) => o.value === descuentoProductoActual);
@@ -2115,10 +2144,12 @@
     onSnapshot(configuracionRef, (snap) => {
       const data = snap.exists() ? snap.data() : {};
       descuentoCodigo.value = data.codigo || "";
-      descuentoPorcentaje.value = data.porcentaje ?? "";
+      descuentoTipo.value = data.tipo === "fixed" ? "fixed" : "percentage";
+      descuentoValor.value = data.valor ?? data.porcentaje ?? "";
       descuentoActivoCheckbox.checked = data.activo === true;
       descuentoProductoActual = data.productoId || "todos";
       aplicarSeleccionProductoDescuento();
+      actualizarCamposValorDescuento();
     });
   }
 
@@ -2131,11 +2162,18 @@
         ? ""
         : descuentoProducto.options[descuentoProducto.selectedIndex].textContent;
 
+    const tipoSeleccionado = descuentoTipo.value === "fixed" ? "fixed" : "percentage";
+    const valorSeleccionado = Number(descuentoValor.value) || 0;
+
     const datos = {
       codigo: descuentoCodigo.value.trim().toUpperCase(),
       productoId: productoIdSeleccionado,
       productoNombre: productoNombreSeleccionado,
-      porcentaje: Number(descuentoPorcentaje.value) || 0,
+      tipo: tipoSeleccionado,
+      valor: valorSeleccionado,
+      // Se mantiene "porcentaje" en espejo solo para tipo percentage,
+      // por compatibilidad con lecturas viejas de este campo.
+      porcentaje: tipoSeleccionado === "percentage" ? valorSeleccionado : 0,
       activo: descuentoActivoCheckbox.checked
     };
 
