@@ -445,6 +445,9 @@
       return { valid: false, reason: "EXPIRED" };
     }
     if ((c.usedCount || 0) >= c.usageLimit) return { valid: false, reason: "LIMIT" };
+    if ((c.productoId || "todos") !== "todos" && c.productoId !== productoSeleccionado?.id) {
+      return { valid: false, reason: "NOT_APPLICABLE" };
+    }
 
     let discountAmount = c.discountType === "percentage" ? subtotal * (c.value / 100) : c.value;
     discountAmount = Math.min(discountAmount, subtotal);
@@ -465,7 +468,8 @@
     NOT_FOUND: "Ese cupón no existe.",
     INACTIVE: "Ese cupón ya no está activo.",
     EXPIRED: "Ese cupón venció.",
-    LIMIT: "Ese cupón llegó a su límite de usos."
+    LIMIT: "Ese cupón llegó a su límite de usos.",
+    NOT_APPLICABLE: "Ese cupón no aplica a este producto."
   };
 
   const WHATSAPP_NEXO = "5492634273255";
@@ -749,6 +753,11 @@
     }
   }
 
+  inputCodigoDescuento.addEventListener("input", () => {
+    descuentoStatus.classList.remove("text-bad", "text-cyan", "text-ok");
+    descuentoStatus.textContent = "";
+  });
+
   btnAplicarDescuento.addEventListener("click", async () => {
     const codigoIngresado = inputCodigoDescuento.value.trim().toUpperCase();
     descuentoStatus.classList.remove("text-bad", "text-cyan", "text-ok");
@@ -797,7 +806,7 @@
           descuentoStatus.textContent = `Cupón ${resultado.codigo} aplicado.`;
           descuentoStatus.classList.add("text-ok");
         } else {
-          descuentoStatus.textContent = "Código o cupón inválido.";
+          descuentoStatus.textContent = CUPON_ERRORES[resultado.reason] || "Código o cupón inválido.";
           descuentoStatus.classList.add("text-bad");
         }
       }
@@ -870,69 +879,155 @@
     btnConfirmar.disabled = true;
     btnConfirmar.textContent = "Guardando...";
     pedidoStatus.textContent = "";
+    pedidoStatus.classList.remove("text-bad");
 
-    const precioOriginal = productoSeleccionado.precio;
-    const precioAPagar = descuentoAplicado ? descuentoAplicado.precioFinal : precioOriginal;
-
-    const datosPedido = {
-      nombre,
-      servicio: productoSeleccionado.nombre,
-      precio: precioAPagar,
-      precioOriginal,
-      estado: "espera",
-      pagado: false,
-      fecha: serverTimestamp()
-    };
-
-    if (descuentoAplicado) {
-      datosPedido.codigoDescuento = descuentoAplicado.codigo;
-      if (descuentoAplicado.montoDescontado != null) {
-        datosPedido.cuponDescuento = descuentoAplicado.montoDescontado;
-      }
-    }
-
-    if (esSeguidor) {
-      datosPedido.linkCuenta = linkCuenta;
-      datosPedido.tipoCuenta = "publica";
-    }
-
-    // Guardar en Firestore, pero sin dejar al cliente trabado si la base
-    // de datos tarda o falla (red lenta, bloqueadores, permisos, etc.):
-    // después de 6s seguimos igual hacia WhatsApp, que es lo que
-    // realmente concreta el pedido. El guardado sigue en curso en
-    // segundo plano aunque ya se haya navegado.
     try {
-      await Promise.race([
-        addDoc(pedidosRef, datosPedido),
-        new Promise((resolve) => setTimeout(resolve, 6000))
-      ]);
-    } catch (err) {
-      console.error("No se pudo confirmar el guardado del pedido, se continúa por WhatsApp:", err);
-    }
+      const precioOriginal = productoSeleccionado.precio;
+      const precioAPagar = descuentoAplicado ? descuentoAplicado.precioFinal : precioOriginal;
 
-    if (descuentoAplicado && descuentoAplicado.montoDescontado != null) {
-      try {
-        await updateDoc(doc(db, "cupones", descuentoAplicado.codigo), { usedCount: increment(1) });
-      } catch (err) {
-        console.error("No se pudo incrementar el uso del cupón:", err);
+      const datosPedido = {
+        nombre,
+        servicio: productoSeleccionado.nombre,
+        precio: precioAPagar,
+        precioOriginal,
+        estado: "espera",
+        pagado: false,
+        fecha: serverTimestamp()
+      };
+
+      if (descuentoAplicado) {
+        datosPedido.codigoDescuento = descuentoAplicado.codigo;
+        if (descuentoAplicado.montoDescontado != null) {
+          datosPedido.cuponDescuento = descuentoAplicado.montoDescontado;
+        }
       }
+
+      if (esSeguidor) {
+        datosPedido.linkCuenta = linkCuenta;
+        datosPedido.tipoCuenta = "publica";
+      }
+
+      // Guardar en Firestore, pero sin dejar al cliente trabado si la base
+      // de datos tarda o falla (red lenta, bloqueadores, permisos, etc.):
+      // después de 6s seguimos igual hacia WhatsApp, que es lo que
+      // realmente concreta el pedido. El guardado sigue en curso en
+      // segundo plano aunque ya se haya navegado.
+      try {
+        await Promise.race([
+          addDoc(pedidosRef, datosPedido),
+          new Promise((resolve) => setTimeout(resolve, 6000))
+        ]);
+      } catch (err) {
+        console.error("No se pudo confirmar el guardado del pedido, se continúa por WhatsApp:", err);
+      }
+
+      if (descuentoAplicado && descuentoAplicado.montoDescontado != null) {
+        try {
+          await updateDoc(doc(db, "cupones", descuentoAplicado.codigo), { usedCount: increment(1) });
+        } catch (err) {
+          console.error("No se pudo incrementar el uso del cupón:", err);
+        }
+      }
+
+      let mensaje =
+        `Hola NEXO! Quiero encargar ${productoSeleccionado.nombre} por ${formatearPrecio(precioAPagar)}. ` +
+        `Mi nombre es ${nombre}.`;
+
+      if (descuentoAplicado) {
+        mensaje += ` Usé el código ${descuentoAplicado.codigo} (precio normal ${formatearPrecio(precioOriginal)}).`;
+      }
+
+      if (esSeguidor) {
+        mensaje += ` Mi cuenta: ${linkCuenta} (pública).`;
+      }
+
+      const url = `https://wa.me/${WHATSAPP_NEXO}?text=${encodeURIComponent(mensaje)}`;
+      window.location.href = url;
+    } catch (err) {
+      // Red de seguridad: pase lo que pase, el botón nunca se queda
+      // trabado en "Guardando..." — se reactiva y avisa qué pasó.
+      console.error("No se pudo completar el pedido:", err);
+      pedidoStatus.textContent = "Algo falló al guardar tu pedido. Intentá de nuevo.";
+      pedidoStatus.classList.add("text-bad");
+      btnConfirmar.disabled = false;
+      btnConfirmar.textContent = "Confirmar pedido";
     }
-
-    let mensaje =
-      `Hola NEXO! Quiero encargar ${productoSeleccionado.nombre} por ${formatearPrecio(precioAPagar)}. ` +
-      `Mi nombre es ${nombre}.`;
-
-    if (descuentoAplicado) {
-      mensaje += ` Usé el código ${descuentoAplicado.codigo} (precio normal ${formatearPrecio(precioOriginal)}).`;
-    }
-
-    if (esSeguidor) {
-      mensaje += ` Mi cuenta: ${linkCuenta} (pública).`;
-    }
-
-    const url = `https://wa.me/${WHATSAPP_NEXO}?text=${encodeURIComponent(mensaje)}`;
-    window.location.href = url;
   });
+</script>
+
+<!-- ============ POPUP: UNITE AL GRUPO DE WHATSAPP ============ -->
+<div id="whatsapp-popup" class="hidden-modal fixed inset-0 z-[70] items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+  <div class="glass border border-line max-w-sm w-full clip-corner glow-border p-6 relative">
+    <button id="btn-cerrar-popup-wsp" aria-label="Cerrar" class="absolute top-3 right-3 text-mute hover:text-cyan transition-colors text-xl leading-none">&times;</button>
+
+    <div class="flex items-center gap-3 mb-4 pr-6">
+      <div class="w-11 h-11 rounded-full flex items-center justify-center shrink-0" style="background: linear-gradient(135deg,#25D366,#128C7E);">
+        <svg viewBox="0 0 24 24" class="w-6 h-6" fill="#08050f"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.36 5.08L2 22l5.09-1.33A9.94 9.94 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm5.2 14.2c-.22.62-1.28 1.2-1.77 1.24-.45.05-.9.22-3.02-.63-2.56-1.02-4.2-3.6-4.33-3.77-.13-.17-1.03-1.37-1.03-2.6 0-1.24.65-1.85.88-2.1.23-.25.5-.3.67-.3h.48c.15 0 .36-.06.56.43.22.53.75 1.83.82 1.96.07.13.11.28.02.45-.09.17-.14.28-.27.43-.13.15-.28.34-.4.46-.13.13-.27.28-.12.55.16.27.7 1.15 1.5 1.86 1.03.92 1.9 1.2 2.17 1.34.27.13.43.11.6-.07.16-.18.68-.79.86-1.06.18-.27.36-.22.6-.13.25.09 1.57.74 1.84.87.27.13.45.2.51.31.07.11.07.63-.15 1.25z"/></svg>
+      </div>
+      <div>
+        <p class="font-display font-bold text-base leading-tight">Unite a nuestro grupo de WhatsApp</p>
+        <p class="text-[11px] text-mute">NEXO STORE</p>
+      </div>
+    </div>
+
+    <p class="text-sm text-mute leading-relaxed mb-5">
+      Enterate primero de ofertas, descuentos y novedades. Sumate al grupo y no te pierdas nada.
+    </p>
+
+    <a href="https://chat.whatsapp.com/Gle8XKDprpVGwBhKdBuVJg" target="_blank" rel="noopener"
+      class="block w-full text-center font-display font-semibold text-sm px-4 py-3 border border-violet text-violet2 hover:bg-violet hover:text-bg transition-colors clip-corner">
+      Unirme al grupo
+    </a>
+
+    <button id="btn-luego-popup-wsp" class="w-full text-center text-[11px] text-mute/70 hover:text-mute transition-colors mt-3">
+      Ahora no
+    </button>
+  </div>
+</div>
+<script>
+  (function () {
+    const KEY = "nexo_wsp_popup_visto";
+    const popup = document.getElementById("whatsapp-popup");
+    const btnCerrar = document.getElementById("btn-cerrar-popup-wsp");
+    const btnLuego = document.getElementById("btn-luego-popup-wsp");
+    if (!popup) return;
+
+    function ocultarPopup() {
+      popup.classList.add("hidden-modal");
+      popup.classList.remove("flex");
+    }
+
+    function mostrarPopup() {
+      popup.classList.remove("hidden-modal");
+      popup.classList.add("flex");
+    }
+
+    function cerrarYRecordar() {
+      ocultarPopup();
+      try {
+        localStorage.setItem(KEY, Date.now().toString());
+      } catch (e) {}
+    }
+
+    btnCerrar && btnCerrar.addEventListener("click", cerrarYRecordar);
+    btnLuego && btnLuego.addEventListener("click", cerrarYRecordar);
+    popup.addEventListener("click", (e) => {
+      if (e.target === popup) cerrarYRecordar();
+    });
+
+    let mostrarDeNuevo = true;
+    try {
+      const visto = localStorage.getItem(KEY);
+      if (visto) {
+        const dias = (Date.now() - Number(visto)) / (1000 * 60 * 60 * 24);
+        mostrarDeNuevo = dias > 3; // vuelve a aparecer a los 3 días si no se unió
+      }
+    } catch (e) {}
+
+    if (mostrarDeNuevo) {
+      setTimeout(mostrarPopup, 2500); // aparece a los 2.5s de cargar la página
+    }
+  })();
 </script>
 
 <!-- ============ AVISO DE COOKIES (mini) ============ -->
