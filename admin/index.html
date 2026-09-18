@@ -298,7 +298,9 @@
     <p class="text-mute text-xs mb-6 leading-relaxed max-w-2xl">
       Cargá el costo en dólares de cada producto. Elegí el tipo de dólar y tocá "Aplicar" para traer la
       cotización actual y calcular el costo en pesos, la ganancia y el margen de cada uno. La cotización
-      no se actualiza sola: solo cambia cuando volvés a tocar Aplicar.
+      no se actualiza sola: solo cambia cuando volvés a tocar Aplicar. Las columnas "Cupón activo" y
+      "Ganancia c/cupón" muestran, para cada producto, el cupón con mayor descuento que un cliente podría
+      usar ahora mismo (de la pestaña Cupones) y la ganancia que quedaría si lo usa.
     </p>
 
     <div class="border border-line bg-panel clip-corner p-6 mb-6">
@@ -332,6 +334,8 @@
             <th class="px-4 py-3 font-medium">Costo (ARS)</th>
             <th class="px-4 py-3 font-medium">Ganancia</th>
             <th class="px-4 py-3 font-medium">Margen</th>
+            <th class="px-4 py-3 font-medium">Cupón activo</th>
+            <th class="px-4 py-3 font-medium">Ganancia c/cupón</th>
           </tr>
         </thead>
         <tbody id="tabla-rentabilidad"></tbody>
@@ -637,6 +641,8 @@
     <td class="px-4 py-3 text-mute whitespace-nowrap" data-field="costo-ars">—</td>
     <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="ganancia">—</td>
     <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="margen">—</td>
+    <td class="px-4 py-3 text-xs whitespace-nowrap" data-field="cupon">—</td>
+    <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="ganancia-cupon">—</td>
   </tr>
 </template>
 
@@ -2204,6 +2210,35 @@
     }
   }
 
+  // Busca, entre los cupones activos y vigentes, el que más descuento
+  // representa para un producto dado (el propio o "todos los productos").
+  // Se usa el "peor caso" (mayor descuento) para que la ganancia mostrada
+  // sea la mínima garantizada si un cliente usa el mejor cupón disponible.
+  function mejorCuponParaProducto(productoId, precio) {
+    if (!precio) return null;
+    const hoy = new Date();
+    let mejor = null;
+    let mejorMonto = -1;
+
+    cuponesCache.forEach((c) => {
+      if (c.active === false) return;
+      if (c.validUntil && new Date(c.validUntil + "T23:59:59") < hoy) return;
+      if ((c.usedCount || 0) >= (c.usageLimit || Infinity)) return;
+      if ((c.productoId || "todos") !== "todos" && c.productoId !== productoId) return;
+
+      const monto =
+        c.discountType === "percentage" ? precio * (Number(c.value) || 0) / 100 : Number(c.value) || 0;
+      const montoLimitado = Math.min(monto, precio);
+
+      if (montoLimitado > mejorMonto) {
+        mejorMonto = montoLimitado;
+        mejor = { codigo: c.codigo, discountAmount: montoLimitado };
+      }
+    });
+
+    return mejor;
+  }
+
   function renderTablaRentabilidad() {
     if (!tablaRentabilidad) return;
     tablaRentabilidad.innerHTML = "";
@@ -2228,14 +2263,25 @@
       const celdaCostoArs = nodo.querySelector('[data-field="costo-ars"]');
       const celdaGanancia = nodo.querySelector('[data-field="ganancia"]');
       const celdaMargen = nodo.querySelector('[data-field="margen"]');
+      const celdaCupon = nodo.querySelector('[data-field="cupon"]');
+      const celdaGananciaCupon = nodo.querySelector('[data-field="ganancia-cupon"]');
 
       const precio = Number(producto.precio) || 0;
       const costoUsd = Number(producto.costoUsd) || 0;
+      const cupon = mejorCuponParaProducto(producto.id, precio);
+
+      if (cupon) {
+        const porcentajeEquivalente = precio > 0 ? (cupon.discountAmount / precio) * 100 : 0;
+        celdaCupon.textContent = `${cupon.codigo} (-${porcentajeEquivalente.toFixed(1)}%)`;
+      } else {
+        celdaCupon.textContent = "—";
+      }
 
       if (!cotizacionActual || !costoUsd) {
         celdaCostoArs.textContent = "—";
         celdaGanancia.textContent = "—";
         celdaMargen.textContent = "—";
+        celdaGananciaCupon.textContent = "—";
       } else {
         const costoArs = costoUsd * cotizacionActual.valor;
         const ganancia = precio - costoArs;
@@ -2247,6 +2293,16 @@
         celdaGanancia.className = "px-4 py-3 font-semibold whitespace-nowrap " + colorGanancia;
         celdaMargen.textContent = margen.toFixed(1) + "%";
         celdaMargen.className = "px-4 py-3 font-semibold whitespace-nowrap " + colorGanancia;
+
+        if (cupon) {
+          const precioConCupon = precio - cupon.discountAmount;
+          const gananciaConCupon = precioConCupon - costoArs;
+          celdaGananciaCupon.textContent = formatearPrecio(Math.round(gananciaConCupon));
+          celdaGananciaCupon.className =
+            "px-4 py-3 font-semibold whitespace-nowrap " + (gananciaConCupon >= 0 ? "text-ok" : "text-bad");
+        } else {
+          celdaGananciaCupon.textContent = "—";
+        }
       }
 
       tablaRentabilidad.appendChild(nodo);
@@ -2512,6 +2568,7 @@
         .map((docSnap) => ({ codigo: docSnap.id, ...docSnap.data() }))
         .sort((a, b) => a.codigo.localeCompare(b.codigo));
       renderCupones();
+      renderTablaRentabilidad();
     });
   }
 
