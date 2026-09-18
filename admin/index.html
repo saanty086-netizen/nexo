@@ -62,7 +62,7 @@
   <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6">
     <div class="flex items-center gap-3 mb-6">
       <div class="w-10 h-10 rounded-full border-2 border-violet overflow-hidden shrink-0">
-        <img src="../assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" loading="eager" />
+        <img src="assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" loading="eager" />
       </div>
       <div>
         <p class="font-display font-bold text-base leading-none">NEXO</p>
@@ -127,7 +127,7 @@
   <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-full border-2 border-violet overflow-hidden shrink-0">
-        <img src="../assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" loading="eager" />
+        <img src="assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" loading="eager" />
       </div>
       <div>
         <p class="font-display font-bold text-base leading-none">NEXO</p>
@@ -298,9 +298,7 @@
     <p class="text-mute text-xs mb-6 leading-relaxed max-w-2xl">
       Cargá el costo en dólares de cada producto. Elegí el tipo de dólar y tocá "Aplicar" para traer la
       cotización actual y calcular el costo en pesos, la ganancia y el margen de cada uno. La cotización
-      no se actualiza sola: solo cambia cuando volvés a tocar Aplicar. Las columnas "Cupón activo" y
-      "Ganancia c/cupón" muestran, para cada producto, el cupón con mayor descuento que un cliente podría
-      usar ahora mismo (de la pestaña Cupones) y la ganancia que quedaría si lo usa.
+      no se actualiza sola: solo cambia cuando volvés a tocar Aplicar.
     </p>
 
     <div class="border border-line bg-panel clip-corner p-6 mb-6">
@@ -334,8 +332,6 @@
             <th class="px-4 py-3 font-medium">Costo (ARS)</th>
             <th class="px-4 py-3 font-medium">Ganancia</th>
             <th class="px-4 py-3 font-medium">Margen</th>
-            <th class="px-4 py-3 font-medium">Cupón activo</th>
-            <th class="px-4 py-3 font-medium">Ganancia c/cupón</th>
           </tr>
         </thead>
         <tbody id="tabla-rentabilidad"></tbody>
@@ -452,7 +448,7 @@
   <div class="max-w-md">
     <p class="text-mute text-xs mb-6 leading-relaxed">
       Definí acá el código de descuento que los clientes pueden ingresar al hacer un pedido en la tienda,
-      junto con el porcentaje o el monto fijo que se les aplica. Podés desactivarlo cuando quieras sin perder los datos cargados.
+      junto con el porcentaje que se les aplica. Podés desactivarlo cuando quieras sin perder los datos cargados.
     </p>
 
     <div class="border border-line bg-panel clip-corner p-6">
@@ -472,20 +468,10 @@
             <option value="todos">Todos los productos</option>
           </select>
         </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="text-xs text-mute block mb-1.5">Tipo</label>
-            <select id="descuento-tipo"
-              class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
-              <option value="percentage">Porcentaje</option>
-              <option value="fixed">Monto fijo</option>
-            </select>
-          </div>
-          <div>
-            <label id="descuento-valor-label" class="text-xs text-mute block mb-1.5">Porcentaje de descuento</label>
-            <input id="descuento-valor" type="number" min="0" step="0.01" placeholder="10"
-              class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
-          </div>
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Porcentaje de descuento</label>
+          <input id="descuento-porcentaje" type="number" min="0" max="100" step="1" placeholder="10"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
         </div>
         <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
           <input id="descuento-activo" type="checkbox" class="w-4 h-4 accent-violet" />
@@ -497,6 +483,42 @@
         <button type="submit" id="btn-guardar-descuento"
           class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
           Guardar
+        </button>
+      </form>
+    </div>
+
+    <div class="border border-line bg-panel clip-corner p-6 mt-6">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">DESCUENTOS</p>
+      <h3 class="font-display font-bold text-xl mb-5">Nuevo código de descuento</h3>
+
+      <form id="form-nuevo-descuento" class="flex flex-col gap-4">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Nombre del código</label>
+          <input required id="nuevo-descuento-nombre" type="text" placeholder="Ej: VERANO25"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-mute block mb-1.5">Tipo</label>
+            <select id="nuevo-descuento-tipo"
+              class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+              <option value="percentage">Porcentaje (%)</option>
+              <option value="fixed">Monto fijo ($)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-mute block mb-1.5">Valor</label>
+            <input required id="nuevo-descuento-valor" type="number" min="0" step="0.01" placeholder="10"
+              class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan" />
+          </div>
+        </div>
+
+        <p id="nuevo-descuento-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+        <button type="submit" id="btn-guardar-nuevo-descuento"
+          class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+          Crear código
         </button>
       </form>
     </div>
@@ -522,7 +544,6 @@
       <thead>
         <tr class="text-left text-[11px] text-mute border-b border-line">
           <th class="px-4 py-3 font-medium">Código</th>
-          <th class="px-4 py-3 font-medium">Producto</th>
           <th class="px-4 py-3 font-medium">Descuento</th>
           <th class="px-4 py-3 font-medium">Vence</th>
           <th class="px-4 py-3 font-medium">Usados</th>
@@ -544,7 +565,6 @@
 <template id="tpl-fila-cupon">
   <tr class="hover:bg-panel2/60 transition-colors align-middle">
     <td class="px-4 py-3 font-display font-bold text-ink" data-field="codigo"></td>
-    <td class="px-4 py-3 text-mute text-xs" data-field="producto"></td>
     <td class="px-4 py-3" data-field="descuento"></td>
     <td class="px-4 py-3 text-mute text-xs" data-field="vence"></td>
     <td class="px-4 py-3 text-mute" data-field="usados"></td>
@@ -566,7 +586,6 @@
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0">
         <p class="font-display font-bold text-sm text-ink truncate" data-field="codigo"></p>
-        <p class="text-xs text-mute mt-0.5" data-field="producto"></p>
         <p class="text-xs text-mute mt-0.5" data-field="descuento"></p>
         <p class="text-[11px] text-mute mt-0.5" data-field="vence-usados"></p>
       </div>
@@ -592,13 +611,6 @@
         <input required id="cupon-codigo" type="text" placeholder="BIENVENIDO10"
           class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
         <p id="cupon-codigo-nota" class="text-[10px] text-mute/70 mt-1"></p>
-      </div>
-      <div>
-        <label class="text-xs text-mute block mb-1.5">Aplicar a</label>
-        <select id="cupon-producto"
-          class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
-          <option value="todos">Todos los productos</option>
-        </select>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
@@ -651,8 +663,6 @@
     <td class="px-4 py-3 text-mute whitespace-nowrap" data-field="costo-ars">—</td>
     <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="ganancia">—</td>
     <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="margen">—</td>
-    <td class="px-4 py-3 text-xs whitespace-nowrap" data-field="cupon">—</td>
-    <td class="px-4 py-3 font-semibold whitespace-nowrap" data-field="ganancia-cupon">—</td>
   </tr>
 </template>
 
@@ -1093,11 +1103,12 @@
     auth,
     db,
     loginConGoogle,
-    loginAnonimo
-  } from "../firebase.js";
+    loginAnonimo,
+    crearCodigoDescuento
+  } from "./firebase.js";
   import {
     setPersistence,
-    browserLocalPersistence,
+    browserSessionPersistence,
     onAuthStateChanged,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
@@ -1123,12 +1134,12 @@
   const ajustesRef = collection(db, "ajustesGanancia");
 
   // -----------------------------
-  // Sesión: se guarda entre visitas (browserLocalPersistence).
-  // Una vez que iniciás sesión, el panel abre directo la próxima
-  // vez que entrás, sin pedir login de nuevo, hasta que cierres
-  // sesión manualmente.
+  // Sesión: no se guarda entre visitas.
+  // Con browserSessionPersistence, cerrar la pestaña/navegador
+  // cierra la sesión y la próxima vez pide loguearse de nuevo,
+  // sin importar qué método de login se haya usado.
   // -----------------------------
-  let sesionLista = setPersistence(auth, browserLocalPersistence);
+  let sesionLista = setPersistence(auth, browserSessionPersistence);
 
   const pantallaLogin = document.getElementById("pantalla-login");
   const appAdmin = document.getElementById("app-admin");
@@ -1225,7 +1236,8 @@
   // firestore.rules (misma lista, dentro de esAdmin()).
   // -----------------------------
   const ADMIN_EMAILS = [
-    "saanty086@gmail.com"
+    "saanty086@gmail.com",
+    "btobias074@gmail.com"
   ];
 
   // -----------------------------
@@ -2092,36 +2104,17 @@
 
   // -----------------------------
   // FINANZAS: código de descuento global de la tienda.
-  // Se guarda en configuracion/descuento -> { codigo, tipo, valor, porcentaje, activo }.
-  // "tipo" es "percentage" (valor en %) o "fixed" (valor en pesos, descontado tal cual).
-  // "porcentaje" se mantiene en espejo de "valor" solo cuando tipo es "percentage",
-  // para no romper integraciones viejas que todavía lean ese campo.
+  // Se guarda en configuracion/descuento -> { codigo, porcentaje, activo }.
   // -----------------------------
   const formDescuento = document.getElementById("form-descuento");
   const descuentoCodigo = document.getElementById("descuento-codigo");
   const descuentoProducto = document.getElementById("descuento-producto");
-  const descuentoTipo = document.getElementById("descuento-tipo");
-  const descuentoValor = document.getElementById("descuento-valor");
-  const descuentoValorLabel = document.getElementById("descuento-valor-label");
+  const descuentoPorcentaje = document.getElementById("descuento-porcentaje");
   const descuentoActivoCheckbox = document.getElementById("descuento-activo");
   const descuentoConfigStatus = document.getElementById("descuento-config-status");
   const btnGuardarDescuento = document.getElementById("btn-guardar-descuento");
 
   let descuentoProductoActual = "todos";
-
-  function actualizarCamposValorDescuento() {
-    const esFijo = descuentoTipo.value === "fixed";
-    descuentoValorLabel.textContent = esFijo ? "Monto fijo de descuento (ARS)" : "Porcentaje de descuento";
-    descuentoValor.placeholder = esFijo ? "1500" : "10";
-    if (esFijo) {
-      descuentoValor.removeAttribute("max");
-    } else {
-      descuentoValor.setAttribute("max", "100");
-    }
-  }
-
-  descuentoTipo.addEventListener("change", actualizarCamposValorDescuento);
-  actualizarCamposValorDescuento();
 
   function aplicarSeleccionProductoDescuento() {
     const existe = Array.from(descuentoProducto.options).some((o) => o.value === descuentoProductoActual);
@@ -2137,19 +2130,16 @@
       descuentoProducto.appendChild(opt);
     });
     aplicarSeleccionProductoDescuento();
-    actualizarOpcionesProductoCupon();
   }
 
   function iniciarEscuchaDescuento() {
     onSnapshot(configuracionRef, (snap) => {
       const data = snap.exists() ? snap.data() : {};
       descuentoCodigo.value = data.codigo || "";
-      descuentoTipo.value = data.tipo === "fixed" ? "fixed" : "percentage";
-      descuentoValor.value = data.valor ?? data.porcentaje ?? "";
+      descuentoPorcentaje.value = data.porcentaje ?? "";
       descuentoActivoCheckbox.checked = data.activo === true;
       descuentoProductoActual = data.productoId || "todos";
       aplicarSeleccionProductoDescuento();
-      actualizarCamposValorDescuento();
     });
   }
 
@@ -2162,18 +2152,11 @@
         ? ""
         : descuentoProducto.options[descuentoProducto.selectedIndex].textContent;
 
-    const tipoSeleccionado = descuentoTipo.value === "fixed" ? "fixed" : "percentage";
-    const valorSeleccionado = Number(descuentoValor.value) || 0;
-
     const datos = {
       codigo: descuentoCodigo.value.trim().toUpperCase(),
       productoId: productoIdSeleccionado,
       productoNombre: productoNombreSeleccionado,
-      tipo: tipoSeleccionado,
-      valor: valorSeleccionado,
-      // Se mantiene "porcentaje" en espejo solo para tipo percentage,
-      // por compatibilidad con lecturas viejas de este campo.
-      porcentaje: tipoSeleccionado === "percentage" ? valorSeleccionado : 0,
+      porcentaje: Number(descuentoPorcentaje.value) || 0,
       activo: descuentoActivoCheckbox.checked
     };
 
@@ -2190,6 +2173,43 @@
     } finally {
       btnGuardarDescuento.disabled = false;
       btnGuardarDescuento.textContent = "Guardar";
+    }
+  });
+
+  // -----------------------------
+  // DESCUENTOS: creación de nuevos códigos (colección "descuentos")
+  // -----------------------------
+  const formNuevoDescuento = document.getElementById("form-nuevo-descuento");
+  const nuevoDescuentoNombre = document.getElementById("nuevo-descuento-nombre");
+  const nuevoDescuentoTipo = document.getElementById("nuevo-descuento-tipo");
+  const nuevoDescuentoValor = document.getElementById("nuevo-descuento-valor");
+  const nuevoDescuentoStatus = document.getElementById("nuevo-descuento-status");
+  const btnGuardarNuevoDescuento = document.getElementById("btn-guardar-nuevo-descuento");
+
+  formNuevoDescuento.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    btnGuardarNuevoDescuento.disabled = true;
+    btnGuardarNuevoDescuento.textContent = "Guardando...";
+    nuevoDescuentoStatus.textContent = "";
+    nuevoDescuentoStatus.className = "text-xs text-mute min-h-[1rem]";
+
+    try {
+      await crearCodigoDescuento({
+        nombre: nuevoDescuentoNombre.value,
+        tipo: nuevoDescuentoTipo.value,
+        valor: nuevoDescuentoValor.value
+      });
+      nuevoDescuentoStatus.textContent = "Código creado correctamente.";
+      nuevoDescuentoStatus.className = "text-xs text-cyan min-h-[1rem]";
+      formNuevoDescuento.reset();
+    } catch (err) {
+      console.error(err);
+      nuevoDescuentoStatus.textContent = err.message || "No se pudo crear el código. Intentá de nuevo.";
+      nuevoDescuentoStatus.className = "text-xs text-bad min-h-[1rem]";
+    } finally {
+      btnGuardarNuevoDescuento.disabled = false;
+      btnGuardarNuevoDescuento.textContent = "Crear código";
     }
   });
 
@@ -2248,35 +2268,6 @@
     }
   }
 
-  // Busca, entre los cupones activos y vigentes, el que más descuento
-  // representa para un producto dado (el propio o "todos los productos").
-  // Se usa el "peor caso" (mayor descuento) para que la ganancia mostrada
-  // sea la mínima garantizada si un cliente usa el mejor cupón disponible.
-  function mejorCuponParaProducto(productoId, precio) {
-    if (!precio) return null;
-    const hoy = new Date();
-    let mejor = null;
-    let mejorMonto = -1;
-
-    cuponesCache.forEach((c) => {
-      if (c.active === false) return;
-      if (c.validUntil && new Date(c.validUntil + "T23:59:59") < hoy) return;
-      if ((c.usedCount || 0) >= (c.usageLimit || Infinity)) return;
-      if ((c.productoId || "todos") !== "todos" && c.productoId !== productoId) return;
-
-      const monto =
-        c.discountType === "percentage" ? precio * (Number(c.value) || 0) / 100 : Number(c.value) || 0;
-      const montoLimitado = Math.min(monto, precio);
-
-      if (montoLimitado > mejorMonto) {
-        mejorMonto = montoLimitado;
-        mejor = { codigo: c.codigo, discountAmount: montoLimitado };
-      }
-    });
-
-    return mejor;
-  }
-
   function renderTablaRentabilidad() {
     if (!tablaRentabilidad) return;
     tablaRentabilidad.innerHTML = "";
@@ -2301,25 +2292,14 @@
       const celdaCostoArs = nodo.querySelector('[data-field="costo-ars"]');
       const celdaGanancia = nodo.querySelector('[data-field="ganancia"]');
       const celdaMargen = nodo.querySelector('[data-field="margen"]');
-      const celdaCupon = nodo.querySelector('[data-field="cupon"]');
-      const celdaGananciaCupon = nodo.querySelector('[data-field="ganancia-cupon"]');
 
       const precio = Number(producto.precio) || 0;
       const costoUsd = Number(producto.costoUsd) || 0;
-      const cupon = mejorCuponParaProducto(producto.id, precio);
-
-      if (cupon) {
-        const porcentajeEquivalente = precio > 0 ? (cupon.discountAmount / precio) * 100 : 0;
-        celdaCupon.textContent = `${cupon.codigo} (-${porcentajeEquivalente.toFixed(1)}%)`;
-      } else {
-        celdaCupon.textContent = "—";
-      }
 
       if (!cotizacionActual || !costoUsd) {
         celdaCostoArs.textContent = "—";
         celdaGanancia.textContent = "—";
         celdaMargen.textContent = "—";
-        celdaGananciaCupon.textContent = "—";
       } else {
         const costoArs = costoUsd * cotizacionActual.valor;
         const ganancia = precio - costoArs;
@@ -2331,16 +2311,6 @@
         celdaGanancia.className = "px-4 py-3 font-semibold whitespace-nowrap " + colorGanancia;
         celdaMargen.textContent = margen.toFixed(1) + "%";
         celdaMargen.className = "px-4 py-3 font-semibold whitespace-nowrap " + colorGanancia;
-
-        if (cupon) {
-          const precioConCupon = precio - cupon.discountAmount;
-          const gananciaConCupon = precioConCupon - costoArs;
-          celdaGananciaCupon.textContent = formatearPrecio(Math.round(gananciaConCupon));
-          celdaGananciaCupon.className =
-            "px-4 py-3 font-semibold whitespace-nowrap " + (gananciaConCupon >= 0 ? "text-ok" : "text-bad");
-        } else {
-          celdaGananciaCupon.textContent = "—";
-        }
       }
 
       tablaRentabilidad.appendChild(nodo);
@@ -2606,29 +2576,7 @@
         .map((docSnap) => ({ codigo: docSnap.id, ...docSnap.data() }))
         .sort((a, b) => a.codigo.localeCompare(b.codigo));
       renderCupones();
-      renderTablaRentabilidad();
     });
-  }
-
-  const cuponProducto = document.getElementById("cupon-producto");
-  let cuponProductoActual = "todos";
-
-  function actualizarOpcionesProductoCupon() {
-    if (!cuponProducto) return;
-    const valorActual = cuponProducto.value || cuponProductoActual;
-    cuponProducto.innerHTML = '<option value="todos">Todos los productos</option>';
-    productosCache.forEach((p) => {
-      const opt = document.createElement("option");
-      opt.value = p.id;
-      opt.textContent = p.nombre || "(sin nombre)";
-      cuponProducto.appendChild(opt);
-    });
-    const existe = Array.from(cuponProducto.options).some((o) => o.value === valorActual);
-    cuponProducto.value = existe ? valorActual : "todos";
-  }
-
-  function formatearProductoCupon(c) {
-    return (c.productoId || "todos") === "todos" ? "Todos los productos" : (c.productoNombre || "Producto eliminado");
   }
 
   function formatearDescuentoCupon(c) {
@@ -2652,7 +2600,6 @@
 
       const fila = tplFilaCupon.content.cloneNode(true);
       fila.querySelector('[data-field="codigo"]').textContent = cupon.codigo;
-      fila.querySelector('[data-field="producto"]').textContent = formatearProductoCupon(cupon);
       fila.querySelector('[data-field="descuento"]').textContent = formatearDescuentoCupon(cupon);
       fila.querySelector('[data-field="vence"]').textContent = formatearFechaCortaCupon(cupon.validUntil);
       fila.querySelector('[data-field="usados"]').textContent = usadosTexto;
@@ -2673,7 +2620,6 @@
 
       const tarjeta = tplTarjetaCupon.content.cloneNode(true);
       tarjeta.querySelector('[data-field="codigo"]').textContent = cupon.codigo;
-      tarjeta.querySelector('[data-field="producto"]').textContent = formatearProductoCupon(cupon);
       tarjeta.querySelector('[data-field="descuento"]').textContent = formatearDescuentoCupon(cupon);
       tarjeta.querySelector('[data-field="vence-usados"]').textContent =
         `Vence: ${formatearFechaCortaCupon(cupon.validUntil)} · Usados: ${usadosTexto}`;
@@ -2726,8 +2672,6 @@
       cuponVence.value = cupon.validUntil || "";
       cuponLimite.value = cupon.usageLimit ?? "";
       cuponActivo.checked = cupon.active !== false;
-      cuponProductoActual = cupon.productoId || "todos";
-      actualizarOpcionesProductoCupon();
     } else {
       cuponEnEdicionCodigo = null;
       modalCuponEyebrow.textContent = "NUEVO CUPÓN";
@@ -2736,8 +2680,6 @@
       cuponCodigoNota.textContent = "";
       cuponTipo.value = "percentage";
       cuponActivo.checked = true;
-      cuponProductoActual = "todos";
-      actualizarOpcionesProductoCupon();
     }
 
     modalCupon.classList.remove("hidden-modal");
@@ -2756,20 +2698,12 @@
   formCupon.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const productoIdSeleccionado = cuponProducto ? cuponProducto.value : "todos";
-    const productoNombreSeleccionado =
-      productoIdSeleccionado === "todos"
-        ? ""
-        : cuponProducto.options[cuponProducto.selectedIndex].textContent;
-
     const datos = {
       discountType: cuponTipo.value,
       value: Number(cuponValor.value) || 0,
       validUntil: cuponVence.value,
       usageLimit: Number(cuponLimite.value) || 1,
-      active: cuponActivo.checked,
-      productoId: productoIdSeleccionado,
-      productoNombre: productoNombreSeleccionado
+      active: cuponActivo.checked
     };
 
     btnGuardarCupon.disabled = true;
