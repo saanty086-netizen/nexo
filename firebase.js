@@ -15,6 +15,7 @@ import {
   collection,
   doc,
   addDoc,
+  setDoc,
   updateDoc,
   getDoc,
   getDocs,
@@ -199,6 +200,39 @@ export async function validarCodigoDescuento(codigoInput, producto) {
  */
 export async function incrementarUsoCupon(codigo) {
   await updateDoc(doc(db, "cupones", codigo), { usedCount: increment(1) });
+}
+
+/**
+ * Crea un nuevo cupón de descuento (colección "cupones", doc ID = código
+ * en mayúsculas). Usado desde el panel admin ("Nuevo código de descuento").
+ * @param {{nombre: string, tipo: "percentage"|"fixed", valor: number|string}} datos
+ * @returns {Promise<string>} el código creado (en mayúsculas)
+ */
+export async function crearCodigoDescuento({ nombre, tipo, valor }) {
+  const codigo = (nombre || "").trim().toUpperCase();
+  if (!codigo) throw new Error("El código no puede estar vacío.");
+
+  const numero = Number(valor);
+  if (!Number.isFinite(numero) || numero <= 0) {
+    throw new Error("El valor del descuento tiene que ser mayor a 0.");
+  }
+
+  const ref = doc(db, "cupones", codigo);
+  const existente = await getDoc(ref);
+  if (existente.exists()) {
+    throw new Error("Ya existe un código con ese nombre.");
+  }
+
+  await setDoc(ref, {
+    discountType: tipo === "fixed" ? "fixed" : "percentage",
+    value: numero,
+    productoId: "todos",
+    active: true,
+    usedCount: 0,
+    creadoEn: new Date().toISOString()
+  });
+
+  return codigo;
 }
 
 // -----------------------------
