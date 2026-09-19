@@ -1104,11 +1104,12 @@
     db,
     loginConGoogle,
     loginAnonimo,
-    crearCodigoDescuento
+    crearCodigoDescuento,
+    obtenerResultadoRedirectGoogle
   } from "./firebase.js";
   import {
     setPersistence,
-    browserSessionPersistence,
+    browserLocalPersistence,
     onAuthStateChanged,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
@@ -1134,12 +1135,16 @@
   const ajustesRef = collection(db, "ajustesGanancia");
 
   // -----------------------------
-  // Sesión: no se guarda entre visitas.
-  // Con browserSessionPersistence, cerrar la pestaña/navegador
-  // cierra la sesión y la próxima vez pide loguearse de nuevo,
-  // sin importar qué método de login se haya usado.
+  // Sesión: se guarda entre visitas (browserLocalPersistence).
+  // Necesario para que el login con Google por redirect (mobile)
+  // sobreviva la ida y vuelta a la pantalla de Google.
   // -----------------------------
-  let sesionLista = setPersistence(auth, browserSessionPersistence);
+  let sesionLista = setPersistence(auth, browserLocalPersistence).then(() =>
+    obtenerResultadoRedirectGoogle().catch((err) => {
+      console.error(err);
+      socialAuthStatus.textContent = "No se pudo completar el ingreso con Google.";
+    })
+  );
 
   const pantallaLogin = document.getElementById("pantalla-login");
   const appAdmin = document.getElementById("app-admin");
