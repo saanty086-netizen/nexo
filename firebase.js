@@ -6,6 +6,8 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signInAnonymously,
   RecaptchaVerifier,
   signInWithPhoneNumber
@@ -50,12 +52,42 @@ export const db = getFirestore(app);
 // -----------------------------
 
 /**
- * Inicia sesión con Google usando un popup.
- * @returns {Promise<import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js").UserCredential>}
+ * Inicia sesión con Google. En mobile (o cuando el popup falla, típico en
+ * Safari/iOS y navegadores integrados como el de WhatsApp por el bloqueo
+ * de sessionStorage entre ventanas) usa redirect en vez de popup, ya que
+ * el popup requiere acceso a sessionStorage que esos navegadores bloquean.
+ * @returns {Promise<import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js").UserCredential|void>}
  */
 export async function loginConGoogle() {
   const provider = new GoogleAuthProvider();
-  return await signInWithPopup(auth, provider);
+  const esMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  if (esMobile) {
+    return await signInWithRedirect(auth, provider);
+  }
+
+  try {
+    return await signInWithPopup(auth, provider);
+  } catch (err) {
+    // Si el popup falla por bloqueo del navegador, reintenta con redirect.
+    if (
+      err.code === "auth/popup-blocked" ||
+      err.code === "auth/popup-closed-by-user" ||
+      err.code === "auth/cancelled-popup-request"
+    ) {
+      return await signInWithRedirect(auth, provider);
+    }
+    throw err;
+  }
+}
+
+/**
+ * Recupera el resultado de un login con Google iniciado por redirect.
+ * Hay que llamarla al cargar la página (después de volver de Google).
+ * @returns {Promise<import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js").UserCredential|null>}
+ */
+export async function obtenerResultadoRedirectGoogle() {
+  return await getRedirectResult(auth);
 }
 
 /**
