@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Solicitudes de acceso | NEXO STORE</title>
+<link rel="icon" href="../favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png" />
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#08050f',
+          panel: '#0f0a1c',
+          panel2: '#150e28',
+          line: '#241a3d',
+          violet: '#9146ff',
+          violet2: '#c9a3ff',
+          cyan: '#4ff2ff',
+          ink: '#ece6fa',
+          mute: '#8b80ab',
+          warn: '#ffb84f',
+          ok: '#4fffa0',
+          bad: '#ff5f7e'
+        },
+        fontFamily: {
+          display: ['"Chakra Petch"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace']
+        }
+      }
+    }
+  };
+</script>
+<style>
+  body { background-color: #08050f; }
+  .clip-corner { clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+  .hidden-modal { display: none !important; }
+  .fila { border-bottom: 1px solid #241a3d; }
+  .fila:last-child { border-bottom: none; }
+</style>
+</head>
+<body class="font-mono text-ink min-h-screen">
+
+<div id="bloqueado" class="hidden-modal min-h-screen flex items-center justify-center px-4 text-center">
+  <div>
+    <p class="text-bad font-display font-bold text-lg mb-2">Acceso restringido</p>
+    <p class="text-mute text-sm">Esta sección es solo para administradores.</p>
+    <a href="./" class="inline-block mt-4 text-violet2 text-sm underline">← Volver a ingresar</a>
+  </div>
+</div>
+
+<div id="app" class="hidden-modal max-w-4xl mx-auto px-5 md:px-8 py-8">
+
+  <header class="flex items-center justify-between gap-4 mb-8 flex-wrap">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full border-2 border-violet overflow-hidden shrink-0">
+        <img src="../assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" />
+      </div>
+      <div>
+        <p class="font-display font-bold text-base leading-none">NEXO</p>
+        <p class="text-[10px] text-mute tracking-[0.2em] mt-1">SOLICITUDES DE ACCESO</p>
+      </div>
+    </div>
+    <a href="./" class="text-[11px] text-mute hover:text-violet2 transition-colors">← Volver al panel</a>
+  </header>
+
+  <h2 class="font-display font-bold text-lg mb-3">Solicitudes pendientes</h2>
+  <div class="border border-line bg-panel clip-corner p-4 mb-10" id="lista-pendientes"></div>
+
+  <h2 class="font-display font-bold text-lg mb-3">Administradores aprobados</h2>
+  <div class="border border-line bg-panel clip-corner p-4" id="lista-aprobados"></div>
+
+</div>
+
+<script type="module">
+  import { auth, db } from "./firebase.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import {
+    collection,
+    query,
+    where,
+    getDocs,
+    doc,
+    updateDoc,
+    deleteDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // Mismos correos que ADMIN_EMAILS en admin/index.html y en firestore.rules.
+  // Solo estas cuentas pueden aprobar, rechazar o quitar acceso.
+  const ADMIN_EMAILS = ["saanty086@gmail.com", "btobias074@gmail.com"];
+
+  const bloqueado = document.getElementById("bloqueado");
+  const app = document.getElementById("app");
+  const listaPendientes = document.getElementById("lista-pendientes");
+  const listaAprobados = document.getElementById("lista-aprobados");
+
+  onAuthStateChanged(auth, (user) => {
+    const email = (user?.email || "").toLowerCase().trim();
+    if (!user || !ADMIN_EMAILS.includes(email)) {
+      bloqueado.classList.remove("hidden-modal");
+      app.classList.add("hidden-modal");
+      return;
+    }
+    bloqueado.classList.add("hidden-modal");
+    app.classList.remove("hidden-modal");
+    cargarPendientes();
+    cargarAprobados();
+  });
+
+  function vacio(texto) {
+    return `<p class="text-mute text-sm text-center py-6">${texto}</p>`;
+  }
+
+  // ---------- Pendientes ----------
+  async function cargarPendientes() {
+    listaPendientes.innerHTML = vacio("Cargando...");
+
+    const q = query(collection(db, "usuarios"), where("estado", "==", "pendiente"));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      listaPendientes.innerHTML = vacio("No hay solicitudes pendientes.");
+      return;
+    }
+
+    listaPendientes.innerHTML = "";
+    snap.forEach((docSnap) => {
+      const data = docSnap.data();
+      const fecha = data.creadoEn ? data.creadoEn.toDate().toLocaleDateString("es-AR") : "";
+
+      const fila = document.createElement("div");
+      fila.className = "fila flex items-center justify-between gap-3 py-3 flex-wrap";
+      fila.innerHTML = `
+        <div>
+          <p class="text-sm font-semibold text-ink">${data.nombre || data.email}</p>
+          <p class="text-[11px] text-mute">${data.nombre ? data.email + " · " : ""}${fecha}</p>
+        </div>
+        <div class="flex gap-2 shrink-0">
+          <button class="btn-aprobar text-[11px] font-display font-semibold px-3.5 py-2 bg-gradient-to-r from-violet to-cyan text-bg hover:opacity-90 transition-opacity" data-id="${docSnap.id}">Aprobar</button>
+          <button class="btn-rechazar text-[11px] font-display font-semibold px-3.5 py-2 border border-bad/40 text-bad hover:bg-bad/10 transition-colors" data-id="${docSnap.id}">Rechazar</button>
+          <button class="btn-eliminar text-[11px] font-display font-semibold px-3.5 py-2 border border-line text-mute hover:text-bad hover:border-bad/40 transition-colors" data-id="${docSnap.id}" data-correo="${data.email}">Eliminar</button>
+        </div>
+      `;
+      listaPendientes.appendChild(fila);
+    });
+
+    listaPendientes.querySelectorAll(".btn-aprobar").forEach((btn) => {
+      btn.addEventListener("click", () => cambiarEstado(btn.dataset.id, "aprobado"));
+    });
+    listaPendientes.querySelectorAll(".btn-rechazar").forEach((btn) => {
+      btn.addEventListener("click", () => cambiarEstado(btn.dataset.id, "rechazado"));
+    });
+    listaPendientes.querySelectorAll(".btn-eliminar").forEach((btn) => {
+      btn.addEventListener("click", () => eliminarUsuario(btn.dataset.id, btn.dataset.correo, cargarPendientes));
+    });
+  }
+
+  async function cambiarEstado(uid, estado) {
+    await updateDoc(doc(db, "usuarios", uid), {
+      estado,
+      revisadoPor: auth.currentUser.email,
+      revisadoEn: serverTimestamp()
+    });
+    cargarPendientes();
+    cargarAprobados();
+  }
+
+  // ---------- Aprobados ----------
+  async function cargarAprobados() {
+    listaAprobados.innerHTML = vacio("Cargando...");
+
+    const q = query(collection(db, "usuarios"), where("estado", "==", "aprobado"));
+    const snap = await getDocs(q);
+
+    // Los super admins (ADMIN_EMAILS) no dependen de este documento, así
+    // que no hace falta listarlos acá aunque tengan uno propio.
+    const usuarios = snap.docs.filter((d) => !ADMIN_EMAILS.includes((d.data().email || "").toLowerCase()));
+
+    if (usuarios.length === 0) {
+      listaAprobados.innerHTML = vacio("Todavía no hay administradores aprobados (aparte de los principales).");
+      return;
+    }
+
+    listaAprobados.innerHTML = "";
+    usuarios.forEach((docSnap) => {
+      const data = docSnap.data();
+      const fila = document.createElement("div");
+      fila.className = "fila flex items-center justify-between gap-3 py-3 flex-wrap";
+      fila.innerHTML = `
+        <div>
+          <p class="text-sm font-semibold text-ink">${data.nombre || data.email}</p>
+          <p class="text-[11px] text-mute">${data.nombre ? data.email : ""}</p>
+        </div>
+        <button class="btn-eliminar text-[11px] font-display font-semibold px-3.5 py-2 border border-line text-mute hover:text-bad hover:border-bad/40 transition-colors" data-id="${docSnap.id}" data-correo="${data.email}">Quitar acceso</button>
+      `;
+      listaAprobados.appendChild(fila);
+    });
+
+    listaAprobados.querySelectorAll(".btn-eliminar").forEach((btn) => {
+      btn.addEventListener("click", () => eliminarUsuario(btn.dataset.id, btn.dataset.correo, cargarAprobados));
+    });
+  }
+
+  // ---------- Eliminar (pendiente o aprobado) ----------
+  async function eliminarUsuario(uid, correo, recargar) {
+    const confirmado = confirm(
+      `¿Eliminar a ${correo}?\n\nEsto le saca el acceso al panel de inmediato. Su cuenta de acceso (usuario/contraseña o Google) sigue existiendo en Firebase Authentication; si querés borrarla del todo, hacelo aparte desde Firebase Console → Authentication → Users.`
+    );
+    if (!confirmado) return;
+
+    await deleteDoc(doc(db, "usuarios", uid));
+    recargar();
+  }
+</script>
+</body>
+</html>

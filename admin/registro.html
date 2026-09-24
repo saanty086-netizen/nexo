@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Solicitar acceso | NEXO STORE</title>
+<link rel="icon" href="../favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png" />
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#08050f',
+          panel: '#0f0a1c',
+          panel2: '#150e28',
+          line: '#241a3d',
+          violet: '#9146ff',
+          violet2: '#c9a3ff',
+          cyan: '#4ff2ff',
+          ink: '#ece6fa',
+          mute: '#8b80ab',
+          warn: '#ffb84f',
+          ok: '#4fffa0',
+          bad: '#ff5f7e'
+        },
+        fontFamily: {
+          display: ['"Chakra Petch"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace']
+        }
+      }
+    }
+  };
+</script>
+<style>
+  body { background-color: #08050f; }
+  .glow-border { box-shadow: 0 0 0 1px rgba(145,70,255,0.25); }
+  .clip-corner { clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+  .hidden-modal { display: none !important; }
+</style>
+</head>
+<body class="font-mono text-ink min-h-screen flex items-center justify-center px-4 py-10">
+
+<div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6">
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-full border-2 border-violet overflow-hidden shrink-0">
+      <img src="../assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" loading="eager" />
+    </div>
+    <div>
+      <p class="font-display font-bold text-base leading-none">NEXO</p>
+      <p class="text-[10px] text-mute tracking-[0.2em] mt-1">SOLICITUD DE ACCESO</p>
+    </div>
+  </div>
+
+  <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">CREAR CUENTA</p>
+  <h3 class="font-display font-bold text-xl mb-2">Sumate al equipo</h3>
+  <p class="text-xs text-mute leading-relaxed mb-5">
+    Creá tu cuenta con Google o con tu correo. Un administrador va a revisar tu solicitud
+    antes de que puedas entrar al panel.
+  </p>
+
+  <p id="error-msg" class="hidden-modal text-xs text-bad bg-bad/10 border border-bad/30 px-3 py-2.5 mb-4 leading-relaxed"></p>
+  <p id="success-msg" class="hidden-modal text-xs text-ok bg-ok/10 border border-ok/30 px-3 py-2.5 mb-4 leading-relaxed"></p>
+
+  <!-- Paso 1: elegir Google o completar formulario de correo -->
+  <div id="paso-1">
+    <button type="button" id="btn-google"
+      class="w-full border border-line bg-panel2 text-sm font-display font-semibold py-2.5 text-ink hover:border-violet transition-colors mb-4">
+      Registrarme con Google
+    </button>
+
+    <div class="flex items-center gap-3 mb-4">
+      <span class="flex-1 h-px bg-line"></span>
+      <span class="text-[10px] text-mute tracking-widest">O CON TU CORREO</span>
+      <span class="flex-1 h-px bg-line"></span>
+    </div>
+
+    <form id="form-registro" class="flex flex-col gap-4">
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Nombre completo</label>
+        <input required id="reg-nombre" type="text" placeholder="Tu nombre y apellido"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Email</label>
+        <input required id="reg-email" type="email" autocomplete="username" placeholder="tu@correo.com"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Contraseña</label>
+        <input required id="reg-password" type="password" minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Repetir contraseña</label>
+        <input required id="reg-password2" type="password" minlength="6" autocomplete="new-password" placeholder="Repetí la contraseña"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <button type="submit" id="btn-registro"
+        class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+        Crear cuenta
+      </button>
+    </form>
+  </div>
+
+  <!-- Paso 2: nombre + contraseña luego de elegir Google -->
+  <form id="form-google" class="hidden-modal flex flex-col gap-4">
+    <p class="text-xs text-mute leading-relaxed -mt-1">
+      Ya validamos tu cuenta de Google. Poné un nombre y una contraseña para tu perfil —
+      así después vas a poder entrar con Google o con correo y contraseña.
+    </p>
+    <div>
+      <label class="text-xs text-mute block mb-1.5">Nombre completo</label>
+      <input required id="g-nombre" type="text" placeholder="Tu nombre y apellido"
+        class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+    </div>
+    <div>
+      <label class="text-xs text-mute block mb-1.5">Creá una contraseña</label>
+      <input required id="g-password" type="password" minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres"
+        class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+    </div>
+    <div>
+      <label class="text-xs text-mute block mb-1.5">Repetir contraseña</label>
+      <input required id="g-password2" type="password" minlength="6" autocomplete="new-password" placeholder="Repetí la contraseña"
+        class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+    </div>
+    <button type="submit" id="btn-google-form"
+      class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+      Finalizar registro
+    </button>
+  </form>
+
+  <a href="./" class="block text-center text-xs text-mute hover:text-violet2 transition-colors mt-5">← Ya tengo cuenta, volver a ingresar</a>
+</div>
+
+<script type="module">
+  import { auth, db, loginConGoogle, obtenerResultadoRedirectGoogle } from "./firebase.js";
+  import {
+    setPersistence,
+    browserLocalPersistence,
+    createUserWithEmailAndPassword,
+    signOut,
+    linkWithCredential,
+    EmailAuthProvider
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const errorMsg = document.getElementById("error-msg");
+  const successMsg = document.getElementById("success-msg");
+
+  function mostrarError(texto) {
+    successMsg.classList.add("hidden-modal");
+    errorMsg.textContent = texto;
+    errorMsg.classList.remove("hidden-modal");
+  }
+  function mostrarExito(texto) {
+    errorMsg.classList.add("hidden-modal");
+    successMsg.textContent = texto;
+    successMsg.classList.remove("hidden-modal");
+  }
+  function ocultarMensajes() {
+    errorMsg.classList.add("hidden-modal");
+    successMsg.classList.add("hidden-modal");
+  }
+
+  // Sesión persistente: necesaria para que el login con Google por
+  // redirect (mobile) sobreviva la ida y vuelta a la pantalla de Google.
+  let sesionLista = setPersistence(auth, browserLocalPersistence);
+
+  // ---------- Registro con correo y contraseña ----------
+  const messages = {
+    "auth/email-already-in-use": "Ese correo ya tiene una cuenta. Probá ingresar en vez de registrarte.",
+    "auth/invalid-email": "El correo ingresado no es válido.",
+    "auth/weak-password": "La contraseña es muy débil, usá al menos 6 caracteres."
+  };
+
+  const formRegistro = document.getElementById("form-registro");
+  const btnRegistro = document.getElementById("btn-registro");
+
+  formRegistro.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    ocultarMensajes();
+
+    const nombre = document.getElementById("reg-nombre").value.trim();
+    const email = document.getElementById("reg-email").value.trim();
+    const password = document.getElementById("reg-password").value;
+    const password2 = document.getElementById("reg-password2").value;
+
+    if (password !== password2) {
+      mostrarError("Las contraseñas no coinciden.");
+      return;
+    }
+
+    btnRegistro.disabled = true;
+    btnRegistro.textContent = "Creando cuenta...";
+
+    try {
+      await sesionLista;
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+
+      await setDoc(doc(db, "usuarios", cred.user.uid), {
+        email,
+        nombre,
+        estado: "pendiente",
+        rol: "usuario",
+        creadoEn: serverTimestamp()
+      });
+
+      await signOut(auth);
+
+      mostrarExito("¡Listo! Tu cuenta fue creada. Un administrador va a revisar tu solicitud antes de darte acceso.");
+      formRegistro.reset();
+    } catch (err) {
+      console.error(err);
+      mostrarError(messages[err.code] || "No se pudo crear la cuenta. Probá de nuevo.");
+    } finally {
+      btnRegistro.disabled = false;
+      btnRegistro.textContent = "Crear cuenta";
+    }
+  });
+
+  // ---------- Registro con Google ----------
+  const paso1 = document.getElementById("paso-1");
+  const formGoogle = document.getElementById("form-google");
+  const btnGoogle = document.getElementById("btn-google");
+  const btnGoogleForm = document.getElementById("btn-google-form");
+  let googleUser = null;
+
+  async function manejarUsuarioGoogle(user) {
+    const ref = doc(db, "usuarios", user.uid);
+    const snap = await getDoc(ref);
+
+    if (snap.exists()) {
+      await signOut(auth);
+      googleUser = null;
+      mostrarError('Ese correo de Google ya tiene una cuenta registrada. Usá "Ya tengo cuenta" para ingresar.');
+      return;
+    }
+
+    googleUser = user;
+    paso1.classList.add("hidden-modal");
+    formGoogle.classList.remove("hidden-modal");
+  }
+
+  btnGoogle.addEventListener("click", async () => {
+    ocultarMensajes();
+    btnGoogle.disabled = true;
+    btnGoogle.textContent = "Abriendo Google...";
+    try {
+      await sesionLista;
+      const result = await loginConGoogle();
+      // En mobile, loginConGoogle usa redirect y no devuelve resultado acá:
+      // el resultado se procesa más abajo, al cargar la página de vuelta.
+      if (result && result.user) {
+        await manejarUsuarioGoogle(result.user);
+      }
+    } catch (err) {
+      console.error(err);
+      mostrarError("No se pudo continuar con Google. Probá de nuevo.");
+    } finally {
+      btnGoogle.disabled = false;
+      btnGoogle.textContent = "Registrarme con Google";
+    }
+  });
+
+  // Procesa el regreso del login con Google por redirect (mobile).
+  sesionLista
+    .then(() => obtenerResultadoRedirectGoogle())
+    .then((result) => {
+      if (result && result.user) {
+        return manejarUsuarioGoogle(result.user);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      mostrarError("No se pudo completar el ingreso con Google.");
+    });
+
+  formGoogle.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!googleUser) return;
+
+    const nombre = document.getElementById("g-nombre").value.trim();
+    const password = document.getElementById("g-password").value;
+    const password2 = document.getElementById("g-password2").value;
+
+    if (password !== password2) {
+      mostrarError("Las contraseñas no coinciden.");
+      return;
+    }
+
+    btnGoogleForm.disabled = true;
+    btnGoogleForm.textContent = "Guardando...";
+
+    try {
+      const credential = EmailAuthProvider.credential(googleUser.email, password);
+      await linkWithCredential(googleUser, credential);
+
+      await setDoc(doc(db, "usuarios", googleUser.uid), {
+        email: googleUser.email,
+        nombre,
+        estado: "pendiente",
+        rol: "usuario",
+        creadoEn: serverTimestamp()
+      });
+
+      await signOut(auth);
+
+      paso1.classList.remove("hidden-modal");
+      formGoogle.classList.add("hidden-modal");
+      formGoogle.reset();
+      googleUser = null;
+
+      mostrarExito("¡Listo! Tu cuenta quedó creada con Google y con contraseña. Un administrador va a revisar tu solicitud.");
+    } catch (err) {
+      console.error(err);
+      let texto = "No se pudo completar el registro. Probá de nuevo.";
+      if (err.code === "auth/email-already-in-use" || err.code === "auth/credential-already-in-use") {
+        texto = "Ese correo ya tiene una contraseña configurada en otra cuenta.";
+      } else if (err.code === "auth/weak-password") {
+        texto = "La contraseña es muy débil, usá al menos 6 caracteres.";
+      }
+      mostrarError(texto);
+    } finally {
+      btnGoogleForm.disabled = false;
+      btnGoogleForm.textContent = "Finalizar registro";
+    }
+  });
+</script>
+</body>
+</html>
