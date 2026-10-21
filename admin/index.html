@@ -889,6 +889,7 @@
     <td class="px-4 py-3">
       <div class="flex items-center gap-2 whitespace-nowrap">
         <button data-field="btn-chat" class="text-[11px] text-cyan border border-cyan/40 px-2.5 py-1.5 hover:bg-cyan hover:text-bg transition-colors">Avisar</button>
+        <button data-field="btn-renovar" class="text-[11px] text-ok border border-ok/40 px-2.5 py-1.5 hover:bg-ok hover:text-bg transition-colors">Renovar</button>
         <button data-field="btn-editar-vencimiento" class="text-[11px] text-violet2 border border-violet/40 px-2.5 py-1.5 hover:bg-violet hover:text-bg transition-colors">Editar</button>
         <button data-field="btn-eliminar-vencimiento" class="text-[11px] text-bad border border-bad/40 px-2.5 py-1.5 hover:bg-bad hover:text-bg transition-colors">Eliminar</button>
       </div>
@@ -913,6 +914,7 @@
 
     <div class="mt-3 flex items-center gap-2">
       <button data-field="btn-chat" class="flex-1 text-[11px] text-cyan border border-cyan/40 py-2 hover:bg-cyan hover:text-bg transition-colors">Avisar</button>
+        <button data-field="btn-renovar" class="flex-1 text-[11px] text-ok border border-ok/40 py-2 hover:bg-ok hover:text-bg transition-colors">Renovar</button>
       <button data-field="btn-ver-mas" class="flex-1 text-[11px] text-mute border border-line py-2 hover:border-violet2 hover:text-violet2 transition-colors">Ver más ▾</button>
     </div>
 
@@ -1144,6 +1146,11 @@
         <label class="text-xs text-mute block mb-1.5">Producto de la lista de precios</label>
         <select id="vencimiento-producto"
           class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm text-ink focus:outline-none focus:border-cyan"></select>
+      </div>
+      <div>
+        <label class="text-xs text-mute block mb-1.5">Monto a cobrar (ARS)</label>
+        <input id="vencimiento-monto" type="number" min="0" step="1" placeholder="Vacío = precio de la lista"
+          class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
       </div>
       <p id="vencimiento-status" class="text-xs text-mute min-h-[1rem]"></p>
 
@@ -1951,6 +1958,10 @@
   const tplVencimiento = document.getElementById("tpl-fila-vencimiento");
 
   function iniciarEscuchaVencimientos() {
+    onSnapshot(collection(db, "renovaciones"), (snap) => {
+      renovacionesCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderResumen();
+    });
     onSnapshot(doc(db, "configuracion", "mensajeVencimiento"), (snap) => {
       if (snap.exists()) msgConfig = { ...msgConfig, ...snap.data() };
       renderTablaVencimientos();
@@ -2040,6 +2051,7 @@
       if (pendienteAviso(cliente)) nodo.querySelector("tr").classList.add("bg-warn/5");
 
       nodo.querySelector('[data-field="btn-chat"]').addEventListener("click", irAlChat);
+      nodo.querySelector('[data-field="btn-renovar"]').addEventListener("click", () => renovarCliente(cliente));
       nodo.querySelector('[data-field="btn-editar-vencimiento"]').addEventListener("click", () => abrirModalVencimiento(cliente));
       nodo.querySelector('[data-field="btn-eliminar-vencimiento"]').addEventListener("click", eliminarCliente);
 
@@ -2060,6 +2072,7 @@
       pintarAviso(tarjeta.querySelector('[data-field="aviso"]'), cliente);
 
       tarjeta.querySelector('[data-field="btn-chat"]').addEventListener("click", irAlChat);
+      tarjeta.querySelector('[data-field="btn-renovar"]').addEventListener("click", () => renovarCliente(cliente));
       activarVerMas(tarjeta.querySelector('[data-field="btn-ver-mas"]'), tarjeta.querySelector('[data-field="detalle"]'));
       tarjeta.querySelector('[data-field="btn-editar-vencimiento"]').addEventListener("click", () => abrirModalVencimiento(cliente));
       tarjeta.querySelector('[data-field="btn-eliminar-vencimiento"]').addEventListener("click", eliminarCliente);
@@ -2148,6 +2161,55 @@
   ].join("\n");
   let msgConfig = { plantilla: PLANTILLA_DEFECTO, alias: "", titular: "", cbu: "", diasDefecto: 5 };
   let filtroVenc = "todos";
+  let renovacionesCache = [];
+
+  function sumarMeses(fechaStr, meses) {
+    const d = new Date(fechaStr + "T00:00:00");
+    const dia = d.getDate();
+    d.setMonth(d.getMonth() + meses);
+    if (d.getDate() !== dia) d.setDate(0);
+    return d;
+  }
+  // Renueva: nuevo vencimiento = (vencimiento actual, o hoy si ya venció) + N meses.
+  // Registra el cobro en "renovaciones" para que cuente en las ganancias del mes.
+  async function renovarCliente(c) {
+    const monto = montoDe(c);
+    const r = window.prompt(
+      `Renovar a ${c.nombre || "cliente"} (${c.cuenta || "cuenta"}).\nMonto por mes: ${monto ? formatearPrecio(monto) : "sin monto cargado"}\n¿Cuántos meses renueva?`,
+      "1"
+    );
+    if (r === null) return;
+    const meses = Math.round(Number(r));
+    if (!(meses >= 1 && meses <= 24)) {
+      alert("Poné una cantidad de meses entre 1 y 24.");
+      return;
+    }
+    const hoy = ymd(new Date());
+    const base = c.fechaVencimiento && c.fechaVencimiento > hoy ? c.fechaVencimiento : hoy;
+    const nuevo = ymd(sumarMeses(base, meses));
+    try {
+      await updateDoc(doc(db, "clientes", c.id), { fechaVencimiento: nuevo, fechaRenovacion: nuevo, ultimoAviso: "", ultimaRenovacion: hoy });
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo renovar. Intentá de nuevo.");
+      return;
+    }
+    let extra = "";
+    if (!monto) {
+      extra = " No había monto cargado, así que no se sumó a las ganancias.";
+    } else {
+      try {
+        await addDoc(collection(db, "renovaciones"), {
+          clienteId: c.id, nombre: c.nombre || "", producto: c.cuenta || "", productoId: c.productoId || "",
+          monto, meses, fecha: serverTimestamp()
+        });
+      } catch (err) {
+        console.error(err);
+        extra = " No se pudo registrar el cobro en las ganancias (revisá las reglas de Firestore para 'renovaciones').";
+      }
+    }
+    alert(`Renovado. Nuevo vencimiento: ${formatearFechaSimple(nuevo)}.${extra}`);
+  }
 
   const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   const umbralDe = (c) => (Number(c.avisarDiasAntes) > 0 ? Number(c.avisarDiasAntes) : Number(msgConfig.diasDefecto) || 5);
@@ -2209,6 +2271,12 @@
     );
   }
 
+  function montoDe(c) {
+    if (Number(c.montoRenovacion) > 0) return Number(c.montoRenovacion);
+    const pr = buscarProductoVenc(c);
+    return pr && Number(pr.precio) > 0 ? Number(pr.precio) : null;
+  }
+
   function armarMensaje(c, plantilla) {
     const pr = buscarProductoVenc(c);
     const d = diasRestantes(c.fechaVencimiento);
@@ -2218,7 +2286,7 @@
       vencimiento: formatearFechaSimple(c.fechaVencimiento),
       dias: diasTexto(d),
       renovacion: c.fechaRenovacion ? formatearFechaSimple(c.fechaRenovacion) : "a coordinar",
-      monto: pr && Number(pr.precio) ? formatearPrecio(pr.precio) : "a confirmar",
+      monto: montoDe(c) ? formatearPrecio(montoDe(c)) : "a confirmar",
       alias: msgConfig.alias || "-",
       titular: msgConfig.titular || "-",
       cbu: msgConfig.cbu || "-"
@@ -2233,7 +2301,7 @@
       return;
     }
     if (!msgConfig.alias && !msgConfig.cbu && !window.confirm('Todavía no cargaste alias/CBU en "Editar mensaje". ¿Enviar igual?')) return;
-    if (!buscarProductoVenc(c) && !window.confirm("No encontré el precio de este producto en la lista. El mensaje dirá \"monto a confirmar\". ¿Enviar igual?")) return;
+    if (!montoDe(c) && !window.confirm("No hay monto para este cliente (ni en la lista de precios ni cargado a mano). El mensaje dirá \"monto a confirmar\". Podés cargarlo en Editar > Monto a cobrar. ¿Enviar igual?")) return;
     window.open(`https://wa.me/${tel}?text=${encodeURIComponent(armarMensaje(c))}`, "_blank");
     updateDoc(doc(db, "clientes", c.id), { ultimoAviso: ymd(new Date()) }).catch(console.error);
   }
@@ -2276,7 +2344,8 @@
       return !!f && f.getMonth() === hoy.getMonth() && f.getFullYear() === hoy.getFullYear();
     };
     const pedMes = pedidosCache.filter((p) => p.estado === "activo" && enMes(p.fecha));
-    const facturado = pedMes.reduce((a, p) => a + (Number(p.precio) || 0), 0);
+    const renMes = renovacionesCache.filter((r) => enMes(r.fecha));
+    const facturado = pedMes.reduce((a, p) => a + (Number(p.precio) || 0), 0) + renMes.reduce((a, r) => a + (Number(r.monto) || 0), 0);
     const ajMes = ajustesCache.filter((a) => enMes(a.fecha)).reduce((a, x) => a + (Number(x.monto) || 0), 0);
     const btnCalc = document.getElementById("res-calc");
     if (cotizacionActual) {
@@ -2287,14 +2356,20 @@
         if (!cu) { sinCosto++; return; }
         gan += (Number(p.precio) || 0) - cu * cotizacionActual.valor;
       });
+      renMes.forEach((r) => {
+        const pr = buscarProductoVenc({ productoId: r.productoId, cuenta: r.producto });
+        const cu = pr ? Number(pr.costoUsd) || 0 : 0;
+        if (!cu) { sinCosto++; return; }
+        gan += (Number(r.monto) || 0) - cu * cotizacionActual.valor * (Number(r.meses) || 1);
+      });
       document.getElementById("res-mes-label").textContent = "GANANCIAS DEL MES";
       document.getElementById("res-mes").textContent = formatearPrecio(Math.round(gan + ajMes));
-      document.getElementById("res-mes-sub").textContent = `Facturado ${formatearPrecio(facturado)}` + (sinCosto ? ` · ${sinCosto} pedido${sinCosto === 1 ? "" : "s"} sin costo` : "");
+      document.getElementById("res-mes-sub").textContent = `Facturado ${formatearPrecio(facturado)}` + (sinCosto ? ` · ${sinCosto} cobro${sinCosto === 1 ? "" : "s"} sin costo` : "");
       btnCalc.classList.add("hidden-modal");
     } else {
       document.getElementById("res-mes-label").textContent = "FACTURADO DEL MES";
       document.getElementById("res-mes").textContent = formatearPrecio(facturado);
-      document.getElementById("res-mes-sub").textContent = `${pedMes.length} pedido${pedMes.length === 1 ? "" : "s"} activo${pedMes.length === 1 ? "" : "s"}`;
+      document.getElementById("res-mes-sub").textContent = `${pedMes.length} pedido${pedMes.length === 1 ? "" : "s"} activo${pedMes.length === 1 ? "" : "s"} · ${renMes.length} renovación${renMes.length === 1 ? "" : "es"}`;
       btnCalc.classList.remove("hidden-modal");
     }
 
@@ -2414,7 +2489,7 @@
         `Cliente: ${c.nombre || "-"}`,
         `WhatsApp: ${c.telefono || "-"}`,
         `Renovación: ${c.fechaRenovacion ? formatearFechaSimple(c.fechaRenovacion) : "a coordinar"}`,
-        `Monto: ${pr && Number(pr.precio) ? formatearPrecio(pr.precio) : "a confirmar"}`,
+        `Monto: ${montoDe(c) ? formatearPrecio(montoDe(c)) : "a confirmar"}`,
         "Abrí el panel de NEXO y tocá Avisar."
       ].join("\n");
       lineas.push(
@@ -2462,6 +2537,13 @@
   const vencimientoRenovacion = document.getElementById("vencimiento-renovacion");
   const vencimientoAviso = document.getElementById("vencimiento-aviso");
   const vencimientoProducto = document.getElementById("vencimiento-producto");
+  const vencimientoMonto = document.getElementById("vencimiento-monto");
+  function actualizarPlaceholderMonto() {
+    const pr = productosCache.find((x) => x.id === vencimientoProducto.value) ||
+      buscarProductoVenc({ cuenta: vencimientoCuenta.value });
+    vencimientoMonto.placeholder = pr && Number(pr.precio) ? `Lista: ${formatearPrecio(pr.precio)} (vacío = usar este)` : "No encontré precio en la lista: cargalo acá";
+  }
+  vencimientoCuenta.addEventListener("input", actualizarPlaceholderMonto);
   function llenarSelectProducto() {
     vencimientoProducto.innerHTML = '<option value="">Detectar por nombre de la cuenta</option>' +
       productosCache.map((p) => `<option value="${p.id}">${(p.nombre || "").replace(/</g, "&lt;")} - ${formatearPrecio(p.precio)}</option>`).join("");
@@ -2469,6 +2551,7 @@
   vencimientoProducto.addEventListener("change", () => {
     const pr = productosCache.find((x) => x.id === vencimientoProducto.value);
     if (pr && !vencimientoCuenta.value.trim()) vencimientoCuenta.value = pr.nombre || "";
+    actualizarPlaceholderMonto();
   });
   const modalVencimientoTitulo = document.getElementById("modal-vencimiento-titulo");
   const modalVencimientoEyebrow = document.getElementById("modal-vencimiento-titulo-eyebrow");
@@ -2496,6 +2579,7 @@
       vencimientoRenovacion.value = cliente.fechaRenovacion || "";
       vencimientoAviso.value = cliente.avisarDiasAntes || "";
       vencimientoProducto.value = cliente.productoId || "";
+      vencimientoMonto.value = cliente.montoRenovacion || "";
     } else if (cliente) {
       // Viene de un pedido sin ficha todavía: se precargan sus datos.
       vencimientoEnEdicionId = null;
@@ -2513,6 +2597,7 @@
       modalVencimientoTitulo.textContent = "Agregar cliente";
     }
 
+    actualizarPlaceholderMonto();
     modalVencimiento.classList.remove("hidden-modal");
     modalVencimiento.classList.add("flex");
   }
@@ -2539,7 +2624,8 @@
       fechaVencimiento: vencimientoFecha.value,
       fechaRenovacion: vencimientoRenovacion.value,
       avisarDiasAntes: Number(vencimientoAviso.value) || null,
-      productoId: vencimientoProducto.value
+      productoId: vencimientoProducto.value,
+      montoRenovacion: Number(vencimientoMonto.value) || null
     };
 
     if (!vencimientoEnEdicionId && pedidoIdParaVincular) {
